@@ -9,7 +9,7 @@
 #include "Frame2DI.hpp"
 #include "ProjectionReaderI.hpp"
 #include "matrix.h"
-#include "utils/ProjectionMatrix.hpp"
+#include "MATRIX/ProjectionMatrix.hpp"
 
 namespace CTL {
 namespace io {

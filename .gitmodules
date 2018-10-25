@@ -1,3 +1,9 @@
 [submodule "submodules/plog"]
 	path = submodules/plog
 	url = https://github.com/SergiusTheBest/plog
+[submodule "submodules/Catch2"]
+	path = submodules/Catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "submodules/Matrix-Template"]
+	path = submodules/Matrix-Template
+	url = ssh://git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git

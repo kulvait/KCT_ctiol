@@ -46,8 +46,8 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/plog/include)
 #find_package(Threads) #include pthreads
 
 #Matrix class 
-#    ssh:  // git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
-#include_directories(${CMAKE_SOURCE_DIR} / submodules / Matrix - Template)
+#ssh:  // git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
+include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
 
 #Projection matrix comparator by Robert Frysch
 #To enable Frobenius norm just define ENABLE_FROBENIUS_NORM
@@ -99,6 +99,17 @@ ENDIF()
 #else()
 #	message("Opencv is outdated on this system, can not compile ImageRegistration program.")
 #endif()
+
+
+#Catch lib
+include_directories(${CMAKE_SOURCE_DIR}/tests)
+add_library(Catch INTERFACE)
+target_include_directories(Catch INTERFACE ${CMAKE_SOURCE_DIR}/submodules/Catch2/single_include)
+FILE( GLOB TST_SRC ${CMAKE_SOURCE_DIR}/tests/*.cpp )
+add_executable(test_ctiol ${TST_SRC})
+target_link_libraries(test_ctiol Catch)
+target_link_libraries(test_ctiol CTIOL)
+target_link_libraries(test_ctiol CTIOL_DENITK)
 
 add_custom_target(formatWebkit
 ./formatWebkit

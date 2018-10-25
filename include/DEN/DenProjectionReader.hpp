@@ -10,7 +10,7 @@
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
 #include "ProjectionReaderI.hpp"
-#include "utils/ProjectionMatrix.hpp"
+#include "MATRIX/ProjectionMatrix.hpp"
 
 namespace CTL {
 namespace io {
