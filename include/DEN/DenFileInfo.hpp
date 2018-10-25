@@ -7,9 +7,9 @@
 #include <string>
 
 // Internal libraries
-#include "io/DenSupportedType.hpp"
-#include "io/rawop.h" //To get number of rows...
-#include "utils/convertEndians.h"
+#include "DEN/DenSupportedType.hpp"
+#include "rawop.h" //To get number of rows...
+#include "DEN/DenNextElement.h"
 
 namespace CTL {
 namespace io {

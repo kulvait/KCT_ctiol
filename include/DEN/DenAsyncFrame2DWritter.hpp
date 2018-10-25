@@ -5,9 +5,9 @@
 #include <string>
 
 // Internal libraries
-#include "io/AsyncFrame2DWritterI.hpp"
-#include "io/rawop.h"
-#include "utils/convertEndians.h"
+#include "AsyncFrame2DWritterI.hpp"
+#include "rawop.h"
+#include "littleEndianAlignment.h"
 
 namespace CTL {
 namespace io {

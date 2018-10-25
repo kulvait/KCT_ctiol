@@ -6,8 +6,8 @@
 
 #include <cmath>
 
-#include "io/DenSupportedType.hpp"
-#include "io/Frame2DI.hpp"
+#include "DEN/DenSupportedType.hpp"
+#include "Frame2DI.hpp"
 
 namespace CTL {
 namespace io {

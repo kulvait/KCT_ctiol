@@ -1,6 +1,6 @@
 #pragma once
 
-#include "io/DenSupportedType.hpp"
+#include "DEN/DenSupportedType.hpp"
 
 namespace CTL {
 namespace io {

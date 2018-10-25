@@ -1,7 +1,7 @@
 #pragma once
 
 // Internal
-#include "io/Frame2DI.hpp"
+#include "Frame2DI.hpp"
 
 namespace CTL {
 namespace io {

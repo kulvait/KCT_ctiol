@@ -4,10 +4,10 @@
 #include <string>
 
 // Internal
-#include "io/BufferedFrame2D.hpp"
-#include "io/DenFileInfo.hpp"
-#include "io/Frame2DI.hpp"
-#include "io/Frame2DReaderI.hpp"
+#include "BufferedFrame2D.hpp"
+#include "DEN/DenFileInfo.hpp"
+#include "Frame2DI.hpp"
+#include "Frame2DReaderI.hpp"
 
 namespace CTL {
 namespace io {
