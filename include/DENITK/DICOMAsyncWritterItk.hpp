@@ -15,8 +15,8 @@
 #include "itkMetaDataObject.h"
 
 // Internal libraries
-#include "io/AsyncFrame2DWritterItkI.hpp"
-#include "io/stringFormatter.h"
+#include "DENITK/AsyncFrame2DWritterItkI.hpp"
+#include "stringFormatter.h"
 
 namespace CTL {
 namespace io {

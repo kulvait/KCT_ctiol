@@ -8,7 +8,7 @@
 
 // Internal
 #include "DEN/DenProjectionReader.hpp"
-#include "io/ProjectionReaderItkI.hpp"
+#include "DENITK/ProjectionReaderItkI.hpp"
 
 namespace CTL {
 namespace io {

@@ -4,7 +4,7 @@
 #include <string>
 
 // Internal
-#include "io/Frame2DReaderItkI.hpp"
+#include "DENITK/Frame2DReaderItkI.hpp"
 
 namespace CTL {
 namespace io {
