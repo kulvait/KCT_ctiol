@@ -7,10 +7,6 @@
 #include <cstring>
 #include <string>
 
-// Internal dependencies
-#include "DEN/DenSupportedType.hpp"
-#include "stringFormatter.h"
-
 namespace CTL {
 namespace util {
 
@@ -35,25 +31,6 @@ namespace util {
     void putInt64(int64_t val, uint8_t* buffer);
     void putFloat(float val, uint8_t* buffer);
     void putDouble(double val, uint8_t* buffer);
-
-    template <typename T>
-    T getNextElement(uint8_t* buffer, io::DenSupportedType dataType)
-    {
-        switch(dataType)
-        {
-        case io::DenSupportedType::uint16_t_:
-            return nextUint16(buffer);
-        case io::DenSupportedType::float_:
-            return nextFloat(buffer);
-        case io::DenSupportedType::double_:
-            return nextDouble(buffer);
-        default:
-            std::string errMsg
-                = io::xprintf("Unsupported data type %s.", io::DenSupportedTypeToString(dataType));
-            LOGE << errMsg;
-            throw std::runtime_error(errMsg);
-        }
-    }
 
     template <typename T>
     void setNextElement(T val, uint8_t* buffer)

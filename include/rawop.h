@@ -12,7 +12,7 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "utils/denByteAlignment.h"
+#include "littleEndianAlignment.h"
 
 namespace CTL {
 namespace io {
