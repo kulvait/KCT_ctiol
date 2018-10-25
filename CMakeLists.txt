@@ -9,13 +9,15 @@ set(CMAKE_BUILD_TYPE Debug)
 set(BUILD_SHARED_LIBS True)
 
 #ITK
-#find_package( ITK REQUIRED)
-#include( ${ITK_USE_FILE} )
+find_package(ITK)
+IF(ITK_FOUND)
+	include( ${ITK_USE_FILE} )
+ENDIF()
 
 #OPENCV
-#find_package( OpenCV REQUIRED )
-#include_directories( ${OpenCV_INCLUDE_DIRS} )
-#message( ${OpenCV_INCLUDE_DIRS} )
+#find_package(OpenCV REQUIRED)
+#include_directories(${OpenCV_INCLUDE_DIRS})
+#message(${OpenCV_INCLUDE_DIRS})
 
 #Header directories for the project
 set(GLOBAL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
@@ -28,35 +30,39 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules)
 include_directories(${CMAKE_SOURCE_DIR}/submodules/plog/include)
 
 #C++ String Toolkit Library
-#(2) If the Boost libraries  (random, regex,  lexical_cast etc) are not
-#available  or  it  not  wished   they  be  used  then  the   following
+#(2) If the Boost libraries(random, regex, lexical_cast etc) are not
+#available or it not wished they be used then the following
 #preprocessor directive needs defining, either in code before strtk.hpp
 #is included or as a compiler switch:
-#   (*) strtk_no_tr1_or_boost
+#(*) strtk_no_tr1_or_boost
 #add_definitions("-Dstrtk_no_tr1_or_boost")
-#include_directories(${CMAKE_SOURCE_DIR}/include/strtk)
+#include_directories(${CMAKE_SOURCE_DIR} / include / strtk)
 
 #CLI11 comand line parser library
-#include_directories(${CMAKE_SOURCE_DIR}/submodules/CLI11/include)
+#include_directories(${CMAKE_SOURCE_DIR} / submodules / CLI11 / include)
 
-#Thread pool management lib ctpl from https://github.com/vit-vit/ctpl
-#include_directories(${CMAKE_SOURCE_DIR}/submodules/ctpl)
-#find_package (Threads)#include pthreads
+#Thread pool management lib ctpl from https:  // github.com/vit-vit/ctpl
+#include_directories(${CMAKE_SOURCE_DIR} / submodules / ctpl)
+#find_package(Threads) #include pthreads
 
-#Matrix class ssh://git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
-#include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
+#Matrix class 
+#    ssh:  // git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
+#include_directories(${CMAKE_SOURCE_DIR} / submodules / Matrix - Template)
 
 #Projection matrix comparator by Robert Frysch
 #To enable Frobenius norm just define ENABLE_FROBENIUS_NORM
 #add_definitions("-DENABLE_FROBENIUS_NORM")
-#include_directories(${CMAKE_SOURCE_DIR}/submodules/projection-matrix-comparator)
-#SET( PMC_SRC ${CMAKE_SOURCE_DIR}/submodules/projection-matrix-comparator/pmatcachedfilereader.cpp  ${CMAKE_SOURCE_DIR}/submodules/projection-matrix-comparator/pmatcomparator.cpp)
+#include_directories(${CMAKE_SOURCE_DIR} / submodules / projection - matrix - \
+#		     comparator)
+#SET(PMC_SRC ${CMAKE_SOURCE_DIR} / submodules / projection - matrix -         \
+#     comparator / pmatcachedfilereader.cpp ${CMAKE_SOURCE_DIR} / submodules / \
+#	 projection -                                                         \
+#     matrix - comparator / pmatcomparator.cpp)
 #add_library(pmc ${PMC_SRC})
 
-
 #file(GLOB GLOBAL_SOURCES "src/*.cpp")
-#message("Version opencv "${OpenCV_VERSION_MAJOR})
-#if(${OpenCV_VERSION_MAJOR} GREATER 2)
+#message("Version opencv " ${OpenCV_VERSION_MAJOR})
+#if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
 FILE( GLOB LIBSRC ${CMAKE_SOURCE_DIR}/src/*.cpp )
 SET(GLOBAL_SOURCES ${LIBSRC})
@@ -69,15 +75,18 @@ set_target_properties(
         SUFFIX ""
 )
 
-FILE( GLOB LIBDENITKSRC ${CMAKE_SOURCE_DIR}/src/DENITK/*.cpp )
 
+IF(ITK_FOUND)
+FILE( GLOB LIBDENITKSRC ${CMAKE_SOURCE_DIR}/src/DENITK/*.cpp )
 add_library(CTIOL_DENITK ${LIBDENITKSRC})
 set_target_properties(
-    CTIOL 
+    CTIOL_DENITK
     PROPERTIES 
         OUTPUT_NAME "ctiol_denitk.so"
         SUFFIX ""
 )
+target_link_libraries(CTIOL_DENITK ${ITK_LIBRARIES})
+ENDIF()
 
 #target_link_libraries(ImageRegistration utils)
 #target_link_libraries(ImageRegistration io)
@@ -123,4 +132,3 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
-

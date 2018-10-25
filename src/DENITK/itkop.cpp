@@ -1,4 +1,4 @@
-#include "io/itkop.h"
+#include "DENITK/itkop.h"
 #include "frameop.h"
 
 namespace CTL {

@@ -1,6 +1,6 @@
 #pragma once
 // Logging
-#include <utils/PlogSetup.h>
+#include <plog/Log.h>
 
 // Standard libraries
 #include <cmath>
