@@ -69,6 +69,16 @@ set_target_properties(
         SUFFIX ""
 )
 
+FILE( GLOB LIBDENITKSRC ${CMAKE_SOURCE_DIR}/src/DENITK/*.cpp )
+
+add_library(CTIOL_DENITK ${LIBDENITKSRC})
+set_target_properties(
+    CTIOL 
+    PROPERTIES 
+        OUTPUT_NAME "ctiol_denitk.so"
+        SUFFIX ""
+)
+
 #target_link_libraries(ImageRegistration utils)
 #target_link_libraries(ImageRegistration io)
 #target_link_libraries(ImageRegistration pmc)

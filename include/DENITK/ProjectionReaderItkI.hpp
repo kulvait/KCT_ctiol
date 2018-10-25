@@ -1,8 +1,13 @@
 #pragma once
+
 // External libraries
+#include "itkImageFileReader.h"
+#include "itkImageIOBase.h"
+#include "itkRawImageIO.h"
 
 // Internal libraries
 #include "Frame2DI.hpp"
+#include "ProjectionReaderI.hpp"
 #include "matrix.h"
 #include "utils/ProjectionMatrix.hpp"
 
@@ -17,20 +22,13 @@ namespace io {
      *structure that source each call.
      */
     template <typename T>
-    class ProjectionReaderI
+    class ProjectionReaderItkI : virtual public ProjectionReaderI<T>
+    // I don't want from implementer to implement all the behavior of ProjectionReaderI when its
+    // implemented in some base class which is itself inherited
     {
     public:
-        virtual std::shared_ptr<util::ProjectionMatrix> readProjectionMatrix(int i) = 0;
-        /**Returns the i-th projection matrix from the source.
-         */
-        virtual std::shared_ptr<io::Frame2DI<T>> readProjectionSlice(int i) = 0;
-        /*Returns i-th projection slice in the source.*/
-        virtual unsigned int dimx() const = 0;
-        /**Returns x dimension.*/
-        virtual unsigned int dimy() const = 0;
-        /**Returns y dimension.*/
-        virtual unsigned int dimz() const = 0;
-        /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
+        virtual typename itk::Image<T, 2>::Pointer readProjectionSliceAsItkImage(int i) = 0;
+        /*Returns i-th projection slice in the source as itk::Image<T,2>.*/
     };
 } // namespace io
 } // namespace CTL

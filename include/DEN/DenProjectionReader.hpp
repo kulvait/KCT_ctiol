@@ -4,12 +4,12 @@
 #include <string>
 
 // Internal
-#include "io/BufferedFrame2D.hpp"
-#include "io/DenFileInfo.hpp"
-#include "io/DenFrame2DReader.hpp"
-#include "io/DenSupportedType.hpp"
-#include "io/Frame2DI.hpp"
-#include "io/ProjectionReaderI.hpp"
+#include "BufferedFrame2D.hpp"
+#include "DEN/DenFileInfo.hpp"
+#include "DEN/DenFrame2DReader.hpp"
+#include "DEN/DenSupportedType.hpp"
+#include "Frame2DI.hpp"
+#include "ProjectionReaderI.hpp"
 #include "utils/ProjectionMatrix.hpp"
 
 namespace CTL {
