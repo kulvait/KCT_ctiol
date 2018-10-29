@@ -6,8 +6,8 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
-#include "rawop.h"
 #include "littleEndianAlignment.h"
+#include "rawop.h"
 
 namespace CTL {
 namespace io {
@@ -88,8 +88,8 @@ namespace io {
         } else
         {
             io::createEmptyFile(projectionsFile, totalFileSize, true);
-            LOGD << io::xprintf("Just created a file %s with size %ld bytes.",
-                                projectionsFile.c_str(), totalFileSize);
+            LOGD << io::xprintf("New file %s of the size %ld bytes was created.", projectionsFile.c_str(),
+                                totalFileSize);
         }
         uint8_t buf[6];
         util::putUint16((uint16_t)dimy, &buf[0]);
@@ -112,6 +112,7 @@ namespace io {
     DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(const DenAsyncFrame2DWritter<T>& b)
         : DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(b.denFile, b.dimx, b.dimy, b.dimz)
     {
+        LOGD << "Caling Copy constructor of DenAsyncFrame2DWritter";
     }
 
     // Copy assignment
@@ -119,7 +120,7 @@ namespace io {
     DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::
     operator=(const DenAsyncFrame2DWritter<T>& b)
     {
-
+        LOGD << "Caling Copy assignment constructor of DenAsyncFrame2DWritter";
         if(&b != this) // To elegantly solve situation when assigning to itself
         {
             this->projectionsFile = b.projectionsFile;
@@ -139,6 +140,7 @@ namespace io {
     template <typename T>
     DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(DenAsyncFrame2DWritter<T>&& b)
     {
+        LOGD << "Caling Move constructor of DenAsyncFrame2DWritter";
         this->projectionsFile = b.projectionsFile;
         this->sizex = b.dimx;
         this->sizey = b.dimy;
@@ -151,7 +153,7 @@ namespace io {
     template <typename T>
     DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::operator=(DenAsyncFrame2DWritter<T>&& b)
     {
-
+        LOGD << "Caling Move assignment constructor of DenAsyncFrame2DWritter";
         if(&b != this) // To elegantly solve situation when assigning to itself
         {
             this->projectionsFile = b.projectionsFile;

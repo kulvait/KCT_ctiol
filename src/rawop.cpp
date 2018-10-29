@@ -148,7 +148,7 @@ namespace io {
         return rc == 0 ? stat_buf.st_size : -1;
     }
 
-    void createEmptyFile(std::string fileName, int numBytes, bool overwrite)
+    void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite)
     {
         if(!fileExists(fileName) || overwrite)
         {
@@ -165,7 +165,7 @@ namespace io {
         } else
         {
             std::stringstream errMsg;
-            errMsg << "File " << fileName << " already exists and overwrite is no set.";
+            errMsg << "File " << fileName << " already exist, set overwrite flag if it should be overwritten.";
             LOGE << errMsg.str();
             throw std::runtime_error(errMsg.str());
         }

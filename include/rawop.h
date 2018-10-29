@@ -20,7 +20,7 @@ namespace io {
     void readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, int numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, int numBytes);
     void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, int numBytes);
-    void createEmptyFile(std::string fileName, int numBytes, bool overwrite);
+    void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite);
     bool fileExists(std::string fileName);
     long getFileSize(std::string filename);
 } // namespace io
