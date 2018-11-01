@@ -64,7 +64,7 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
 #message("Version opencv " ${OpenCV_VERSION_MAJOR})
 #if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
-FILE( GLOB LIBSRC ${CMAKE_SOURCE_DIR}/src/*.cpp )
+FILE( GLOB LIBSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/argparse/*.cpp )
 SET(GLOBAL_SOURCES ${LIBSRC})
 
 add_library(CTIOL ${GLOBAL_SOURCES})
