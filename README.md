@@ -2,9 +2,7 @@
 
 Input output routines for asynchronous thread safe reading/writing CT data.
 Currently, mainly the DEN format read/write is implemented.
-
-## Submodules
-The project contains submodules in the subdirectory submodules. 
+This repository actually contains one basic library and separate library that depends on ITK and header files.
 
 ## Cloning repository:
 Basic clone can be done via
@@ -36,14 +34,58 @@ cmake ..
 make
 ```
 
-## Used libraries
-ITK
-Documentation of the used version
-https://itk.org/Doxygen410/html/index.html
+## Submodules
+
+Submodules lives in the submodules directory. To clone project including submodules one have to use the following commands
+
+```
+git submodule init
+git submodule update
+```
+or use the following command when cloning repository
+
+```
+git clone --recurse-submodules
+```
+
+### [Plog](https://github.com/SergiusTheBest/plog) logger
+
+Logger Plog is used for logging. It is licensed under the Mozilla Public License Version 2.0.
+
+### [Catch2](https://github.com/catchorg/Catch2)
+
+Testing framework. Licensed under Boost Software License 1.0.
+
+### [Matrix template](ssh://git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git)
+
+Manipulations with matrices by Robert Frysch.
+
+
+## Documentation
+
+Documentation is generated using doxygen and lives in doc directory.
+First the config file for doxygen was prepared runing doxygen -g.
+Doc files and this file can be written using [Markdown syntax](https://daringfireball.net/projects/markdown/syntax), JAVADOC_AUTOBRIEF is set to yes to treat first line of the doc comment as a brief description, comments are of the format 
+```
+/**Brief description.
+*
+*Long description
+*thay might span multiple lines.
+*/
+```
+.
+
+
+## Dependencies
+
+The library ctiol\_denitk uses [ITK library](https://itk.org/Doxygen410/html/index.html). It is required to have this library in the system installed and headers reachable. On Debian it is sufficient to run
+```
+apt-get install libinsighttoolkit4-dev
+```
 
 ## Using IDEs
 
-#Eclipse
+### Eclipse
 For eclipse to work, create out of source project that is not child or ancesor of the parent directory.
 Run the following to generate eclipse project
 ```
