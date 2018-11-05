@@ -1,6 +1,11 @@
 #pragma once
 //#define strtk_no_tr1_or_boost
 
+//We do not have boost
+#ifndef strtk_no_tr1_or_boost
+#define strtk_no_tr1_or_boost
+#endif
+
 //STD libraries
 #include <string>
 #include <vector>

@@ -35,7 +35,6 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/plog/include)
 #preprocessor directive needs defining, either in code before strtk.hpp
 #is included or as a compiler switch:
 #(*) strtk_no_tr1_or_boost
-#add_definitions("-Dstrtk_no_tr1_or_boost")
 #include_directories(${CMAKE_SOURCE_DIR} / include / strtk)
 
 #CLI11 comand line parser library
@@ -64,6 +63,7 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
 #message("Version opencv " ${OpenCV_VERSION_MAJOR})
 #if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
+add_definitions("-Dstrtk_no_tr1_or_boost")
 FILE( GLOB LIBSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/argparse/*.cpp )
 SET(GLOBAL_SOURCES ${LIBSRC})
 
