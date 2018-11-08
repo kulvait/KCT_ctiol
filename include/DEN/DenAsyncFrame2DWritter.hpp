@@ -103,7 +103,7 @@ namespace io {
     template <typename T>
     DenAsyncFrame2DWritter<T>::~DenAsyncFrame2DWritter()
     {
-        if(buffer == nullptr)
+        if(buffer != nullptr)
             delete[] buffer;
     }
 

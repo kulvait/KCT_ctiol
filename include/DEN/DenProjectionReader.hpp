@@ -138,7 +138,7 @@ namespace io {
     template <typename T>
     std::shared_ptr<io::Frame2DI<T>> DenProjectionReader<T>::readProjectionSlice(int sliceNum)
     {
-        uint8_t buffer[elementByteSize * sizex * sizey];
+        uint8_t *buffer = new buffer[elementByteSize * sizex * sizey];
         uint64_t position = (uint64_t)6 + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];
@@ -149,6 +149,7 @@ namespace io {
         std::shared_ptr<Frame2DI<T>> ps
             = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
         delete[] buffer_copy; // Constructor creates new copy of the data
+	delete[] buffer;
         return ps;
     }
 

@@ -138,6 +138,41 @@ namespace io {
             throw std::runtime_error(errMsg.str());
         }
     }
+    
+	void appendBytes(std::string fileName, uint8_t* buffer, int numBytes)
+    {
+        if(CHAR_BIT != 8)
+        {
+            std::stringstream errMsg;
+            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
+                   << CHAR_BIT << ".";
+            LOGE << errMsg.str();
+            throw std::runtime_error(errMsg.str());
+        }
+        std::ofstream file(fileName,
+                           std::ios::binary | std::ios::out
+                               | std::ios::in | std::ios::ate); // Open binary, for output, for input
+        if(!file.is_open()) // cannot open file
+        {
+            std::stringstream errMsg;
+            errMsg << "Can not open file " << fileName << ".";
+            LOGE << errMsg.str();
+            throw std::runtime_error(errMsg.str());
+        }
+        std::streampos cur = file.tellp();
+        file.write((char*)buffer, numBytes);
+        auto pos = file.tellp();
+        auto num = pos - cur;
+        file.close();
+        if(num != numBytes)
+        {
+            std::stringstream errMsg;
+            errMsg << num << " bytes written from number of bytess that should be written "
+                   << numBytes << " to " << fileName << ".";
+            LOGE << errMsg.str();
+            throw std::runtime_error(errMsg.str());
+        }
+    }
 
     bool fileExists(std::string fileName) { return (access(fileName.c_str(), F_OK) != -1); }
 
