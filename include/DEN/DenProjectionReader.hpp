@@ -138,7 +138,7 @@ namespace io {
     template <typename T>
     std::shared_ptr<io::Frame2DI<T>> DenProjectionReader<T>::readProjectionSlice(int sliceNum)
     {
-        uint8_t *buffer = new buffer[elementByteSize * sizex * sizey];
+        uint8_t *buffer = new uint8_t[elementByteSize * sizex * sizey];
         uint64_t position = (uint64_t)6 + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];

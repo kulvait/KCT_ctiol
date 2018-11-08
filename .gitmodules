@@ -7,3 +7,6 @@
 [submodule "submodules/Matrix-Template"]
 	path = submodules/Matrix-Template
 	url = ssh://git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
+[submodule "submodules/CTMAL"]
+	path = submodules/CTMAL
+	url = ssh://git@gitlab.stimulate.ovgu.de:2200/vojtech.kulvait/CTMAL.git

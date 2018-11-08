@@ -75,6 +75,9 @@ set_target_properties(
         SUFFIX ""
 )
 
+FILE( GLOB CTMAL_SRC ${CMAKE_SOURCE_DIR}/submodules/CTMAL/src/*.cpp )
+add_library(ctmal ${CTMAL_SRC})
+include_directories(${CMAKE_SOURCE_DIR}/submodules/CTMAL/include)
 
 IF(ITK_FOUND)
 FILE( GLOB LIBDENITKSRC ${CMAKE_SOURCE_DIR}/src/DENITK/*.cpp )
@@ -110,6 +113,7 @@ add_executable(test_ctiol ${TST_SRC})
 target_link_libraries(test_ctiol Catch)
 target_link_libraries(test_ctiol CTIOL)
 target_link_libraries(test_ctiol CTIOL_DENITK)
+target_link_libraries(test_ctiol ctmal)
 
 add_custom_target(formatWebkit
 ./formatWebkit
