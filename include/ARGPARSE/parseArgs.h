@@ -7,10 +7,12 @@
 #endif
 
 //STD libraries
+#include "plog/Log.h"
 #include <string>
 #include <vector>
 #include <regex>
-#include "plog/Log.h"
+#include <cctype>//std::isspace
+#include <algorithm>//std::remove_if
 #include "stringFormatter.h"
 #include "strtk/strtk.hpp"
 

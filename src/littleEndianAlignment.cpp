@@ -14,7 +14,6 @@ namespace util {
 
     int16_t nextInt8(uint8_t* buffer)
     {
-        int8_t num;
         return (int8_t)nextUint8(buffer);
     }
 
@@ -27,7 +26,6 @@ namespace util {
 
     int16_t nextInt16(uint8_t* buffer)
     {
-        int16_t num;
         return (int16_t)nextUint16(buffer);
     }
 
@@ -52,7 +50,6 @@ namespace util {
 
     int32_t nextInt32(uint8_t* buffer)
     {
-        int32_t num;
         return (int32_t)nextUint32(buffer);
     }
 
