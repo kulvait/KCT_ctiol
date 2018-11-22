@@ -4,7 +4,10 @@ project(CTIOL)
 set(CMAKE_INSTALL_PREFIX $ENV{HOME}/bin)
 set(CMAKE_CXX_STANDARD 14)#Supported values are 98, 11 and 14.
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+message("Current value of flags is ${CMAKE_CXX_FLAGS} and debug is ${CMAKE_CXX_FLAGS_DEBUG} and release is ${CMAKE_CXX_FLAGS_RELEASE}")
+#Default CMAKE_CXX_FLAGS are empty, default for CMAKE_CXX_FLAGS_DEBUG is -g and CMAKE_CXX_FLAGS_RELEASE are not empty
+set(CMAKE_CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_BUILD_TYPE Debug)
 set(BUILD_SHARED_LIBS True)
 
@@ -64,10 +67,8 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
 #if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
 add_definitions("-Dstrtk_no_tr1_or_boost")
-FILE( GLOB LIBSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/argparse/*.cpp )
-SET(GLOBAL_SOURCES ${LIBSRC})
-
-add_library(CTIOL ${GLOBAL_SOURCES})
+FILE( GLOB CTIOLSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/argparse/*.cpp )
+add_library(CTIOL ${CTIOLSRC})
 set_target_properties(
     CTIOL 
     PROPERTIES 
@@ -107,7 +108,7 @@ ENDIF()
 #Catch lib
 include_directories(${CMAKE_SOURCE_DIR}/tests)
 add_library(Catch INTERFACE)
-target_include_directories(Catch INTERFACE ${CMAKE_SOURCE_DIR}/submodules/Catch2/single_include)
+target_include_directories(Catch INTERFACE ${CMAKE_SOURCE_DIR}/submodules/Catch2/single_include/catch2)
 FILE( GLOB TST_SRC ${CMAKE_SOURCE_DIR}/tests/*.cpp )
 add_executable(test_ctiol ${TST_SRC})
 target_link_libraries(test_ctiol Catch)

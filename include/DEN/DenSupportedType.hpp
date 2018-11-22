@@ -24,6 +24,8 @@ namespace io {
         }
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
     inline DenSupportedType getSupportedTypeByByteLength(int byteLength)
     {
         switch(byteLength)
@@ -38,6 +40,7 @@ namespace io {
             io::throwerr("Unknown DenSupportedType of the length %d", byteLength);
         }
     }
+#pragma GCC diagnostic pop
 
 } // namespace io
 } // namespace CTL

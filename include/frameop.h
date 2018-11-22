@@ -11,6 +11,9 @@
 
 namespace CTL {
 namespace io {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
     /**Minimal value.
      *
      *Excluding any NaN values if they are present.
@@ -68,6 +71,9 @@ namespace io {
                 }
             return min;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            // This function actually throws an error.
         }
     }
 
@@ -128,8 +134,13 @@ namespace io {
                 }
             return max;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            // This function actually throws an error.
         }
     }
+
+#pragma GCC diagnostic pop
 
     /**Median value.
      *
@@ -169,6 +180,8 @@ namespace io {
                 }
             break;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
         }
 
         std::sort(vec.begin(), vec.end());
