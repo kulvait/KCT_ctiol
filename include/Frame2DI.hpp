@@ -15,19 +15,19 @@ namespace io {
     {
     public:
         /**Get the value at coordinates x, y.*/
-        virtual T get(unsigned int x, unsigned int y) const = 0;
+        virtual T get(uint32_t x, uint32_t y) const = 0;
 
         /**Get the value at coordinates x, y. Calls get(x,y).*/
-        T operator()(unsigned int x, unsigned int y) const { return get(x, y); }
+        T operator()(uint32_t x, uint32_t y) const { return get(x, y); }
 
         /**Set the value at coordinates x, y.*/
-        virtual void set(T val, unsigned int x, unsigned int y) = 0;
+        virtual void set(T val, uint32_t x, uint32_t y) = 0;
 
         /**Returns x dimension.*/
-        virtual unsigned int dimx() const = 0;
+        virtual uint32_t dimx() const = 0;
 
         /**Returns y dimension.*/
-        virtual unsigned int dimy() const = 0;
+        virtual uint32_t dimy() const = 0;
     };
 } // namespace io
 } // namespace CTL

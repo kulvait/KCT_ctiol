@@ -12,17 +12,17 @@ namespace io {
     class AsyncFrame2DWritterI
     {
     public:
-        virtual void writeFrame(const Frame2DI<T>& s, int i) = 0;
         /**Writes i-th slice to the source.*/
+        virtual void writeFrame(const Frame2DI<T>& s, uint32_t i) = 0;
 
-        virtual unsigned int dimx() const = 0;
         /**Returns x dimension.*/
+        virtual uint32_t dimx() const = 0;
 
-        virtual unsigned int dimy() const = 0;
         /**Returns y dimension.*/
+        virtual uint32_t dimy() const = 0;
 
-        virtual unsigned int dimz() const = 0;
-        /**Returns y dimension.*/
+        /**Returns z dimension.*/
+        virtual uint32_t dimz() const = 0;
     };
 } // namespace io
 } // namespace CTL

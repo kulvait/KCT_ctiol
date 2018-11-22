@@ -19,25 +19,25 @@ namespace io {
     {
     private:
         std::string projectionsFile;
-        int sizex, sizey, sizez;
+        uint32_t sizex, sizey, sizez;
         uint8_t* buffer;
         mutable std::mutex writingMutex;
 
     public:
         /*To write file is needed to specify its name and dimensions.*/
-        DenAsyncFrame2DWritter(std::string projectionsFile, int dimx, int dimy, int dimz);
+        DenAsyncFrame2DWritter(std::string projectionsFile, uint32_t dimx, uint32_t dimy, uint32_t dimz);
 
         /**Writes i-th frame to the file.*/
-        void writeFrame(const Frame2DI<T>& s, int i) override;
+        void writeFrame(const Frame2DI<T>& s, uint32_t i) override;
 
         /**Returns x dimension.*/
-        virtual unsigned int dimx() const override;
+        virtual uint32_t dimx() const override;
 
         /**Returns y dimension.*/
-        virtual unsigned int dimy() const override;
+        virtual uint32_t dimy() const override;
 
         /**Returns z dimension.*/
-        virtual unsigned int dimz() const override;
+        virtual uint32_t dimz() const override;
 
         /**Returns file name.**/
         std::string getFileName() const;
@@ -56,9 +56,9 @@ namespace io {
 
     template <typename T>
     DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string projectionsFile,
-                                                      int dimx,
-                                                      int dimy,
-                                                      int dimz)
+                                                      uint32_t dimx,
+                                                      uint32_t dimy,
+                                                      uint32_t dimz)
     {
         if(dimx < 1 || dimy < 1 || dimz < 1)
         {
@@ -75,7 +75,7 @@ namespace io {
         uint64_t totalFileSize = uint64_t(6) + elementByteSize * dimx * dimy * dimz;
         if(io::fileExists(projectionsFile))
         {
-            long fileSize = io::getFileSize(projectionsFile);
+            uint64_t fileSize = io::getFileSize(projectionsFile);
             if(fileSize != totalFileSize)
             {
                 io::createEmptyFile(projectionsFile, totalFileSize, true);
@@ -177,31 +177,31 @@ namespace io {
     }
 
     template <typename T>
-    unsigned int DenAsyncFrame2DWritter<T>::dimx() const
+    uint32_t DenAsyncFrame2DWritter<T>::dimx() const
     {
         return sizex;
     }
 
     template <typename T>
-    unsigned int DenAsyncFrame2DWritter<T>::dimy() const
+    uint32_t DenAsyncFrame2DWritter<T>::dimy() const
     {
         return sizey;
     }
 
     template <typename T>
-    unsigned int DenAsyncFrame2DWritter<T>::dimz() const
+    uint32_t DenAsyncFrame2DWritter<T>::dimz() const
     {
         return sizez;
     }
 
     template <typename T>
-    void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& s, int i)
+    void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& s, uint32_t i)
     {
         std::lock_guard<std::mutex> guard(
             writingMutex); // Mutex will be released as this goes out of scope.
-        for(int j = 0; j != this->dimy(); j++)
+        for(std::size_t j = 0; j != this->dimy(); j++)
         {
-            for(int k = 0; k != this->dimx(); k++)
+            for(std::size_t k = 0; k != this->dimx(); k++)
             {
                 util::setNextElement<T>(s(k, j), &buffer[(j * this->dimx() + k) * sizeof(T)]);
             }
