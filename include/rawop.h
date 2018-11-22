@@ -24,5 +24,7 @@ namespace io {
     void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite);
     bool fileExists(std::string fileName);
     long getFileSize(std::string filename);
+    std::string getParent(const std::string& path);
+    std::string getBasename(const std::string& path);
 } // namespace io
 } // namespace CTL

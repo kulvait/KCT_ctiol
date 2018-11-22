@@ -138,8 +138,8 @@ namespace io {
             throw std::runtime_error(errMsg.str());
         }
     }
-    
-	void appendBytes(std::string fileName, uint8_t* buffer, int numBytes)
+
+    void appendBytes(std::string fileName, uint8_t* buffer, int numBytes)
     {
         if(CHAR_BIT != 8)
         {
@@ -150,8 +150,8 @@ namespace io {
             throw std::runtime_error(errMsg.str());
         }
         std::ofstream file(fileName,
-                           std::ios::binary | std::ios::out
-                               | std::ios::in | std::ios::ate); // Open binary, for output, for input
+                           std::ios::binary | std::ios::out | std::ios::in
+                               | std::ios::ate); // Open binary, for output, for input
         if(!file.is_open()) // cannot open file
         {
             std::stringstream errMsg;
@@ -175,6 +175,33 @@ namespace io {
     }
 
     bool fileExists(std::string fileName) { return (access(fileName.c_str(), F_OK) != -1); }
+
+    std::string getParent(const std::string& path)
+    {
+        // find last '/' or '\\' symbol in source string
+        std::string::size_type found = path.find_last_of("/\\");
+        if(found != std::string::npos)
+        {
+            return path.substr(0, found);
+        } else
+        {
+            return "";
+        }
+    }
+
+    std::string getBasename(const std::string& path)
+    {
+        // find last '/' or '\\' symbol in source string
+        std::string::size_type found = path.find_last_of("/\\");
+        // if we found one of this symbols
+        if(found != std::string::npos)
+        {
+            return path.substr(found + 1);
+        } else
+        {
+            return path;
+        }
+    }
 
     long getFileSize(std::string filename)
     {
@@ -200,7 +227,8 @@ namespace io {
         } else
         {
             std::stringstream errMsg;
-            errMsg << "File " << fileName << " already exist, set overwrite flag if it should be overwritten.";
+            errMsg << "File " << fileName
+                   << " already exist, set overwrite flag if it should be overwritten.";
             LOGE << errMsg.str();
             throw std::runtime_error(errMsg.str());
         }
