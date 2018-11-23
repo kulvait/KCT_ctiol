@@ -52,12 +52,12 @@ namespace io {
         {
             uint16_t max = 0;
             uint8_t* buffer = new uint8_t[rows * cols * 2];
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
                 currentPosition = offset + z * rows * cols * 2;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 2);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 2], dataType);
                     max = (max > val ? max : val);
@@ -70,12 +70,12 @@ namespace io {
         {
             float max = -std::numeric_limits<float>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 4];
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
                 currentPosition = offset + z * rows * cols * 4;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 4);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 4], dataType);
                     if(!std::isnan(val))
@@ -91,12 +91,12 @@ namespace io {
         {
             double max = -std::numeric_limits<double>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 8];
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
                 currentPosition = offset + z * rows * cols * 8;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 8);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 8], dataType);
                     if(!std::isnan(val))
@@ -131,12 +131,12 @@ namespace io {
         {
             uint16_t min = 65535;
             uint8_t* buffer = new uint8_t[rows * cols * 2];
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
                 currentPosition = offset + z * rows * cols * 2;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 2);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 2], dataType);
                     min = (min < val ? min : val);
@@ -149,12 +149,12 @@ namespace io {
         {
             float min = std::numeric_limits<float>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 4];
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
                 currentPosition = offset + z * rows * cols * 4;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 4);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 4], dataType);
                     if(!std::isnan(val))
@@ -170,13 +170,13 @@ namespace io {
         {
             double min = std::numeric_limits<double>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 8]; // This is problematic should be new
-            for(int z = 0; z != zdim; z++)
+            for(uint64_t z = 0; z != zdim; z++)
             {
 
                 currentPosition = offset + z * rows * cols * 8;
                 io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 8);
                 T val;
-                for(int pos = 0; pos != rows * cols; pos++)
+                for(uint64_t pos = 0; pos != rows * cols; pos++)
                 {
                     val = util::getNextElement<T>(&buffer[pos * 8], dataType);
                     if(!std::isnan(val))

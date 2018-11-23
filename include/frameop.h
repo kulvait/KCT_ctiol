@@ -228,25 +228,25 @@ namespace io {
     double meanFrameValue(const Frame2DI<T>& f)
     {
         DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
-        int dimx = f.dimx();
-        int dimy = f.dimy();
+        uint16_t dimx = f.dimx();
+        uint16_t dimy = f.dimy();
+        double sum = 0;
+        uint32_t nonNanCount = 0;
         switch(dataType)
         {
         case io::DenSupportedType::uint16_t_:
         {
-            double sum = 0;
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
                     sum += (double)f.get(i, j);
                 }
-            return sum / (dimx * dimy);
+            nonNanCount = dimx * dimy;
+            break;
         }
         case io::DenSupportedType::float_:
         case io::DenSupportedType::double_:
         {
-            double sum = 0;
-            int nonNanCount = 0;
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
@@ -256,9 +256,12 @@ namespace io {
                         nonNanCount++;
                     }
                 }
-            return sum / nonNanCount;
+            break;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
         }
+        return sum / nonNanCount;
     }
 
     /**Number of NaN values  in the Frame2DI.
@@ -268,30 +271,36 @@ namespace io {
      *
      */
     template <typename T>
-    int sumNanValues(const Frame2DI<T>& f)
+    uint32_t sumNanValues(const Frame2DI<T>& f)
     {
         DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        uint32_t nnv = 0;
         switch(dataType)
         {
         case io::DenSupportedType::uint16_t_:
-            return 0;
+            break;
         case io::DenSupportedType::float_:
         case io::DenSupportedType::double_:
-            int nv = 0;
-            int dimx = f.dimx();
-            int dimy = f.dimy();
-            for(int i = 0; i != dimx; i++)
+        {
+            uint16_t dimx = f.dimx();
+            uint16_t dimy = f.dimy();
+            for(uint16_t i = 0; i != dimx; i++)
             {
-                for(int j = 0; j != dimy; j++)
+                for(uint16_t j = 0; j != dimy; j++)
                 {
                     if(std::isnan(f.get(i, j)))
                     {
-                        nv++;
+                        nnv++;
                     }
                 }
             }
-            return nv;
+            break;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            break;
+        }
+        return nnv;
     }
 
     /**Number of finite values in the Frame2DI.
@@ -303,21 +312,22 @@ namespace io {
      *
      */
     template <typename T>
-    int sumNonfiniteValues(const Frame2DI<T>& f)
+    uint32_t sumNonfiniteValues(const Frame2DI<T>& f)
     {
         DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        uint32_t nfc = 0;
         switch(dataType)
         {
         case io::DenSupportedType::uint16_t_:
-            return 0;
+            break;
         case io::DenSupportedType::float_:
         case io::DenSupportedType::double_:
-            int nfc = 0;
-            int dimx = f.dimx();
-            int dimy = f.dimy();
-            for(int i = 0; i != dimx; i++)
+        {
+            uint16_t dimx = f.dimx();
+            uint16_t dimy = f.dimy();
+            for(uint16_t i = 0; i != dimx; i++)
             {
-                for(int j = 0; j != dimy; j++)
+                for(uint16_t j = 0; j != dimy; j++)
                 {
                     if(!std::isfinite(f.get(i, j)))
                     {
@@ -325,8 +335,13 @@ namespace io {
                     }
                 }
             }
-            return nfc;
+            break;
         }
+        default:
+            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            break;
+        }
+        return nfc;
     }
 } // namespace io
 } // namespace CTL
