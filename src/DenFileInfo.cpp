@@ -27,8 +27,8 @@ namespace io {
     /**Z dimension*/
     uint16_t DenFileInfo::dimz() const
     {
-        uint8_t buffer[4];
-        readBytesFrom(this->fileName, 0, buffer, 2);
+        uint8_t buffer[2];
+        readBytesFrom(this->fileName, 4, buffer, 2);
         return (util::nextUint16(buffer));
     }
 
