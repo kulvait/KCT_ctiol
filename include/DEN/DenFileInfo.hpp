@@ -7,9 +7,9 @@
 #include <string>
 
 // Internal libraries
+#include "DEN/DenNextElement.h"
 #include "DEN/DenSupportedType.hpp"
 #include "rawop.h" //To get number of rows...
-#include "DEN/DenNextElement.h"
 
 namespace CTL {
 namespace io {
@@ -18,24 +18,27 @@ namespace io {
     {
     public:
         DenFileInfo(std::string fileName);
-        int getNumRows();
-        int getNumCols();
-        int getNumSlices();
-        long getSize();
-        long getNumPixels();
-        DenSupportedType getDataType();
-        int elementByteSize();
+        uint16_t dimx() const;
+        uint16_t dimy() const;
+        uint16_t dimz() const;
+        uint16_t getNumRows() const;
+        uint16_t getNumCols() const;
+        uint16_t getNumSlices() const;
+        uint64_t getSize() const;
+        uint64_t getNumPixels() const;
+        DenSupportedType getDataType() const;
+        uint8_t elementByteSize() const;
         template <typename T>
-        T getMaxVal();
+        T getMaxVal() const;
         template <typename T>
-        T getMinVal();
+        T getMinVal() const;
 
     private:
         std::string fileName;
     };
 
     template <typename T>
-    T DenFileInfo::getMaxVal()
+    T DenFileInfo::getMaxVal() const
     {
         DenSupportedType dataType = getDataType();
         uint64_t rows = getNumRows();
@@ -114,7 +117,7 @@ namespace io {
     }
 
     template <typename T>
-    T DenFileInfo::getMinVal()
+    T DenFileInfo::getMinVal() const
     {
         DenSupportedType dataType = getDataType();
         uint64_t rows = getNumRows();

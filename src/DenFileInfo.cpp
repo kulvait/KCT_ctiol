@@ -2,50 +2,63 @@
 
 namespace CTL {
 namespace io {
-
+    /**Constructor*/
     DenFileInfo::DenFileInfo(std::string fileName)
         : fileName(fileName)
     {
     }
 
-    int DenFileInfo::getNumRows()
-    {
-        uint8_t buffer[2];
-        readBytesFrom(this->fileName, 0, buffer, 2);
-        return (util::nextUint16(buffer));
-    }
-    /**Y dimension*/
-
-    int DenFileInfo::getNumCols()
+    /**X dimension*/
+    uint16_t DenFileInfo::dimx() const
     {
         uint8_t buffer[2];
         readBytesFrom(this->fileName, 2, buffer, 2);
         return (util::nextUint16(buffer));
     }
-    /**X dimension*/
 
-    int DenFileInfo::getNumSlices()
+    /**Y dimension*/
+    uint16_t DenFileInfo::dimy() const
     {
         uint8_t buffer[2];
-        readBytesFrom(this->fileName, 4, buffer, 2);
+        readBytesFrom(this->fileName, 0, buffer, 2);
         return (util::nextUint16(buffer));
     }
-    /**Z dimension*/
 
-    long DenFileInfo::getSize()
+    /**Z dimension*/
+    uint16_t DenFileInfo::dimz() const
+    {
+        uint8_t buffer[4];
+        readBytesFrom(this->fileName, 0, buffer, 2);
+        return (util::nextUint16(buffer));
+    }
+
+    /**Y dimension*/
+    uint16_t DenFileInfo::getNumRows() const { return this->dimy(); }
+
+    /**X dimension*/
+    uint16_t DenFileInfo::getNumCols() const { return this->dimx(); }
+
+    /**Z dimension*/
+    uint16_t DenFileInfo::getNumSlices() const { return this->dimz(); }
+
+    /**File size
+     */
+    uint64_t DenFileInfo::getSize() const
     {
         std::ifstream ifs(this->fileName, std::ifstream::ate | std::ifstream::binary);
-        long size = ifs.tellg();
+        uint64_t size = ifs.tellg();
         ifs.close();
         return size;
     }
 
-    long DenFileInfo::getNumPixels()
+    /**Total number of pixels as a product of dimensions
+     */
+    uint64_t DenFileInfo::getNumPixels() const
     {
-        return (long)this->getNumCols() * (long)this->getNumRows() * (long)this->getNumSlices();
+        return uint64_t(this->dimx()) * uint64_t(this->dimy()) * uint64_t(this->dimz());
     }
 
-    DenSupportedType DenFileInfo::getDataType()
+    DenSupportedType DenFileInfo::getDataType() const
     {
         int elementByteSize = this->elementByteSize();
         switch(elementByteSize)
@@ -66,10 +79,10 @@ namespace io {
         }
     }
 
-    int DenFileInfo::elementByteSize()
+    uint8_t DenFileInfo::elementByteSize() const
     {
-        long dataSize = this->getSize() - 6;
-        long numPixels = this->getNumPixels();
+        uint64_t dataSize = this->getSize() - 6;
+        uint64_t numPixels = this->getNumPixels();
         if(dataSize == 0)
         {
             if(numPixels == 0)
