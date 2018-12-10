@@ -8,9 +8,9 @@
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
 #include "FrameMemoryViewer2D.hpp"
+#include "MATRIX/ProjectionMatrix.hpp"
 #include "ProjectionReaderI.hpp"
 #include "stringFormatter.h"
-#include "MATRIX/ProjectionMatrix.hpp"
 
 namespace CTL {
 namespace io {
@@ -179,7 +179,7 @@ namespace io {
     std::shared_ptr<io::Frame2DI<T>> DenProjectionNakedReader<T>::readProjectionSlice(int sliceNum)
     {
         uint64_t position = uint64_t(6) + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
-        uint8_t tmp[elementByteSize * sizex * sizey];
+        uint8_t* tmp = new uint8_t[elementByteSize * sizex * sizey];
         io::readBytesFrom(this->projectionsFile, position, tmp, elementByteSize * sizex * sizey);
         for(int a = 0; a != sizex * sizey; a++)
         {
@@ -187,6 +187,7 @@ namespace io {
         }
         std::shared_ptr<Frame2DI<T>> ps
             = std::make_shared<FrameMemoryViewer2D<T>>(buffer, sizex, sizey);
+        delete[] tmp;
         return ps;
     }
 
