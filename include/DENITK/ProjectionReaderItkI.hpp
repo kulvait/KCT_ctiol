@@ -8,7 +8,6 @@
 // Internal libraries
 #include "Frame2DI.hpp"
 #include "ProjectionReaderI.hpp"
-#include "matrix.h"
 #include "MATRIX/ProjectionMatrix.hpp"
 
 namespace CTL {

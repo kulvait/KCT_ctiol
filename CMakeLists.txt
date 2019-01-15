@@ -48,10 +48,6 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/plog/include)
 #include_directories(${CMAKE_SOURCE_DIR} / submodules / ctpl)
 #find_package(Threads) #include pthreads
 
-#Matrix class 
-#ssh:  // git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git
-include_directories(${CMAKE_SOURCE_DIR}/submodules/Matrix-Template)
-
 #Intel MKL
 find_package(MKL)
 include_directories(${MKL_INCLUDE_DIRS})
