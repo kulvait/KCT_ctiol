@@ -17,7 +17,7 @@ namespace io {
     {
     public:
         /*Returns i-th projection slice in the source.*/
-        virtual util::ProjectionMatrix readMatrix(int i) = 0;
+        virtual matrix::ProjectionMatrix readMatrix(int i) = 0;
         /**Number of projection matrices in the source.*/
         virtual unsigned int count() const = 0;
     };

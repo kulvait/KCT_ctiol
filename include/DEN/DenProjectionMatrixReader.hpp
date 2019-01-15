@@ -25,7 +25,7 @@ namespace io {
         DenProjectionMatrixReader(std::string projectionMatrixFile);
 
         /*Returns i-th projection slice in the source.*/
-        util::ProjectionMatrix readMatrix(int i) override;
+        matrix::ProjectionMatrix readMatrix(int i) override;
         /**Number of projection matrices in the source.*/
         unsigned int count() const override;
     };
@@ -54,7 +54,7 @@ namespace io {
         }
     }
 
-    util::ProjectionMatrix DenProjectionMatrixReader::readMatrix(int i)
+    matrix::ProjectionMatrix DenProjectionMatrixReader::readMatrix(int i)
     {
         uint8_t buffer[8 * 3 * 4];
         uint64_t position = ((uint64_t)6) + ((uint64_t)i) * 3 * 4 * 8;
@@ -64,7 +64,7 @@ namespace io {
         {
             matrixData[a] = util::nextDouble(&buffer[a * 8]);
         }
-        return util::ProjectionMatrix(matrixData);
+        return matrix::ProjectionMatrix(matrixData);
     }
 
 	unsigned int DenProjectionMatrixReader::count() const
