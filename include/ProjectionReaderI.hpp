@@ -20,7 +20,7 @@ namespace io {
     class ProjectionReaderI
     {
     public:
-        virtual std::shared_ptr<util::ProjectionMatrix> readProjectionMatrix(int i) = 0;
+        virtual std::shared_ptr<matrix::ProjectionMatrix> readProjectionMatrix(int i) = 0;
         /**Returns the i-th projection matrix from the source.
          */
         virtual std::shared_ptr<io::Frame2DI<T>> readProjectionSlice(int i) = 0;

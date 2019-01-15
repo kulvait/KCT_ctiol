@@ -36,7 +36,7 @@ namespace io {
          * (projectionMatrixFile).
          *
          */
-        std::shared_ptr<util::ProjectionMatrix> readProjectionMatrix(int i) override;
+        std::shared_ptr<matrix::ProjectionMatrix> readProjectionMatrix(int i) override;
         std::shared_ptr<io::Frame2DI<T>> readProjectionSlice(int i) override;
         /**
          * Access to the slice of the DEN file that is ordered as in the file.
@@ -119,7 +119,7 @@ namespace io {
             return(newdata)
     */
     template <typename T>
-    std::shared_ptr<util::ProjectionMatrix>
+    std::shared_ptr<matrix::ProjectionMatrix>
     DenProjectionReader<T>::readProjectionMatrix(int sliceNum)
     {
         uint8_t buffer[8 * 3 * 4];
@@ -130,8 +130,8 @@ namespace io {
         {
             matrixData[a] = util::nextDouble(&buffer[a * 8]);
         }
-        std::shared_ptr<util::ProjectionMatrix> pm
-            = std::make_shared<util::ProjectionMatrix>(matrixData);
+        std::shared_ptr<matrix::ProjectionMatrix> pm
+            = std::make_shared<matrix::ProjectionMatrix>(matrixData);
         return pm;
     }
 
