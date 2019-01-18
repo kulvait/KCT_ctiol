@@ -36,7 +36,7 @@ namespace io {
         }
     }
 
-    void readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, int numBytes)
+    void readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, std::streamsize numBytes)
     {
         // LOGD << io::xprintf("Reading %d bytes from pos %lu.", numBytes, fromPosition);
         if(CHAR_BIT != 8)
