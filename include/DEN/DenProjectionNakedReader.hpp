@@ -61,7 +61,7 @@ namespace io {
          */
         void setStartBuffer(T* buffer) { this->buffer = buffer; }
 
-        std::shared_ptr<util::ProjectionMatrix> readProjectionMatrix(int i) override;
+        std::shared_ptr<matrix::ProjectionMatrix> readProjectionMatrix(int i) override;
         /**Reads projection slice into the memory on the address provided in T* buffer pointer and
          * returning an FrameMemoryViewer2D object.
          *
@@ -156,7 +156,7 @@ namespace io {
             return(newdata)
     */
     template <typename T>
-    std::shared_ptr<util::ProjectionMatrix>
+    std::shared_ptr<matrix::ProjectionMatrix>
     DenProjectionNakedReader<T>::readProjectionMatrix(int sliceNum)
     {
         uint8_t buffer[8 * 3 * 4];
@@ -167,8 +167,8 @@ namespace io {
         {
             matrixData[a] = util::nextDouble(&buffer[a * 8]);
         }
-        std::shared_ptr<util::ProjectionMatrix> pm
-            = std::make_shared<util::ProjectionMatrix>(matrixData);
+        std::shared_ptr<matrix::ProjectionMatrix> pm
+            = std::make_shared<matrix::ProjectionMatrix>(matrixData);
         return pm;
     }
 
