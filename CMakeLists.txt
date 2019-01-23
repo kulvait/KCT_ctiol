@@ -23,6 +23,13 @@ ENDIF()
 #include_directories(${OpenCV_INCLUDE_DIRS})
 #message(${OpenCV_INCLUDE_DIRS})
 
+#OpenCL
+find_package(OpenCL)
+IF(OpenCL_FOUND)
+	include_directories(${OpenCL_INCLUDE_DIRS})
+ENDIF()
+
+
 #Header directories for the project
 set(GLOBAL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 include_directories(${GLOBAL_INCLUDE_DIR})
@@ -68,7 +75,7 @@ include_directories(${MKL_INCLUDE_DIRS})
 #if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
 add_definitions("-Dstrtk_no_tr1_or_boost")
-FILE( GLOB CTIOLSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/argparse/*.cpp )
+FILE( GLOB CTIOLSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/ARGPARSE/*.cpp )
 add_library(CTIOL ${CTIOLSRC})
 set_target_properties(
     CTIOL 
@@ -99,6 +106,19 @@ set_target_properties(
         SUFFIX ""
 )
 target_link_libraries(CTIOL_DENITK ${ITK_LIBRARIES})
+ENDIF()
+
+IF(OpenCL_FOUND)
+FILE( GLOB LIBCTIOLOPENCLSRC ${CMAKE_SOURCE_DIR}/src/OPENCL/*.cpp )
+add_library(CTIOL_OPENCL ${LIBCTIOLOPENCLSRC})
+set_target_properties(
+	CTIOL_OPENCL
+    	PROPERTIES 
+        OUTPUT_NAME "ctiol_opencl.so"
+        SUFFIX ""
+)
+target_link_libraries(CTIOL_OPENCL OpenCL::OpenCL)
+target_link_libraries(CTIOL_OPENCL CTIOL)
 ENDIF()
 
 #target_link_libraries(ImageRegistration utils)
