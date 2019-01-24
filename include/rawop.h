@@ -26,5 +26,6 @@ namespace io {
     long getFileSize(std::string filename);
     std::string getParent(const std::string& path);
     std::string getBasename(const std::string& path);
+    std::string fileToString(const std::string& fileName);
 } // namespace io
 } // namespace CTL

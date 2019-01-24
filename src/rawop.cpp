@@ -36,7 +36,10 @@ namespace io {
         }
     }
 
-    void readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, std::streamsize numBytes)
+    void readBytesFrom(std::string fileName,
+                       uint64_t fromPosition,
+                       uint8_t* buffer,
+                       std::streamsize numBytes)
     {
         // LOGD << io::xprintf("Reading %d bytes from pos %lu.", numBytes, fromPosition);
         if(CHAR_BIT != 8)
@@ -232,6 +235,26 @@ namespace io {
             LOGE << errMsg.str();
             throw std::runtime_error(errMsg.str());
         }
+    }
+
+    /** File to string.
+     *
+     * This function converts file to string.
+     * @param fileName file
+     *
+     * @return std::string that corresponds to the file contents.
+     */
+    std::string fileToString(const std::string& fileName)
+    {
+        std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+
+        std::ifstream::pos_type fileSize = ifs.tellg();
+        ifs.seekg(0, std::ios::beg);
+
+        std::vector<char> bytes(fileSize);
+        ifs.read(bytes.data(), fileSize);
+
+        return std::string(bytes.data(), fileSize);
     }
 
 } // namespace io
