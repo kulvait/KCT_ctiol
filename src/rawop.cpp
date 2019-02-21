@@ -240,13 +240,19 @@ namespace io {
     /** File to string.
      *
      * This function converts file to string.
-     * @param fileName file
+     * @param f File path.
      *
      * @return std::string that corresponds to the file contents.
      */
-    std::string fileToString(const std::string& fileName)
+    std::string fileToString(const std::string& f)
     {
-        std::ifstream ifs(fileName.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+        if(!fileExists(f))
+        {
+            std::string ERR = io::xprintf("File %s does not exist.", f.c_str());
+            LOGE << ERR;
+            io::throwerr(ERR);
+        }
+        std::ifstream ifs(f.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
         std::ifstream::pos_type fileSize = ifs.tellg();
         ifs.seekg(0, std::ios::beg);

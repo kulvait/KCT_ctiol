@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include "littleEndianAlignment.h"
+#include "stringFormatter.h"
 
 namespace CTL {
 namespace io {
