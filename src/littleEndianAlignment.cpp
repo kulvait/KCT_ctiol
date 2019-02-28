@@ -12,10 +12,7 @@ namespace util {
         return (num);
     }
 
-    int16_t nextInt8(uint8_t* buffer)
-    {
-        return (int8_t)nextUint8(buffer);
-    }
+    int16_t nextInt8(uint8_t* buffer) { return (int8_t)nextUint8(buffer); }
 
     uint16_t nextUint16(uint8_t* buffer)
     {
@@ -24,10 +21,7 @@ namespace util {
         return (num);
     }
 
-    int16_t nextInt16(uint8_t* buffer)
-    {
-        return (int16_t)nextUint16(buffer);
-    }
+    int16_t nextInt16(uint8_t* buffer) { return (int16_t)nextUint16(buffer); }
 
     uint32_t nextUint32(uint8_t* buffer)
     {
@@ -48,10 +42,7 @@ namespace util {
         return (num);
     }
 
-    int32_t nextInt32(uint8_t* buffer)
-    {
-        return (int32_t)nextUint32(buffer);
-    }
+    int32_t nextInt32(uint8_t* buffer) { return (int32_t)nextUint32(buffer); }
 
     int64_t nextInt64(uint8_t* buffer) { return (int64_t)nextUint64(buffer); }
 

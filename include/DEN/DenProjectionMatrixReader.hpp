@@ -3,8 +3,8 @@
 
 // Internal libraries
 //#include "MATRIX/ProjectionMatrix.hpp"
-#include "ProjectionMatrixReaderI.hpp"
 #include "DEN/DenFileInfo.hpp"
+#include "ProjectionMatrixReaderI.hpp"
 
 namespace CTL {
 namespace io {

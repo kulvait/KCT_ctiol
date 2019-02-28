@@ -207,8 +207,8 @@ namespace io {
             return std::numeric_limits<double>::quiet_NaN();
         int dimx = f.dimx();
         int dimy = f.dimy();
-        T a;
-        T sum = 0;
+        double a;
+        double sum = 0;
 
         for(int i = 0; i != dimx; i++)
             for(int j = 0; j != dimy; j++)
@@ -217,6 +217,33 @@ namespace io {
                 sum += std::pow(std::abs(a), (double)normExponent);
             }
         return std::pow(sum, 1.0 / (double)normExponent);
+    }
+
+    /**
+     * Computes square of l2 norm of given frame.
+     *
+     * @param f
+     * @param normExponent
+     *
+     * @return
+     */
+    template <typename T>
+    double l2square(const Frame2DI<T>& f)
+    {
+        if(sumNonfiniteValues(f) > 0)
+            return std::numeric_limits<double>::quiet_NaN();
+        int dimx = f.dimx();
+        int dimy = f.dimy();
+        double a;
+        double sum = 0;
+
+        for(int i = 0; i != dimx; i++)
+            for(int j = 0; j != dimy; j++)
+            {
+                a = (double)f.get(i, j);
+                sum += a * a;
+            }
+        return sum;
     }
 
     /**Mean value.

@@ -10,7 +10,9 @@
 
 // Classes
 #include "DEN/DenFileInfo.hpp" //Provide information about particular den file, includes io/DenSupportedType.hpp, io/rawop.h, utils/convertEndians.h, io/DenSupportedType.hpp, io/stringFormatter.h
-//#include "RawSliceReader.hpp" //Reading of the slices in the ITK format, depends on io/DenFileInfo.hpp, io/rawop.h, utils/convertEndians.h(io/DenSupportedType.hpp, io/stringFormatter.h)
+//#include "RawSliceReader.hpp" //Reading of the slices in the ITK format, depends on
+//io/DenFileInfo.hpp, io/rawop.h, utils/convertEndians.h(io/DenSupportedType.hpp,
+//io/stringFormatter.h)
 
 // Interfaces
 #include "DENITK/AsyncFrame2DWritterItkI.hpp" // Writing from itk images, INCLUDES NOTHING
@@ -44,5 +46,5 @@
 #include "DENITK/DenProjectionReaderItk.hpp" //Read den files to itk images, INCLUDES io/Frame2DI.hpp, io/BufferedFrame2D.hpp, utils/ProjectionMatrix.hpp, io/DenProjectionReader.hpp, io/ProjectionReaderItkI.hpp
 
 // Headers of functions including something
-#include "frameop.h" //Statistics of frames, INCLUDES io/DenSupportedType.hpp, io/Frame2DI.hpp
 #include "DENITK/itkop.h" //Writing images, INCLUDES io/Frame2DI.hpp
+#include "frameop.h" //Statistics of frames, INCLUDES io/DenSupportedType.hpp, io/Frame2DI.hpp

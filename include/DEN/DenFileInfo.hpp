@@ -32,6 +32,8 @@ namespace io {
         T getMaxVal() const;
         template <typename T>
         T getMinVal() const;
+        template <typename T>
+        T getl2Square() const;
 
     private:
         std::string fileName;
@@ -187,6 +189,81 @@ namespace io {
             }
             delete[] buffer;
             return min;
+        }
+        default:
+            std::string errMsg
+                = io::xprintf("Unsupported data type %s.", io::DenSupportedTypeToString(dataType));
+            LOGE << errMsg;
+            throw std::runtime_error(errMsg);
+        }
+    }
+
+    /**
+     * Get square of l2 norm for given file.
+     *
+     * @return |x|_2^2
+     */
+    template <typename T>
+    T DenFileInfo::getl2Square() const
+    {
+        DenSupportedType dataType = getDataType();
+        uint64_t dim_x = dimx();
+        uint64_t dim_y = dimy();
+        uint64_t dim_z = dimz();
+        uint64_t currentPosition;
+        uint64_t offset = 6;
+        double sum = 0.0;
+        double val;
+        switch(dataType)
+        {
+        case io::DenSupportedType::uint16_t_:
+        {
+            uint8_t* buffer = new uint8_t[dim_x * dim_y * 2];
+            for(uint64_t z = 0; z != dim_z; z++)
+            {
+                currentPosition = offset + z * dim_x * dim_y * 2;
+                io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * 2);
+                for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+                {
+                    val = (double)util::getNextElement<T>(&buffer[pos * 2], dataType);
+                    sum += val * val;
+                }
+            }
+            delete[] buffer;
+            return sum;
+        }
+        case io::DenSupportedType::float_:
+        {
+            uint8_t* buffer = new uint8_t[dim_y * dim_x * 4];
+            for(uint64_t z = 0; z != dim_z; z++)
+            {
+                currentPosition = offset + z * dim_y * dim_x * 4;
+                io::readBytesFrom(fileName, currentPosition, buffer, dim_y * dim_x * 4);
+                for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+                {
+                    val = (double)util::getNextElement<T>(&buffer[pos * 4], dataType);
+                    sum += val * val;
+                }
+            }
+            delete[] buffer;
+            return sum;
+        }
+        case io::DenSupportedType::double_:
+        {
+            uint8_t* buffer = new uint8_t[dim_y * dim_x * 8]; // This is problematic should be new
+            for(uint64_t z = 0; z != dim_z; z++)
+            {
+
+                currentPosition = offset + z * dim_y * dim_x * 8;
+                io::readBytesFrom(fileName, currentPosition, buffer, dim_y * dim_x * 8);
+                for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+                {
+                    val = (double)util::getNextElement<T>(&buffer[pos * 8], dataType);
+                    sum += val * val;
+                }
+            }
+            delete[] buffer;
+            return sum;
         }
         default:
             std::string errMsg

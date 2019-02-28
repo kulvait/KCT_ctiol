@@ -39,10 +39,7 @@ namespace io {
         return matrix::ProjectionMatrix(matrixData);
     }
 
-	unsigned int DenProjectionMatrixReader::count() const
-	{
-		return countMatrices;
-	}
+    unsigned int DenProjectionMatrixReader::count() const { return countMatrices; }
 
 } // namespace io
 } // namespace CTL

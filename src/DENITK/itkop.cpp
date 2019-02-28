@@ -23,7 +23,7 @@ namespace io {
     {
         using OutputPixelType = unsigned char;
         using OutputImageType = itk::Image<OutputPixelType, 2>;
-        //using CastFilterType = itk::CastImageFilter<itk::Image<T, 2>, OutputImageType>;
+        // using CastFilterType = itk::CastImageFilter<itk::Image<T, 2>, OutputImageType>;
 
         using WriterType = itk::ImageFileWriter<OutputImageType>;
         WriterType::Pointer writer = WriterType::New();

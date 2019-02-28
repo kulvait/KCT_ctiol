@@ -25,7 +25,10 @@ namespace io {
 
     public:
         /*To write file is needed to specify its name and dimensions.*/
-        DenAsyncFrame2DWritter(std::string projectionsFile, uint32_t dimx, uint32_t dimy, uint32_t dimz);
+        DenAsyncFrame2DWritter(std::string projectionsFile,
+                               uint32_t dimx,
+                               uint32_t dimy,
+                               uint32_t dimz);
 
         /**Writes i-th frame to the file.*/
         void writeFrame(const Frame2DI<T>& s, uint32_t i) override;
@@ -88,8 +91,8 @@ namespace io {
         } else
         {
             io::createEmptyFile(projectionsFile, totalFileSize, true);
-            LOGD << io::xprintf("New file %s of the size %ld bytes was created.", projectionsFile.c_str(),
-                                totalFileSize);
+            LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
+                                projectionsFile.c_str(), totalFileSize);
         }
         uint8_t buf[6];
         util::putUint16((uint16_t)dimy, &buf[0]);

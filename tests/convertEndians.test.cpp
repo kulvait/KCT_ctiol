@@ -1,12 +1,12 @@
-//Logging, testing
+// Logging, testing
 #include "catch.hpp"
 #include <plog/Log.h>
 
-//Standard libs
-#include <iostream>
+// Standard libs
 #include <cmath>
+#include <iostream>
 
-//Internal libs
+// Internal libs
 #include "CTIOL.h"
 
 using namespace CTL;
@@ -89,21 +89,16 @@ TEST_CASE("TEST: nextUint64 function.", "convertEndians_test.cpp")
     SECTION("Now testing writing")
     {
         std::string file = "../tests/integerByteManipulations/uint64_";
-        uint64_t valuesToWrite[9] = { 0,
-            18446744073709551615ULL,
-            3294967195,
-            1,
-            50000000000ULL,
-            2,
-            3,
-            256,
-            4294967295 };
-        for (int i = 0; i != 9; i++) {
+        uint64_t valuesToWrite[9]
+            = { 0, 18446744073709551615ULL, 3294967195, 1, 50000000000ULL, 2, 3, 256, 4294967295 };
+        for(int i = 0; i != 9; i++)
+        {
             util::putUint64(valuesToWrite[i], &buffer[i * 8]);
         }
         io::writeFirstBytes(file, buffer, 72);
         io::readFirstBytes(file, xuffer, 72);
-        for (int i = 0; i != 9; i++) {
+        for(int i = 0; i != 9; i++)
+        {
             REQUIRE(util::nextUint64(&xuffer[i * 8]) == valuesToWrite[i]);
         }
     }
@@ -123,17 +118,15 @@ TEST_CASE("TEST: nextInt8 readBytesFrom.", "convertEndians_test.cpp")
     {
         int TYPESIZE = 1;
         std::string file = "../tests/integerByteManipulations/int8_";
-        int8_t valuesToWrite[9] = { -128,
-            -1,
-            0,
-            1,
-            127, -2, -3, 33, 21 };
-        for (int i = 0; i != 9; i++) {
+        int8_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -2, -3, 33, 21 };
+        for(int i = 0; i != 9; i++)
+        {
             util::putInt8(valuesToWrite[i], &buffer[i * TYPESIZE]);
         }
         io::writeFirstBytes(file, buffer, 9 * TYPESIZE);
         io::readFirstBytes(file, xuffer, 9 * TYPESIZE);
-        for (int i = 0; i != 9; i++) {
+        for(int i = 0; i != 9; i++)
+        {
             REQUIRE(util::nextInt8(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
         }
     }
@@ -153,17 +146,15 @@ TEST_CASE("TEST: nextInt16 readBytesFrom.", "convertEndians_test.cpp")
     {
         int TYPESIZE = 2;
         std::string file = "../tests/integerByteManipulations/int16_";
-        int16_t valuesToWrite[9] = { -128,
-            -1,
-            0,
-            1,
-            127, -32768, 32767, -3, 999 };
-        for (int i = 0; i != 9; i++) {
+        int16_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -32768, 32767, -3, 999 };
+        for(int i = 0; i != 9; i++)
+        {
             util::putInt16(valuesToWrite[i], &buffer[i * TYPESIZE]);
         }
         io::writeFirstBytes(file, buffer, 9 * TYPESIZE);
         io::readFirstBytes(file, xuffer, 9 * TYPESIZE);
-        for (int i = 0; i != 9; i++) {
+        for(int i = 0; i != 9; i++)
+        {
             REQUIRE(util::nextInt16(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
         }
     }
@@ -183,17 +174,15 @@ TEST_CASE("TEST: nextInt32 readBytesFrom.", "convertEndians_test.cpp")
     {
         int TYPESIZE = 4;
         std::string file = "../tests/integerByteManipulations/int32_";
-        int32_t valuesToWrite[9] = { -128,
-            -1,
-            0,
-            1,
-            127, -32768, 32767, -2147483648, 2147483647 };
-        for (int i = 0; i != 9; i++) {
+        int32_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -32768, 32767, -2147483648, 2147483647 };
+        for(int i = 0; i != 9; i++)
+        {
             util::putInt32(valuesToWrite[i], &buffer[i * TYPESIZE]);
         }
         io::writeFirstBytes(file, buffer, 9 * TYPESIZE);
         io::readFirstBytes(file, xuffer, 9 * TYPESIZE);
-        for (int i = 0; i != 9; i++) {
+        for(int i = 0; i != 9; i++)
+        {
             REQUIRE(util::nextInt32(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
         }
     }
@@ -205,17 +194,28 @@ TEST_CASE("TEST: nextInt64, putInt64, readBytesFrom.", "convertEndians_test.cpp"
     uint8_t xuffer[100];
     int TYPESIZE = 8;
     std::string file = "../tests/integerByteManipulations/int32_";
-    int64_t valuesToWrite[11] = { -128,
-        -1,
-        0,
-        1,
-        127, -32768, 32767, -2147483648, 2147483647, -9223372036854775807LL, 9223372036854775807LL }; //Signed range of int64_t is restricted to −9,223,372,036,854,775,807 to +9,223,372,036,854,775,807 not 9,223,372,036,854,775,808 to +9,223,372,036,854,775,807
-    for (int i = 0; i != 11; i++) {
+    int64_t valuesToWrite[11]
+        = { -128,
+            -1,
+            0,
+            1,
+            127,
+            -32768,
+            32767,
+            -2147483648,
+            2147483647,
+            -9223372036854775807LL,
+            9223372036854775807LL }; // Signed range of int64_t is restricted to
+                                     // −9,223,372,036,854,775,807 to +9,223,372,036,854,775,807 not
+                                     // 9,223,372,036,854,775,808 to +9,223,372,036,854,775,807
+    for(int i = 0; i != 11; i++)
+    {
         util::putInt64(valuesToWrite[i], &buffer[i * TYPESIZE]);
     }
     io::writeFirstBytes(file, buffer, 11 * TYPESIZE);
     io::readFirstBytes(file, xuffer, 11 * TYPESIZE);
-    for (int i = 0; i != 11; i++) {
+    for(int i = 0; i != 11; i++)
+    {
         REQUIRE(util::nextInt64(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
     }
 }
@@ -235,20 +235,30 @@ TEST_CASE("TEST: nextFloat readBytesFrom.", "convertEndians_test.cpp")
         int TYPESIZE = 4;
         std::string file = "../tests/integerByteManipulations/float_";
         float valuesToWrite[11] = { 1.1f,
-            3.1f,
-            340282300000000000000000000000000000000.0f,
-            -3402.823f,
-            -3.0e25f, 1.0f, 12.32f, -8.1f, std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity(), -std::numeric_limits<float>::infinity() };
-        for (int i = 0; i != 11; i++) {
+                                    3.1f,
+                                    340282300000000000000000000000000000000.0f,
+                                    -3402.823f,
+                                    -3.0e25f,
+                                    1.0f,
+                                    12.32f,
+                                    -8.1f,
+                                    std::numeric_limits<float>::quiet_NaN(),
+                                    std::numeric_limits<float>::infinity(),
+                                    -std::numeric_limits<float>::infinity() };
+        for(int i = 0; i != 11; i++)
+        {
             util::putFloat(valuesToWrite[i], &buffer[i * TYPESIZE]);
         }
         io::writeFirstBytes(file, buffer, 11 * TYPESIZE);
         io::readFirstBytes(file, xuffer, 11 * TYPESIZE);
-        for (int i = 0; i != 11; i++) {
+        for(int i = 0; i != 11; i++)
+        {
             float x = util::nextFloat(&xuffer[i * TYPESIZE]);
-            if (std::isnan(x)) {
+            if(std::isnan(x))
+            {
                 REQUIRE(std::isnan(valuesToWrite[i]));
-            } else {
+            } else
+            {
                 REQUIRE(util::nextFloat(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
             }
         }
@@ -271,26 +281,30 @@ TEST_CASE("TEST: nextDouble readBytesFrom.", "convertEndians_test.cpp")
         int TYPESIZE = 8;
         std::string file = "../tests/integerByteManipulations/double_";
         double valuesToWrite[11] = { 1.1,
-            3.1,
-            500.0,
-            3.0e253,
-            -3.0e253,
-            1e20,
-            32767e1,
-            -2147483648.0,
-            2147483647.1,
-            std::numeric_limits<float>::infinity(),
-            -std::numeric_limits<float>::infinity() };
-        for (int i = 0; i != 11; i++) {
+                                     3.1,
+                                     500.0,
+                                     3.0e253,
+                                     -3.0e253,
+                                     1e20,
+                                     32767e1,
+                                     -2147483648.0,
+                                     2147483647.1,
+                                     std::numeric_limits<float>::infinity(),
+                                     -std::numeric_limits<float>::infinity() };
+        for(int i = 0; i != 11; i++)
+        {
             util::putDouble(valuesToWrite[i], &buffer[i * TYPESIZE]);
         }
         io::writeFirstBytes(file, buffer, 11 * TYPESIZE);
         io::readFirstBytes(file, xuffer, 11 * TYPESIZE);
-        for (int i = 0; i != 11; i++) {
+        for(int i = 0; i != 11; i++)
+        {
             double x = util::nextDouble(&xuffer[i * TYPESIZE]);
-            if (std::isnan(x)) {
+            if(std::isnan(x))
+            {
                 REQUIRE(std::isnan(valuesToWrite[i]));
-            } else {
+            } else
+            {
                 REQUIRE(util::nextDouble(&xuffer[i * TYPESIZE]) == valuesToWrite[i]);
             }
         }

@@ -9,8 +9,8 @@
 #include "DEN/DenFrame2DReader.hpp"
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
-#include "ProjectionReaderI.hpp"
 #include "MATRIX/ProjectionMatrix.hpp"
+#include "ProjectionReaderI.hpp"
 
 namespace CTL {
 namespace io {
@@ -138,7 +138,7 @@ namespace io {
     template <typename T>
     std::shared_ptr<io::Frame2DI<T>> DenProjectionReader<T>::readProjectionSlice(int sliceNum)
     {
-        uint8_t *buffer = new uint8_t[elementByteSize * sizex * sizey];
+        uint8_t* buffer = new uint8_t[elementByteSize * sizex * sizey];
         uint64_t position = (uint64_t)6 + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];
@@ -149,7 +149,7 @@ namespace io {
         std::shared_ptr<Frame2DI<T>> ps
             = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
         delete[] buffer_copy; // Constructor creates new copy of the data
-	delete[] buffer;
+        delete[] buffer;
         return ps;
     }
 

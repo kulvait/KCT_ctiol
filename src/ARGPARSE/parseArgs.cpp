@@ -6,7 +6,9 @@ namespace util {
     std::vector<int> processFramesSpecification(std::string frameSpecification, int dimz)
     {
         // Remove spaces
-        frameSpecification.erase(std::remove_if(frameSpecification.begin(), frameSpecification.end(), ::isspace), frameSpecification.end());
+        frameSpecification.erase(
+            std::remove_if(frameSpecification.begin(), frameSpecification.end(), ::isspace),
+            frameSpecification.end());
         frameSpecification = std::regex_replace(frameSpecification, std::regex("end"),
                                                 io::xprintf("%d", dimz - 1).c_str());
         LOGD << io::xprintf("Processing frame specification '%s'.", frameSpecification.c_str());

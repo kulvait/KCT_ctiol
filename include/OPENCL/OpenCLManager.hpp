@@ -15,7 +15,8 @@ namespace util {
     {
     public:
         static std::shared_ptr<cl::Platform> getPlatform(uint32_t id = 0, bool verbose = false);
-        static std::shared_ptr<cl::Device> getDevice(const cl::Platform& platform, uint32_t id = 0, bool verbose = false);
+        static std::shared_ptr<cl::Device>
+        getDevice(const cl::Platform& platform, uint32_t id = 0, bool verbose = false);
     };
 } // namespace util
 } // namespace CTL

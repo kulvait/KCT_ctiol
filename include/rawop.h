@@ -18,7 +18,10 @@
 namespace CTL {
 namespace io {
     void readFirstBytes(std::string fileName, uint8_t* buffer, int numBytes);
-    void readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, std::streamsize numBytes);
+    void readBytesFrom(std::string fileName,
+                       uint64_t fromPosition,
+                       uint8_t* buffer,
+                       std::streamsize numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, int numBytes);
     void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, int numBytes);
     void appendBytes(std::string fileName, uint8_t* buffer, int numBytes);
