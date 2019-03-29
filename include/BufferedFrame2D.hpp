@@ -21,7 +21,7 @@ namespace io {
          *while creating object. When the buffer is nullptr, memory is allocated but nothing is
          *copied. Frame then have to be filled by calling set to individual elements.
          */
-        BufferedFrame2D(T* buffer, int sizex, int sizey)
+        BufferedFrame2D(T* buffer, uint32_t sizex, uint32_t sizey)
         {
             this->slice = new T[sizex * sizey];
             if(buffer != nullptr)
@@ -40,7 +40,7 @@ namespace io {
          *This constructor allocates memory and fills it with a certain value that will be used for
          *the whole buffer.
          */
-        BufferedFrame2D(T elm, int sizex, int sizey)
+        BufferedFrame2D(T elm, uint32_t sizex, uint32_t sizey)
         {
             this->slice = new T[sizex * sizey];
             std::fill(this->slice, this->slice + (sizex * sizey), elm);

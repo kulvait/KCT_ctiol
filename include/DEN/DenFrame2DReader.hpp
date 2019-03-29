@@ -43,7 +43,8 @@ namespace io {
         DenFrame2DReader(DenFrame2DReader<T>&& b);
         // Move assignment
         DenFrame2DReader<T>& operator=(DenFrame2DReader<T>&& other);
-        std::shared_ptr<io::Frame2DI<T>> readFrame(int i) override;
+        std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) override;
+        std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(unsigned int i);
         unsigned int dimx() const override;
         unsigned int dimy() const override;
         unsigned int dimz() const override;
@@ -192,7 +193,14 @@ namespace io {
     }
 
     template <typename T>
-    std::shared_ptr<io::Frame2DI<T>> DenFrame2DReader<T>::readFrame(int sliceNum)
+    std::shared_ptr<io::Frame2DI<T>> DenFrame2DReader<T>::readFrame(unsigned int sliceNum)
+    {
+        std::shared_ptr<Frame2DI<T>> ps = readBufferedFrame(sliceNum);
+        return ps;
+    }
+    
+	template <typename T>
+    std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
     {
         std::lock_guard<std::mutex> guard(consistencyMutex);
         // Mutex will be released as this goes out of scope.
@@ -203,7 +211,7 @@ namespace io {
         {
             buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
-        std::shared_ptr<Frame2DI<T>> ps
+        std::shared_ptr<BufferedFrame2D<T>> ps
             = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
         return ps;
     }

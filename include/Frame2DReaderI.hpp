@@ -17,7 +17,7 @@ namespace io {
     class Frame2DReaderI
     {
     public:
-        virtual std::shared_ptr<io::Frame2DI<T>> readFrame(int i) = 0;
+        virtual std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) = 0;
         /*Returns i-th projection slice in the source.*/
         virtual unsigned int dimx() const = 0;
         /**Returns x dimension.*/
