@@ -72,7 +72,7 @@ namespace io {
         }
     }
 
-    void writeFirstBytes(std::string fileName, uint8_t* buffer, int numBytes)
+    void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes)
     {
         if(CHAR_BIT != 8)
         {
@@ -96,7 +96,7 @@ namespace io {
         file.write((char*)buffer, numBytes);
         auto num = file.tellp();
         file.close();
-        if(num != numBytes)
+        if(num != (int64_t)numBytes)
         {
             std::stringstream errMsg;
             errMsg << "Can not read first " << numBytes << "bytes from the file " << fileName
@@ -106,7 +106,7 @@ namespace io {
         }
     }
 
-    void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, int numBytes)
+    void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
     {
         if(CHAR_BIT != 8)
         {
@@ -132,7 +132,7 @@ namespace io {
         auto pos = file.tellp();
         auto num = pos - cur;
         file.close();
-        if(num != numBytes)
+        if(num != (int64_t)numBytes)
         {
             std::stringstream errMsg;
             errMsg << num << " bytes written from number of bytess that should be written "
@@ -142,7 +142,7 @@ namespace io {
         }
     }
 
-    void appendBytes(std::string fileName, uint8_t* buffer, int numBytes)
+    void appendBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes)
     {
         if(CHAR_BIT != 8)
         {
@@ -167,7 +167,7 @@ namespace io {
         auto pos = file.tellp();
         auto num = pos - cur;
         file.close();
-        if(num != numBytes)
+        if(num != (int64_t)numBytes)
         {
             std::stringstream errMsg;
             errMsg << num << " bytes written from number of bytess that should be written "
