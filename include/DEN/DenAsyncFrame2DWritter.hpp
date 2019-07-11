@@ -86,7 +86,7 @@ namespace io {
                     "Just overwritten the file %s with empty file of the size %ld bytes.",
                     projectionsFile.c_str(), totalFileSize);
             }
-            LOGD << io::xprintf("Will be working on existing file %s ewith %ld bytes.",
+            LOGD << io::xprintf("Will be writting to existing file %s of %ld bytes.",
                                 projectionsFile.c_str(), totalFileSize);
         } else
         {
