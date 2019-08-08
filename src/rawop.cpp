@@ -106,7 +106,8 @@ namespace io {
         }
     }
 
-    void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
+    void
+    writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
     {
         if(CHAR_BIT != 8)
         {
@@ -263,5 +264,32 @@ namespace io {
         return std::string(bytes.data(), fileSize);
     }
 
+    void concatenateTextFiles(const std::string& outputFile,
+                              bool overwrite,
+                              std::initializer_list<std::string> inputFiles)
+    {
+        if(fileExists(outputFile) && !overwrite)
+        {
+            std::string ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
+                                          outputFile.c_str());
+            LOGE << ERR;
+            throw std::ios_base::failure(ERR);
+        }
+        std::ofstream ofs(outputFile, std::ios_base::binary | std::ios::trunc);
+        for(std::string f : inputFiles)
+        {
+            if(!fileExists(f))
+            {
+                std::string ERR
+                    = io::xprintf("One of the files to concatenate %s does not exist!", f.c_str());
+                LOGE << ERR;
+                throw std::ios_base::failure(ERR);
+            }
+            std::ifstream ifs(f, std::ios_base::binary);
+            ofs << ifs.rdbuf();
+            ifs.close();
+        }
+        ofs.close();
+    }
 } // namespace io
 } // namespace CTL
