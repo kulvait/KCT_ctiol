@@ -20,3 +20,9 @@ TEST_CASE("TEST: concatenateTextFiles function.", "rawop.h")
     std::string content = io::fileToString(outputFile);
     REQUIRE(content == "A\nB\n");
 }
+
+TEST_CASE("TEST: absolute path.", "rawop.h")
+{
+    std::string p = io::getParent("abc");
+    //LOGE << p;
+}

@@ -182,15 +182,15 @@ namespace io {
 
     std::string getParent(const std::string& path)
     {
-	std::string absolutePath =  std::experimental::filesystem::absolute(path);
+        std::string absolutePath = std::experimental::filesystem::absolute(path);
         // find last '/' or '\\' symbol in source string
         std::string::size_type found = absolutePath.find_last_of("/\\");
         if(found != std::string::npos)
         {
-            return path.substr(0, found);
+            return std::experimental::filesystem::canonical(absolutePath.substr(0, found));
         } else
         {
-            return "";
+            return std::experimental::filesystem::canonical(".");
         }
     }
 
