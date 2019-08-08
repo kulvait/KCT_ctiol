@@ -83,6 +83,7 @@ set_target_properties(
         OUTPUT_NAME "ctiol.so"
         SUFFIX ""
 )
+target_link_libraries(CTIOL stdc++fs)#include <experimental/filesystem>
 
 FILE( GLOB CTMAL_SRC ${CMAKE_SOURCE_DIR}/submodules/CTMAL/src/*.cpp )
 include_directories(${CMAKE_SOURCE_DIR}/submodules/CTMAL/include)
