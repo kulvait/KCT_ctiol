@@ -2,6 +2,7 @@
 
 // External
 #include <string>
+#include <mutex>
 
 // Internal
 #include "BufferedFrame2D.hpp"
