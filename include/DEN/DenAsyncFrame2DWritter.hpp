@@ -91,8 +91,10 @@ namespace io {
         } else
         {
             io::createEmptyFile(projectionsFile, totalFileSize, true);
-            LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
+        /*
+	    LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
                                 projectionsFile.c_str(), totalFileSize);
+	*/
         }
         uint8_t buf[6];
         util::putUint16((uint16_t)dimy, &buf[0]);
