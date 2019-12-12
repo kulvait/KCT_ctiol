@@ -60,9 +60,9 @@ namespace io {
     {
         this->denFile = denFile;
         DenFileInfo pi = DenFileInfo(this->denFile);
-        this->sizey = pi.getNumRows();
-        this->sizex = pi.getNumCols();
-        this->sizez = pi.getNumSlices();
+        this->sizey = pi.dimx();
+        this->sizex = pi.dimy();
+        this->sizez = pi.dimz();
         this->dataType = pi.getDataType();
         this->elementByteSize = pi.elementByteSize();
         this->buffer = new uint8_t[elementByteSize * sizex * sizey];
@@ -81,10 +81,12 @@ namespace io {
         {
             delete[] buffer;
         }
+	buffer = nullptr;
         if(buffer_copy != nullptr)
         {
             delete[] buffer_copy;
         }
+	buffer_copy = nullptr;
     }
 
     /**Copy constructor of DenFrame2DReader from another element.

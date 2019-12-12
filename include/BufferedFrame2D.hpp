@@ -59,7 +59,14 @@ namespace io {
         /**Destructor of BufferedFrame2D.
          *
          */
-        ~BufferedFrame2D() { delete[] slice; } // destructor
+        ~BufferedFrame2D()
+        {
+            if(slice != nullptr)
+            {
+                delete[] slice;
+            }
+            slice = nullptr;
+        } // destructor
 
         /**Copy assignment
          *
@@ -70,7 +77,10 @@ namespace io {
             {
                 this->sizex = b.sizex;
                 this->sizey = b.sizey;
-                delete[] this->slice;
+                if(this->slice != nullptr)
+                {
+                    delete[] this->slice;
+                }
                 this->slice = nullptr;
                 this->slice = new T[sizex * sizey];
                 memcpy(this->slice, b.slice, sizex * sizey * sizeof(T));
@@ -91,7 +101,11 @@ namespace io {
         {
             if(&other != this)
             {
-                delete[] this->slice;
+                if(this.slice != nullptr)
+                {
+                    delete[] this->slice;
+                }
+                this->slice = nullptr;
                 this->slice = other.slice;
                 this->sizex = other.sizex;
                 this->sizey = other.sizey;
