@@ -3,6 +3,13 @@
 namespace CTL {
 namespace io {
     RunTimeInfo::RunTimeInfo()
+        : RunTimeInfo(0, nullptr)
+    {
+    }
+
+    RunTimeInfo::RunTimeInfo(int argc, char* argv[])
+        : argc(argc)
+        , argv(argv)
     {
         char exepath[PATH_MAX + 1] = { 0 };
         ssize_t len = ::readlink("/proc/self/exe", exepath, PATH_MAX);
@@ -14,13 +21,6 @@ namespace io {
         {
             throw std::runtime_error(io::xprintf("Can not read process path."));
         }
-    }
-
-    RunTimeInfo::RunTimeInfo(int argc, char* argv[])
-        : argc(argc)
-        , argv(argv)
-    {
-        RunTimeInfo();
     }
 
     std::string RunTimeInfo::getExecutablePath() { return (executablePath); }
