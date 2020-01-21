@@ -11,10 +11,12 @@
 
 using namespace CTL;
 
+std::string basedir();//Included in main
+
 TEST_CASE("TEST: concatenateTextFiles function.", "rawop.h")
 {
-    std::string fileA = "../tests/testFiles/A";
-    std::string fileB = "../tests/testFiles/B";
+    std::string fileA = io::xprintf("%s/tests/testFiles/A", basedir().c_str());
+    std::string fileB = io::xprintf("%s/tests/testFiles/B", basedir().c_str());
     std::string outputFile = "/tmp/AB";
     io::concatenateTextFiles(outputFile, true, { fileA, fileB });
     std::string content = io::fileToString(outputFile);

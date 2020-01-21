@@ -8,19 +8,23 @@
 
 // Internal libs
 #include "CTIOL.h"
+#include "RunTimeInfo.hpp"
 
 using namespace CTL;
+
+std::string basedir();
 
 uint8_t uint8Value(int i)
 {
     uint8_t buffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/uint8", buffer, 2);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/uint8", basedir().c_str()),
+                       buffer, 2);
     return util::nextUint8(&buffer[i]);
 }
 
 TEST_CASE("TEST: putUint8 function.", "convertEndians_test.cpp")
 {
-    std::string file = "../tests/integerByteManipulations/uint8_";
+    std::string file = io::xprintf("%s/tests/integerByteManipulations/uint8_", basedir().c_str());
     uint8_t buffer[100];
     util::putUint8(0, &buffer[0]);
     util::putUint8(255, &buffer[1]);
@@ -40,12 +44,13 @@ TEST_CASE("TEST: nextUint16 function.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/uint16", buffer, 4);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/uint16", basedir().c_str()),
+                       buffer, 4);
     REQUIRE(util::nextUint16(&buffer[0]) == 0);
     REQUIRE(util::nextUint16(&buffer[2]) == 65535);
     SECTION("Now testing writing")
     {
-        std::string file = "../tests/integerByteManipulations/uint16_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/uint16_", basedir().c_str());
         util::putUint16(0, &buffer[0]);
         util::putUint16(65535, &buffer[2]);
         util::putUint16(65533, &buffer[4]);
@@ -61,12 +66,12 @@ TEST_CASE("TEST: nextUint32 function.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/uint32", buffer, 8);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/uint32", basedir().c_str()), buffer, 8);
     REQUIRE(util::nextUint32(&buffer[0]) == 0);
     REQUIRE(util::nextUint32(&buffer[4]) == 4294967295);
     SECTION("Now testing writing")
     {
-        std::string file = "../tests/integerByteManipulations/uint32_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/uint32_", basedir().c_str());
         util::putUint32(0, &buffer[0]);
         util::putUint32(4294967295, &buffer[4]);
         util::putUint32(3294967195, &buffer[8]);
@@ -82,13 +87,13 @@ TEST_CASE("TEST: nextUint64 function.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/uint64", buffer, 16);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/uint64", basedir().c_str()), buffer, 16);
     REQUIRE(util::nextUint64(&buffer[0]) == 0);
     uint64_t maxval = 18446744073709551615ULL;
     REQUIRE(util::nextUint64(&buffer[8]) == maxval);
     SECTION("Now testing writing")
     {
-        std::string file = "../tests/integerByteManipulations/uint64_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/uint64_", basedir().c_str());
         uint64_t valuesToWrite[9]
             = { 0, 18446744073709551615ULL, 3294967195, 1, 50000000000ULL, 2, 3, 256, 4294967295 };
         for(int i = 0; i != 9; i++)
@@ -108,7 +113,7 @@ TEST_CASE("TEST: nextInt8 readBytesFrom.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/int8", buffer, 5);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/int8", basedir().c_str()), buffer, 5);
     REQUIRE(util::nextInt8(buffer) == -128);
     REQUIRE(util::nextInt8(&buffer[1]) == -1);
     REQUIRE(util::nextInt8(&buffer[2]) == 0);
@@ -117,7 +122,7 @@ TEST_CASE("TEST: nextInt8 readBytesFrom.", "convertEndians_test.cpp")
     SECTION("Now testing writing")
     {
         int TYPESIZE = 1;
-        std::string file = "../tests/integerByteManipulations/int8_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/int8_", basedir().c_str());
         int8_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -2, -3, 33, 21 };
         for(int i = 0; i != 9; i++)
         {
@@ -136,7 +141,7 @@ TEST_CASE("TEST: nextInt16 readBytesFrom.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/int16", buffer, 10);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/int16", basedir().c_str()), buffer, 10);
     REQUIRE(util::nextInt16(buffer) == -32768);
     REQUIRE(util::nextInt16(&buffer[2]) == -1);
     REQUIRE(util::nextInt16(&buffer[4]) == 0);
@@ -145,7 +150,7 @@ TEST_CASE("TEST: nextInt16 readBytesFrom.", "convertEndians_test.cpp")
     SECTION("Now testing writing")
     {
         int TYPESIZE = 2;
-        std::string file = "../tests/integerByteManipulations/int16_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/int16_", basedir().c_str());
         int16_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -32768, 32767, -3, 999 };
         for(int i = 0; i != 9; i++)
         {
@@ -164,7 +169,7 @@ TEST_CASE("TEST: nextInt32 readBytesFrom.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/int32", buffer, 20);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/int32", basedir().c_str()), buffer, 20);
     REQUIRE(util::nextInt32(buffer) == -2147483648);
     REQUIRE(util::nextInt32(&buffer[4]) == -1);
     REQUIRE(util::nextInt32(&buffer[8]) == 0);
@@ -173,7 +178,7 @@ TEST_CASE("TEST: nextInt32 readBytesFrom.", "convertEndians_test.cpp")
     SECTION("Now testing writing")
     {
         int TYPESIZE = 4;
-        std::string file = "../tests/integerByteManipulations/int32_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/int32_", basedir().c_str());
         int32_t valuesToWrite[9] = { -128, -1, 0, 1, 127, -32768, 32767, -2147483648, 2147483647 };
         for(int i = 0; i != 9; i++)
         {
@@ -193,7 +198,7 @@ TEST_CASE("TEST: nextInt64, putInt64, readBytesFrom.", "convertEndians_test.cpp"
     uint8_t buffer[100];
     uint8_t xuffer[100];
     int TYPESIZE = 8;
-    std::string file = "../tests/integerByteManipulations/int32_";
+    std::string file = io::xprintf("%s/tests/integerByteManipulations/int32_", basedir().c_str());
     int64_t valuesToWrite[11]
         = { -128,
             -1,
@@ -224,7 +229,7 @@ TEST_CASE("TEST: nextFloat readBytesFrom.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/float", buffer, 20);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/float", basedir().c_str()), buffer, 20);
     REQUIRE(util::nextFloat(buffer) == 1.1f);
     REQUIRE(util::nextFloat(&buffer[4]) == 3.1f);
     REQUIRE(util::nextFloat(&buffer[8]) == 340282300000000000000000000000000000000.0f);
@@ -233,7 +238,7 @@ TEST_CASE("TEST: nextFloat readBytesFrom.", "convertEndians_test.cpp")
     SECTION("Now test writing.")
     {
         int TYPESIZE = 4;
-        std::string file = "../tests/integerByteManipulations/float_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/float_", basedir().c_str());
         float valuesToWrite[11] = { 1.1f,
                                     3.1f,
                                     340282300000000000000000000000000000000.0f,
@@ -269,7 +274,7 @@ TEST_CASE("TEST: nextDouble readBytesFrom.", "convertEndians_test.cpp")
 {
     uint8_t buffer[100];
     uint8_t xuffer[100];
-    io::readFirstBytes("../tests/integerByteManipulations/double", buffer, 40);
+    io::readFirstBytes(io::xprintf("%s/tests/integerByteManipulations/double", basedir().c_str()), buffer, 40);
     REQUIRE(util::nextDouble(buffer) == 1.1);
     REQUIRE(util::nextDouble(&buffer[8]) == 3.1);
     REQUIRE(util::nextDouble(&buffer[16]) == 500.0);
@@ -279,7 +284,7 @@ TEST_CASE("TEST: nextDouble readBytesFrom.", "convertEndians_test.cpp")
     {
 
         int TYPESIZE = 8;
-        std::string file = "../tests/integerByteManipulations/double_";
+        std::string file = io::xprintf("%s/tests/integerByteManipulations/double_", basedir().c_str());
         double valuesToWrite[11] = { 1.1,
                                      3.1,
                                      500.0,

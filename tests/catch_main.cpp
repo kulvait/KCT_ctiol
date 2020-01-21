@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 #include "PlogSetup.h"
 #include "catch.hpp"
+#include "RunTimeInfo.hpp"
 
 using namespace CTL;
 
@@ -22,6 +23,13 @@ int main(int argc, char* argv[])
     // global clean-up...
 
     return result;
+}
+
+std::string basedir()
+{
+	io::RunTimeInfo rti;
+	std::string path = rti.getExecutableDirectoryPath();//build dir
+	return io::getParent(path);
 }
 
 TEST_CASE("LOGGING SETUP", "catch_main.cpp") {}
