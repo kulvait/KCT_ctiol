@@ -26,3 +26,11 @@ TEST_CASE("TEST: absolute path.", "rawop.h")
     std::string p = io::getParent("abc");
     //LOGE << p;
 }
+
+TEST_CASE("Filesystem operations", "[filesystem]")
+{
+    REQUIRE(io::pathExists("/tmp"));
+    REQUIRE(io::isDirectory("/tmp"));
+    REQUIRE(!io::isRegularFile("/tmp"));
+    //LOGE << p;
+}

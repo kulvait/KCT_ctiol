@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(CTIOL)
 
 set(CMAKE_INSTALL_PREFIX $ENV{HOME}/bin)
-set(CMAKE_CXX_STANDARD 14)#Supported values are 98, 11 and 14.
+set(CMAKE_CXX_STANDARD 17)#Supported values are 98, 11 and 14.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
 message("Current value of flags is ${CMAKE_CXX_FLAGS} and debug is ${CMAKE_CXX_FLAGS_DEBUG} and release is ${CMAKE_CXX_FLAGS_RELEASE}")
@@ -145,7 +145,7 @@ target_link_libraries(test_ctiol Catch)
 target_link_libraries(test_ctiol CTIOL)
 target_link_libraries(test_ctiol CTIOL_DENITK)
 target_link_libraries(test_ctiol ctmal)
-
+target_link_libraries(test_ctiol stdc++fs)
 add_custom_target(formatWebkit
 ./formatWebkit
 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

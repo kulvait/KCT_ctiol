@@ -76,7 +76,7 @@ namespace io {
         this->sizez = dimz;
         uint64_t elementByteSize = sizeof(T);
         uint64_t totalFileSize = uint64_t(6) + elementByteSize * dimx * dimy * dimz;
-        if(io::fileExists(projectionsFile))
+        if(io::pathExists(projectionsFile))
         {
             uint64_t fileSize = io::getFileSize(projectionsFile);
             if(fileSize != totalFileSize)

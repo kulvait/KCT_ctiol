@@ -178,7 +178,17 @@ namespace io {
         }
     }
 
-    bool fileExists(std::string fileName) { return (access(fileName.c_str(), F_OK) != -1); }
+    bool pathExists(std::string fileName) { return (access(fileName.c_str(), F_OK) != -1); }
+
+    bool isDirectory(const std::experimental::filesystem::path& p)
+    {
+        return std::experimental::filesystem::is_directory(p);
+    }
+	
+    bool isRegularFile(const std::experimental::filesystem::path& p)
+    {
+        return std::experimental::filesystem::is_regular_file(p);
+    }
 
     std::string getParent(const std::string& path)
     {
@@ -217,7 +227,7 @@ namespace io {
 
     void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite)
     {
-        if(!fileExists(fileName) || overwrite)
+        if(!pathExists(fileName) || overwrite)
         {
             std::ofstream ofs(
                 fileName,
@@ -248,9 +258,15 @@ namespace io {
      */
     std::string fileToString(const std::string& f)
     {
-        if(!fileExists(f))
+        if(!pathExists(f))
         {
             std::string ERR = io::xprintf("File %s does not exist.", f.c_str());
+            LOGE << ERR;
+            io::throwerr(ERR);
+        }
+        if(!isRegularFile(f))
+        {
+            std::string ERR = io::xprintf("File %s is not a regular file.", f.c_str());
             LOGE << ERR;
             io::throwerr(ERR);
         }
@@ -269,7 +285,7 @@ namespace io {
                               bool overwrite,
                               std::initializer_list<std::string> inputFiles)
     {
-        if(fileExists(outputFile) && !overwrite)
+        if(pathExists(outputFile) && !overwrite)
         {
             std::string ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
                                           outputFile.c_str());
@@ -279,10 +295,10 @@ namespace io {
         std::ofstream ofs(outputFile, std::ios_base::binary | std::ios::trunc);
         for(std::string f : inputFiles)
         {
-            if(!fileExists(f))
+            if(!isRegularFile(f))
             {
                 std::string ERR
-                    = io::xprintf("One of the files to concatenate %s does not exist!", f.c_str());
+                    = io::xprintf("File %s from the files to concatenate is not regular file!", f.c_str());
                 LOGE << ERR;
                 throw std::ios_base::failure(ERR);
             }

@@ -28,7 +28,9 @@ namespace io {
     void writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
     void appendBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite);
-    bool fileExists(std::string fileName);
+    bool pathExists(std::string fileName);
+    bool isDirectory(const std::experimental::filesystem::path& p);
+    bool isRegularFile(const std::experimental::filesystem::path& p);
     long getFileSize(std::string filename);
     std::string getParent(const std::string& path);
     std::string getBasename(const std::string& path);
