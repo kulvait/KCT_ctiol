@@ -1,8 +1,8 @@
 #pragma once
 
 // External
-#include <string>
 #include <mutex>
+#include <string>
 
 // Internal
 #include "BufferedFrame2D.hpp"
@@ -60,8 +60,8 @@ namespace io {
     {
         this->denFile = denFile;
         DenFileInfo pi = DenFileInfo(this->denFile);
-        this->sizey = pi.dimx();
-        this->sizex = pi.dimy();
+        this->sizex = pi.dimx();
+        this->sizey = pi.dimy();
         this->sizez = pi.dimz();
         this->dataType = pi.getDataType();
         this->elementByteSize = pi.elementByteSize();
@@ -81,12 +81,12 @@ namespace io {
         {
             delete[] buffer;
         }
-	buffer = nullptr;
+        buffer = nullptr;
         if(buffer_copy != nullptr)
         {
             delete[] buffer_copy;
         }
-	buffer_copy = nullptr;
+        buffer_copy = nullptr;
     }
 
     /**Copy constructor of DenFrame2DReader from another element.
@@ -133,8 +133,8 @@ namespace io {
     DenFrame2DReader<T>::DenFrame2DReader(DenFrame2DReader<T>&& b)
     {
         this->denFile = b.denFile;
-        this->sizey = b.sizey;
         this->sizex = b.sizex;
+        this->sizey = b.sizey;
         this->sizez = b.sizez;
         this->dataType = b.dataType;
         this->elementByteSize = b.elementByteSize;
@@ -162,8 +162,8 @@ namespace io {
             this->buffer_copy = other.buffer_copy;
             other.buffer_copy = nullptr;
             this->denFile = other.denFile;
-            this->sizey = other.sizey;
             this->sizex = other.sizex;
+            this->sizey = other.sizey;
             this->sizez = other.sizez;
             this->dataType = other.dataType;
             this->elementByteSize = other.elementByteSize;
@@ -201,9 +201,10 @@ namespace io {
         std::shared_ptr<Frame2DI<T>> ps = readBufferedFrame(sliceNum);
         return ps;
     }
-    
-	template <typename T>
-    std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
+
+    template <typename T>
+    std::shared_ptr<io::BufferedFrame2D<T>>
+    DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
     {
         std::lock_guard<std::mutex> guard(consistencyMutex);
         // Mutex will be released as this goes out of scope.
