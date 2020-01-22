@@ -6,7 +6,8 @@ namespace io {
     {
         this->projectionMatrixFile = projectionMatrixFile;
         DenFileInfo mi = DenFileInfo(this->projectionMatrixFile);
-        int cols, rows;
+		this->offset = mi.getOffset();
+        uint32_t cols, rows;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
         countMatrices = mi.getNumSlices();
@@ -29,7 +30,7 @@ namespace io {
     matrix::ProjectionMatrix DenProjectionMatrixReader::readMatrix(int i)
     {
         uint8_t buffer[8 * 3 * 4];
-        uint64_t position = ((uint64_t)6) + ((uint64_t)i) * 3 * 4 * 8;
+        uint64_t position = this->offset + ((uint64_t)i) * 3 * 4 * 8;
         io::readBytesFrom(this->projectionMatrixFile, position, buffer, 8 * 3 * 4);
         double matrixData[3 * 4];
         for(int a = 0; a != 3 * 4; a++)
@@ -39,7 +40,7 @@ namespace io {
         return matrix::ProjectionMatrix(matrixData);
     }
 
-    unsigned int DenProjectionMatrixReader::count() const { return countMatrices; }
+    uint32_t DenProjectionMatrixReader::count() const { return countMatrices; }
 
 } // namespace io
 } // namespace CTL

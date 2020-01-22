@@ -26,7 +26,7 @@ namespace io {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
-    inline DenSupportedType getSupportedTypeByByteLength(int byteLength)
+    inline DenSupportedType getSupportedTypeByByteLength(uint32_t byteLength)
     {
         switch(byteLength)
         {

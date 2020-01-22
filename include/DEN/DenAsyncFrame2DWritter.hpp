@@ -20,6 +20,8 @@ namespace io {
     private:
         std::string projectionsFile;
         uint32_t sizex, sizey, sizez;
+        uint64_t offset;
+        bool extended;
         uint8_t* buffer;
         mutable std::mutex writingMutex;
 
@@ -70,12 +72,19 @@ namespace io {
             LOGE << msg;
             throw std::runtime_error(msg);
         }
+        extended = false;
+        offset = 6;
+        if(dimx > 65535 || dimy > 65535 || dimz > 65535)
+        {
+            extended = true;
+            offset = 18;
+        }
         this->projectionsFile = projectionsFile;
         this->sizex = dimx;
         this->sizey = dimy;
         this->sizez = dimz;
         uint64_t elementByteSize = sizeof(T);
-        uint64_t totalFileSize = uint64_t(6) + elementByteSize * dimx * dimy * dimz;
+        uint64_t totalFileSize = offset + elementByteSize * dimx * dimy * dimz;
         if(io::pathExists(projectionsFile))
         {
             uint64_t fileSize = io::getFileSize(projectionsFile);
@@ -91,16 +100,28 @@ namespace io {
         } else
         {
             io::createEmptyFile(projectionsFile, totalFileSize, true);
-        /*
-	    LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
-                                projectionsFile.c_str(), totalFileSize);
-	*/
+            /*
+                LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
+                                    projectionsFile.c_str(), totalFileSize);
+            */
         }
-        uint8_t buf[6];
-        util::putUint16((uint16_t)dimy, &buf[0]);
-        util::putUint16((uint16_t)dimx, &buf[2]);
-        util::putUint16((uint16_t)dimz, &buf[4]);
-        io::writeFirstBytes(projectionsFile, buf, 6);
+        uint8_t buf[18];
+        if(extended)
+        {
+            util::putUint16(0, &buf[0]);
+            util::putUint16(0, &buf[2]);
+            util::putUint16(0, &buf[4]);
+            util::putUint32(dimy, &buf[0]);
+            util::putUint32(dimx, &buf[2]);
+            util::putUint32(dimz, &buf[4]);
+            io::writeFirstBytes(projectionsFile, buf, 18);
+        } else
+        {
+            util::putUint16((uint16_t)dimy, &buf[0]);
+            util::putUint16((uint16_t)dimx, &buf[2]);
+            util::putUint16((uint16_t)dimz, &buf[4]);
+            io::writeFirstBytes(projectionsFile, buf, 6);
+        }
         buffer = new uint8_t[sizeof(T) * this->dimx() * this->dimy()];
     }
 
@@ -132,6 +153,8 @@ namespace io {
             this->sizex = b.dimx;
             this->sizey = b.dimy;
             this->sizez = b.dimz;
+            this->offset = offset;
+            this->extended = extended;
             if(this->buffer != nullptr)
             {
                 delete[] this->buffer;
@@ -150,6 +173,8 @@ namespace io {
         this->sizex = b.dimx;
         this->sizey = b.dimy;
         this->sizez = b.dimz;
+        this->offset = b.offset;
+        this->extended = b.extended;
         this->buffer = b.buffer;
         b.buffer = nullptr;
     }
@@ -165,6 +190,8 @@ namespace io {
             this->sizex = b.dimx;
             this->sizey = b.dimy;
             this->sizez = b.dimz;
+            this->offset = b.offset;
+            this->extended = b.extended;
             if(this->buffer != nullptr)
             {
                 delete[] this->buffer;
@@ -211,7 +238,7 @@ namespace io {
                 util::setNextElement<T>(s(k, j), &buffer[(j * this->dimx() + k) * sizeof(T)]);
             }
         }
-        uint64_t position = uint64_t(6) + ((uint64_t)sizeof(T)) * i * this->dimx() * this->dimy();
+        uint64_t position = offset + ((uint64_t)sizeof(T)) * i * this->dimx() * this->dimy();
         io::writeBytesFrom(projectionsFile, position, buffer,
                            sizeof(T) * this->dimx() * this->dimy());
         return;

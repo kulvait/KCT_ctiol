@@ -18,14 +18,16 @@ namespace io {
     {
     public:
         DenFileInfo(std::string fileName);
-        uint16_t dimx() const;
-        uint16_t dimy() const;
-        uint16_t dimz() const;
-        uint16_t getNumRows() const;
-        uint16_t getNumCols() const;
-        uint16_t getNumSlices() const;
+        uint32_t dimx() const;
+        uint32_t dimy() const;
+        uint32_t dimz() const;
+        uint32_t getNumRows() const;
+        uint32_t getNumCols() const;
+        uint32_t getNumSlices() const;
         uint64_t getSize() const;
         uint64_t getNumPixels() const;
+        bool isExtended() const;
+        uint64_t getOffset() const;
         DenSupportedType getDataType() const;
         uint8_t elementByteSize() const;
         template <typename T>
@@ -37,6 +39,9 @@ namespace io {
 
     private:
         std::string fileName;
+		//Extended format means that the file has header 0,0,0 followed by the four dimensions so that the offset is 18 bytes and dimensions are stored in 6..9, 10..13 and 14..17 bytes as uint32_t
+		bool extended = false;
+		uint64_t offset = 6;
     };
 
     template <typename T>
@@ -47,7 +52,6 @@ namespace io {
         uint64_t cols = getNumCols();
         uint64_t zdim = getNumSlices();
         uint64_t currentPosition;
-        uint64_t offset = 6;
         switch(dataType)
         {
         case io::DenSupportedType::uint16_t_:
@@ -126,7 +130,6 @@ namespace io {
         uint64_t cols = getNumCols();
         uint64_t zdim = getNumSlices();
         uint64_t currentPosition;
-        uint64_t offset = 6;
         switch(dataType)
         {
         case io::DenSupportedType::uint16_t_:
@@ -211,7 +214,6 @@ namespace io {
         uint64_t dim_y = dimy();
         uint64_t dim_z = dimz();
         uint64_t currentPosition;
-        uint64_t offset = 6;
         double sum = 0.0;
         double val;
         switch(dataType)

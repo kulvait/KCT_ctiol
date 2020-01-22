@@ -70,14 +70,16 @@ namespace io {
         /**
          * Access to the slice of the DEN file that is ordered as in the file.
          */
-        unsigned int dimx() const override;
-        unsigned int dimy() const override;
-        unsigned int dimz() const override;
+        uint32_t dimx() const override;
+        uint32_t dimy() const override;
+        uint32_t dimz() const override;
 
         std::string getProjectionsFile() { return projectionsFile; }
 
     private:
         T* buffer;
+		uint64_t offsetMatrix = 6;
+		uint64_t offsetProjections = 6;
     };
 
     template <typename T>
@@ -92,6 +94,8 @@ namespace io {
         this->sizey = pi.getNumRows();
         this->sizex = pi.getNumCols();
         this->sizez = pi.getNumSlices();
+		this->offsetMatrix = mi.getOffset();
+		this->offsetProjections = mi.getOffset();
         int cols, rows, matCount;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
@@ -124,19 +128,19 @@ namespace io {
     }
 
     template <typename T>
-    unsigned int DenProjectionNakedReader<T>::dimx() const
+    uint32_t DenProjectionNakedReader<T>::dimx() const
     {
         return sizex;
     }
 
     template <typename T>
-    unsigned int DenProjectionNakedReader<T>::dimy() const
+    uint32_t DenProjectionNakedReader<T>::dimy() const
     {
         return sizey;
     }
 
     template <typename T>
-    unsigned int DenProjectionNakedReader<T>::dimz() const
+    uint32_t DenProjectionNakedReader<T>::dimz() const
     {
         return sizez;
     }
@@ -160,7 +164,7 @@ namespace io {
     DenProjectionNakedReader<T>::readProjectionMatrix(int sliceNum)
     {
         uint8_t buffer[8 * 3 * 4];
-        uint64_t position = ((uint64_t)6) + ((uint64_t)sliceNum) * 3 * 4 * 8;
+        uint64_t position = this->offsetMatrix + ((uint64_t)sliceNum) * 3 * 4 * 8;
         io::readBytesFrom(this->projectionMatrixFile, position, buffer, 8 * 3 * 4);
         double matrixData[3 * 4];
         for(int a = 0; a != 3 * 4; a++)
@@ -178,7 +182,7 @@ namespace io {
     template <typename T>
     std::shared_ptr<io::Frame2DI<T>> DenProjectionNakedReader<T>::readProjectionSlice(int sliceNum)
     {
-        uint64_t position = uint64_t(6) + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position = this->offsetProjections + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
         uint8_t* tmp = new uint8_t[elementByteSize * sizex * sizey];
         io::readBytesFrom(this->projectionsFile, position, tmp, elementByteSize * sizex * sizey);
         for(int a = 0; a != sizex * sizey; a++)

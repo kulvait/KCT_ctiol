@@ -23,11 +23,13 @@ namespace io {
     // ProjectionReaderI will be only once in the family tree
     {
     protected: // Visible in inheritance structure
-        int sizex, sizey, sizez;
+        uint32_t sizex, sizey, sizez;
         std::string projectionsFile;
         std::string projectionMatrixFile;
         DenSupportedType dataType;
-        int elementByteSize;
+        uint32_t elementByteSize;
+		uint64_t offsetMatrix = 6;
+		uint64_t offsetProjections = 6;
 
     public:
         DenProjectionReader(std::string projectionsFile, std::string projectionMatrixFile);
@@ -42,9 +44,9 @@ namespace io {
          * Access to the slice of the DEN file that is ordered as in the file.
          */
         void* readNakedMemory(int sliceNum);
-        unsigned int dimx() const override;
-        unsigned int dimy() const override;
-        unsigned int dimz() const override;
+        uint32_t dimx() const override;
+        uint32_t dimy() const override;
+        uint32_t dimz() const override;
     };
 
     template <typename T>
@@ -55,10 +57,12 @@ namespace io {
         this->projectionMatrixFile = projectionMatrixFile;
         DenFileInfo pi = DenFileInfo(this->projectionsFile);
         DenFileInfo mi = DenFileInfo(this->projectionMatrixFile);
-        this->sizey = pi.getNumRows();
-        this->sizex = pi.getNumCols();
-        this->sizez = pi.getNumSlices();
-        int cols, rows, matCount;
+        this->sizex = pi.dimx();
+        this->sizey = pi.dimy();
+        this->sizez = pi.dimz();
+		this->offsetMatrix = mi.getOffset();
+		this->offsetProjections = mi.getOffset();
+        uint32_t cols, rows, matCount;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
         matCount = mi.getNumSlices();
@@ -123,7 +127,7 @@ namespace io {
     DenProjectionReader<T>::readProjectionMatrix(int sliceNum)
     {
         uint8_t buffer[8 * 3 * 4];
-        uint64_t position = ((uint64_t)6) + ((uint64_t)sliceNum) * 3 * 4 * 8;
+        uint64_t position = this->offsetMatrix + ((uint64_t)sliceNum) * 3 * 4 * 8;
         io::readBytesFrom(this->projectionMatrixFile, position, buffer, 8 * 3 * 4);
         double matrixData[3 * 4];
         for(int a = 0; a != 3 * 4; a++)
@@ -139,7 +143,7 @@ namespace io {
     std::shared_ptr<io::Frame2DI<T>> DenProjectionReader<T>::readProjectionSlice(int sliceNum)
     {
         uint8_t* buffer = new uint8_t[elementByteSize * sizex * sizey];
-        uint64_t position = (uint64_t)6 + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];
         for(int a = 0; a != sizex * sizey; a++)
@@ -157,7 +161,7 @@ namespace io {
     void* DenProjectionReader<T>::readNakedMemory(int sliceNum)
     {
         uint8_t* buffer = new uint8_t[elementByteSize * sizex * sizey];
-        uint64_t position = (uint64_t)6 + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         return buffer;
     }

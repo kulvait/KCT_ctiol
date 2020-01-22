@@ -18,8 +18,9 @@ namespace io {
     class DenProjectionMatrixReader : ProjectionMatrixReaderI
     {
     private:
-        int countMatrices;
         std::string projectionMatrixFile;
+        uint32_t countMatrices;
+		uint64_t offset;
 
     public:
         DenProjectionMatrixReader(std::string projectionMatrixFile);
@@ -27,7 +28,7 @@ namespace io {
         /*Returns i-th projection slice in the source.*/
         matrix::ProjectionMatrix readMatrix(int i) override;
         /**Number of projection matrices in the source.*/
-        unsigned int count() const override;
+        uint32_t count() const override;
     };
 } // namespace io
 } // namespace CTL

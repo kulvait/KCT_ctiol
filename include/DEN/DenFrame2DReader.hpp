@@ -46,12 +46,14 @@ namespace io {
         DenFrame2DReader<T>& operator=(DenFrame2DReader<T>&& other);
         std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) override;
         std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(unsigned int i);
-        unsigned int dimx() const override;
-        unsigned int dimy() const override;
-        unsigned int dimz() const override;
+        void readFrameIntoBuffer(unsigned int frameID, T* outside_buffer);
+        uint32_t dimx() const override;
+        uint32_t dimy() const override;
+        uint32_t dimz() const override;
         std::string getFileName() const;
         /**Returns file name of the underlying DEN file.**/
     private:
+		uint64_t offset;
         mutable std::mutex consistencyMutex;
     };
 
@@ -63,6 +65,7 @@ namespace io {
         this->sizex = pi.dimx();
         this->sizey = pi.dimy();
         this->sizez = pi.dimz();
+        this->offset = pi.getOffset();
         this->dataType = pi.getDataType();
         this->elementByteSize = pi.elementByteSize();
         this->buffer = new uint8_t[elementByteSize * sizex * sizey];
@@ -110,6 +113,7 @@ namespace io {
             this->sizey = b.sizey;
             this->sizex = b.sizex;
             this->sizez = b.sizez;
+            this->offset = b.offset;
             this->dataType = b.dataType;
             this->elementByteSize = b.elementByteSize;
             if(this->buffer != nullptr)
@@ -136,6 +140,7 @@ namespace io {
         this->sizex = b.sizex;
         this->sizey = b.sizey;
         this->sizez = b.sizez;
+            this->offset = b.offset;
         this->dataType = b.dataType;
         this->elementByteSize = b.elementByteSize;
         this->buffer = b.buffer;
@@ -165,6 +170,7 @@ namespace io {
             this->sizex = other.sizex;
             this->sizey = other.sizey;
             this->sizez = other.sizez;
+            this->offset = other.offset;
             this->dataType = other.dataType;
             this->elementByteSize = other.elementByteSize;
         }
@@ -178,19 +184,19 @@ namespace io {
     }
 
     template <typename T>
-    unsigned int DenFrame2DReader<T>::dimx() const
+    uint32_t DenFrame2DReader<T>::dimx() const
     {
         return sizex;
     }
 
     template <typename T>
-    unsigned int DenFrame2DReader<T>::dimy() const
+    uint32_t DenFrame2DReader<T>::dimy() const
     {
         return sizey;
     }
 
     template <typename T>
-    unsigned int DenFrame2DReader<T>::dimz() const
+    uint32_t DenFrame2DReader<T>::dimz() const
     {
         return sizez;
     }
@@ -209,7 +215,7 @@ namespace io {
         std::lock_guard<std::mutex> guard(consistencyMutex);
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
-        uint64_t position = uint64_t(6) + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
         for(int a = 0; a != sizex * sizey; a++)
         {
@@ -218,6 +224,20 @@ namespace io {
         std::shared_ptr<BufferedFrame2D<T>> ps
             = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
         return ps;
+    }
+
+    template <typename T>
+    void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID, T* outside_buffer)
+    {
+        std::lock_guard<std::mutex> guard(consistencyMutex);
+        // Mutex will be released as this goes out of scope.
+        // To protect calling this method from another thread using the same block of memory
+        uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * sizex * sizey;
+        io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
+        for(int a = 0; a != sizex * sizey; a++)
+        {
+            outside_buffer[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+        }
     }
 } // namespace io
 } // namespace CTL

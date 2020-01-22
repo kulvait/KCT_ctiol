@@ -6,40 +6,78 @@ namespace io {
     DenFileInfo::DenFileInfo(std::string fileName)
         : fileName(fileName)
     {
+        uint8_t buffer[6];
+        readBytesFrom(this->fileName, 0, buffer, 6);
+        if(util::nextUint16(buffer) == 0 && util::nextUint16(buffer + 2) == 0
+           && util::nextUint16(buffer + 4) == 0 && getSize() > 6)
+        {
+            extended = true;
+            offset = 18;
+        } else
+        {
+            extended = false;
+            offset = 6;
+        }
     }
 
+    uint64_t DenFileInfo::getOffset() const { return offset; }
+    bool DenFileInfo::isExtended() const { return extended; }
     /**X dimension*/
-    uint16_t DenFileInfo::dimx() const
+    uint32_t DenFileInfo::dimx() const
     {
-        uint8_t buffer[2];
-        readBytesFrom(this->fileName, 2, buffer, 2);
-        return (util::nextUint16(buffer));
+        if(extended)
+        {
+            uint8_t buffer[4];
+            readBytesFrom(this->fileName, 6 + 4, buffer, 4);
+            return (util::nextUint32(buffer));
+        } else
+        {
+            uint8_t buffer[2];
+            readBytesFrom(this->fileName, 2, buffer, 2);
+            return (util::nextUint16(buffer));
+        }
     }
 
     /**Y dimension*/
-    uint16_t DenFileInfo::dimy() const
+    uint32_t DenFileInfo::dimy() const
     {
-        uint8_t buffer[2];
-        readBytesFrom(this->fileName, 0, buffer, 2);
-        return (util::nextUint16(buffer));
+        if(extended)
+        {
+            uint8_t buffer[4];
+            readBytesFrom(this->fileName, 6, buffer, 4);
+            return (util::nextUint32(buffer));
+        } else
+        {
+            uint8_t buffer[2];
+            readBytesFrom(this->fileName, 0, buffer, 2);
+            return (util::nextUint16(buffer));
+        }
     }
 
     /**Z dimension*/
-    uint16_t DenFileInfo::dimz() const
+    uint32_t DenFileInfo::dimz() const
     {
-        uint8_t buffer[2];
-        readBytesFrom(this->fileName, 4, buffer, 2);
-        return (util::nextUint16(buffer));
+        if(extended)
+        {
+            uint8_t buffer[4];
+            readBytesFrom(this->fileName, 6 + 8, buffer, 4);
+            return (util::nextUint32(buffer));
+        } else
+        {
+            uint8_t buffer[2];
+            readBytesFrom(this->fileName, 4, buffer, 2);
+            return (util::nextUint16(buffer));
+        }
     }
 
     /**Y dimension*/
-    uint16_t DenFileInfo::getNumRows() const { return this->dimy(); }
+    uint32_t DenFileInfo::getNumRows() const { return this->dimy(); }
 
     /**X dimension*/
-    uint16_t DenFileInfo::getNumCols() const { return this->dimx(); }
+    uint32_t DenFileInfo::getNumCols() const { return this->dimx(); }
 
     /**Z dimension*/
-    uint16_t DenFileInfo::getNumSlices() const { return this->dimz(); }
+    uint32_t DenFileInfo::getNumSlices() const { return this->dimz(); }
 
     /**File size
      */
@@ -81,7 +119,14 @@ namespace io {
 
     uint8_t DenFileInfo::elementByteSize() const
     {
-        uint64_t dataSize = this->getSize() - 6;
+        uint64_t dataSize;
+        if(extended)
+        {
+            dataSize = this->getSize() - 18;
+        } else
+        {
+            dataSize = this->getSize() - 6;
+        }
         uint64_t numPixels = this->getNumPixels();
         if(dataSize == 0)
         {
