@@ -264,29 +264,29 @@ namespace io {
     std::shared_ptr<io::BufferedFrame2D<T>>
     DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
     {
-		std::unique_lock<std::mutex> l;
-		bool locked = false;
-		uint32_t mutexnum = 0;
-		for(uint32_t i = 0; i!= 1 + additionalBufferNum; i++)
-		{
-			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
-			if(l.owns_lock())
-			{
-				locked = true;
-				mutexnum = i;
-				break;
-			}
-		}
-		if(!locked)
-		{
-			l = std::unique_lock<std::mutex>(consistencyMutexes[0]); 
-				mutexnum = 0;
-		}
+        std::unique_lock<std::mutex> l;
+        bool locked = false;
+        uint32_t mutexnum = 0;
+        for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+        {
+            l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
+            if(l.owns_lock())
+            {
+                locked = true;
+                mutexnum = i;
+                break;
+            }
+        }
+        if(!locked)
+        {
+            l = std::unique_lock<std::mutex>(consistencyMutexes[0]);
+            mutexnum = 0;
+        }
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
         uint8_t* buffer = buffers[mutexnum];
         T* buffer_copy = buffer_copys[mutexnum];
-		uint32_t elmCount = sizex*sizey;
+        uint32_t elmCount = sizex * sizey;
         uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * elmCount;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
         for(uint32_t a = 0; a != elmCount; a++)
@@ -301,28 +301,28 @@ namespace io {
     template <typename T>
     void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID, T* outside_buffer)
     {
-		std::unique_lock<std::mutex> l;
-		bool locked = false;
-		uint32_t mutexnum = 0;
-		for(int i = 0; i!= 1 + additionalBufferNum; i++)
-		{
-			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
-			if(l.owns_lock())
-			{
-				locked = true;
-				mutexnum = i;
-				break;
-			}
-		}
-		if(!locked)
-		{
-			l = std::unique_lock<std::mutex>(consistencyMutexes[0]); 
-			mutexnum = 0;
-		}
+        std::unique_lock<std::mutex> l;
+        bool locked = false;
+        uint32_t mutexnum = 0;
+        for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+        {
+            l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
+            if(l.owns_lock())
+            {
+                locked = true;
+                mutexnum = i;
+                break;
+            }
+        }
+        if(!locked)
+        {
+            l = std::unique_lock<std::mutex>(consistencyMutexes[0]);
+            mutexnum = 0;
+        }
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
         uint8_t* buffer = buffers[mutexnum];
-		uint32_t elmCount = sizex*sizey;
+        uint32_t elmCount = sizex * sizey;
         uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * elmCount;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
         for(uint32_t a = 0; a != elmCount; a++)
