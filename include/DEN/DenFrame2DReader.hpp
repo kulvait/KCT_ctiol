@@ -270,7 +270,7 @@ namespace io {
 		for(uint32_t i = 0; i!= 1 + additionalBufferNum; i++)
 		{
 			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
-			if(!l.owns_lock())
+			if(l.owns_lock())
 			{
 				locked = true;
 				mutexnum = i;
@@ -286,9 +286,10 @@ namespace io {
         // To protect calling this method from another thread using the same block of memory
         uint8_t* buffer = buffers[mutexnum];
         T* buffer_copy = buffer_copys[mutexnum];
-        uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
-        io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
-        for(uint32_t a = 0; a != sizex * sizey; a++)
+		uint32_t elmCount = sizex*sizey;
+        uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * elmCount;
+        io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
+        for(uint32_t a = 0; a != elmCount; a++)
         {
             buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
@@ -306,7 +307,7 @@ namespace io {
 		for(int i = 0; i!= 1 + additionalBufferNum; i++)
 		{
 			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
-			if(!l.owns_lock())
+			if(l.owns_lock())
 			{
 				locked = true;
 				mutexnum = i;
@@ -321,9 +322,10 @@ namespace io {
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
         uint8_t* buffer = buffers[mutexnum];
-        uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * sizex * sizey;
-        io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
-        for(int a = 0; a != sizex * sizey; a++)
+		uint32_t elmCount = sizex*sizey;
+        uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * elmCount;
+        io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
+        for(uint32_t a = 0; a != elmCount; a++)
         {
             outside_buffer[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
