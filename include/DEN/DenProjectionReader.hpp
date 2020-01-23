@@ -6,7 +6,6 @@
 // Internal
 #include "BufferedFrame2D.hpp"
 #include "DEN/DenFileInfo.hpp"
-#include "DEN/DenFrame2DReader.hpp"
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
 #include "MATRIX/ProjectionMatrix.hpp"

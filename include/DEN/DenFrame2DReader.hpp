@@ -20,26 +20,24 @@ namespace io {
     class DenFrame2DReader : virtual public Frame2DReaderI<T>
     // Frame2DReaderI<T> will be only once in the family tree
     {
-    protected: // Visible in inheritance structure
-        int sizex, sizey, sizez;
-        std::string denFile;
-        DenSupportedType dataType;
-        int elementByteSize;
-        uint8_t* buffer;
-        T* buffer_copy;
 
     public:
         /**Constructs DenFrame2DReader from file name.
          *
-         *@param denFile File in a DEN format that is about to read by frames..
+         *
+         * @param denFile
+         * @param denFile File in a DEN format to read by frames.
+         * @param additionalBufferNum Number of additional buffers to allocate. Defaults to 0 for 1
+         * default buffer.
          */
-        DenFrame2DReader(std::string denFile);
+        DenFrame2DReader(std::string denFile, uint32_t additionalBufferNum = 0);
         /// Destructor
         ~DenFrame2DReader();
         /// Copy constructor
         DenFrame2DReader(const DenFrame2DReader<T>& b);
-        // Copy assignment
-        DenFrame2DReader<T>& operator=(const DenFrame2DReader<T>& b);
+        // Copy assignment with copy and swap
+        DenFrame2DReader<T>& operator=(DenFrame2DReader<T> b);
+        static void swap(DenFrame2DReader<T>& a, DenFrame2DReader<T>& b);
         // Move constructor
         DenFrame2DReader(DenFrame2DReader<T>&& b);
         // Move assignment
@@ -53,23 +51,38 @@ namespace io {
         std::string getFileName() const;
         /**Returns file name of the underlying DEN file.**/
     private:
-		uint64_t offset;
-        mutable std::mutex consistencyMutex;
+        std::string denFile;
+        uint64_t offset;
+        // protected: // Visible in inheritance structure
+        uint32_t sizex, sizey, sizez;
+        DenSupportedType dataType;
+        int elementByteSize;
+        mutable std::mutex* consistencyMutexes;
+        uint8_t** buffers;
+        T** buffer_copys;
+        uint32_t additionalBufferNum;
     };
 
     template <typename T>
-    DenFrame2DReader<T>::DenFrame2DReader(std::string denFile)
+    DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBufferNum)
+        : denFile(denFile)
+        , additionalBufferNum(additionalBufferNum)
     {
-        this->denFile = denFile;
         DenFileInfo pi = DenFileInfo(this->denFile);
+        this->offset = pi.getOffset();
         this->sizex = pi.dimx();
         this->sizey = pi.dimy();
         this->sizez = pi.dimz();
-        this->offset = pi.getOffset();
         this->dataType = pi.getDataType();
         this->elementByteSize = pi.elementByteSize();
-        this->buffer = new uint8_t[elementByteSize * sizex * sizey];
-        this->buffer_copy = new T[sizex * sizey];
+        this->consistencyMutexes = new std::mutex[1 + additionalBufferNum];
+        this->buffers = new uint8_t*[1 + additionalBufferNum];
+        this->buffer_copys = new T*[1 + additionalBufferNum];
+        for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+        {
+            this->buffers[i] = new uint8_t[elementByteSize * sizex * sizey];
+            this->buffer_copys[i] = new T[sizex * sizey];
+        }
         // Buffers are used for the alocation of new frames. Since this class uses the instance that
         // copies memory, this memory might me reused.
     }
@@ -80,16 +93,37 @@ namespace io {
     template <typename T>
     DenFrame2DReader<T>::~DenFrame2DReader()
     {
-        if(buffer != nullptr)
+        if(consistencyMutexes != nullptr)
         {
-            delete[] buffer;
+            delete[] consistencyMutexes;
         }
-        buffer = nullptr;
-        if(buffer_copy != nullptr)
+        consistencyMutexes = nullptr;
+        if(buffers != nullptr)
         {
-            delete[] buffer_copy;
+            for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+            {
+                if(buffers[i] != nullptr)
+                {
+                    delete buffers[i];
+                }
+                buffers[i] = nullptr;
+            }
+            delete[] buffers;
         }
-        buffer_copy = nullptr;
+        buffers = nullptr;
+        if(buffer_copys != nullptr)
+        {
+            for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+            {
+                if(buffer_copys[i] != nullptr)
+                {
+                    delete buffer_copys[i];
+                }
+                buffer_copys[i] = nullptr;
+            }
+            delete[] buffer_copys;
+        }
+        buffer_copys = nullptr;
     }
 
     /**Copy constructor of DenFrame2DReader from another element.
@@ -97,39 +131,34 @@ namespace io {
      */
     template <typename T>
     DenFrame2DReader<T>::DenFrame2DReader(const DenFrame2DReader<T>& b)
-        : DenFrame2DReader<T>::DenFrame2DReader(b.denFile)
+        : DenFrame2DReader<T>::DenFrame2DReader(b.denFile, b.additionalBufferNum)
     {
+    }
+
+    template <typename T>
+    void DenFrame2DReader<T>::swap(DenFrame2DReader<T>& a, DenFrame2DReader<T>& b)
+    {
+        std::swap(a.denFile, b.denFile);
+        std::swap(a.offset, b.offset);
+        std::swap(a.sizex, b.sizex);
+        std::swap(a.sizey, b.sizey);
+        std::swap(a.sizez, b.sizez);
+        std::swap(a.dataType, b.dataType);
+        std::swap(a.elementByteSize, b.elementByteSize);
+        std::swap(a.additionalBufferNum, b.additionalBufferNum);
+        // It will probably work just to swap pointers to the starts of respective arrays
+        std::swap(a.buffers, b.buffers);
+        std::swap(a.buffer_copys, b.buffer_coppys);
+        std::swap(a.consistencyMutexes, b.consistencyMutexes);
     }
 
     /**Copy assignment
      *
      */
     template <typename T>
-    DenFrame2DReader<T>& DenFrame2DReader<T>::operator=(const DenFrame2DReader<T>& b)
+    DenFrame2DReader<T>& DenFrame2DReader<T>::operator=(DenFrame2DReader<T> b)
     {
-        if(&b != this) // To elegantly solve situation when assigning to itself
-        {
-            this->denFile = b.denFile;
-            this->sizey = b.sizey;
-            this->sizex = b.sizex;
-            this->sizez = b.sizez;
-            this->offset = b.offset;
-            this->dataType = b.dataType;
-            this->elementByteSize = b.elementByteSize;
-            if(this->buffer != nullptr)
-            {
-                delete[] this->buffer;
-            }
-            this->buffer = nullptr;
-            if(this->buffer_copy != nullptr)
-            {
-                delete[] this->buffer_copy;
-            }
-            this->buffer_copy = nullptr;
-            this.buffer = new uint8_t[elementByteSize * sizex * sizey];
-            this.buffer_copy = new T[sizex * sizey];
-            // No memcpy due to the temporary buffer usage.
-        }
+        swap(*this, b);
         return *this;
     }
 
@@ -137,42 +166,65 @@ namespace io {
     DenFrame2DReader<T>::DenFrame2DReader(DenFrame2DReader<T>&& b)
     {
         this->denFile = b.denFile;
+        this->offset = b.offset;
         this->sizex = b.sizex;
         this->sizey = b.sizey;
         this->sizez = b.sizez;
-            this->offset = b.offset;
         this->dataType = b.dataType;
         this->elementByteSize = b.elementByteSize;
-        this->buffer = b.buffer;
-        b.buffer = nullptr;
-        this->buffer_copy = b.buffer_copy;
-        b.buffer_copy = nullptr;
+        this->additionalBufferNum = b.additionalBufferNum;
+        this->consistencyMutexes = std::exchange(b.consistencyMutexes, nullptr);
+        this->buffers = std::exchange(b.buffers, nullptr);
+        this->buffer_copys = std::exchange(b.buffer_copys, nullptr);
     } // Move constructor to steal resources from another object
 
     template <typename T>
-    DenFrame2DReader<T>& DenFrame2DReader<T>::operator=(DenFrame2DReader<T>&& other)
+    DenFrame2DReader<T>& DenFrame2DReader<T>::operator=(DenFrame2DReader<T>&& b)
     {
-        if(&other != this) // To elegantly solve situation when assigning to itself
+        if(&b != this) // To elegantly solve situation when assigning to itself
         {
-            if(this->buffer != nullptr)
+            this->denFile = b.denFile;
+            this->offset = b.offset;
+            this->sizex = b.sizex;
+            this->sizey = b.sizey;
+            this->sizez = b.sizez;
+            this->dataType = b.dataType;
+            this->elementByteSize = b.elementByteSize;
+            this->additionalBufferNum = b.additionalBufferNum;
+            if(consistencyMutexes != nullptr)
             {
-                delete[] this->buffer;
+                delete[] consistencyMutexes;
             }
-            this->buffer = other.buffer;
-            other.buffer = nullptr;
-            if(this->buffer_copy != nullptr)
+            consistencyMutexes = nullptr;
+            if(buffers != nullptr)
             {
-                delete[] this->buffer_copy;
+                for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+                {
+                    if(buffers[i] != nullptr)
+                    {
+                        delete buffers[i];
+                    }
+                    buffers[i] = nullptr;
+                }
+                delete[] buffers;
             }
-            this->buffer_copy = other.buffer_copy;
-            other.buffer_copy = nullptr;
-            this->denFile = other.denFile;
-            this->sizex = other.sizex;
-            this->sizey = other.sizey;
-            this->sizez = other.sizez;
-            this->offset = other.offset;
-            this->dataType = other.dataType;
-            this->elementByteSize = other.elementByteSize;
+            buffers = nullptr;
+            if(buffer_copys != nullptr)
+            {
+                for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+                {
+                    if(buffer_copys[i] != nullptr)
+                    {
+                        delete buffer_copys[i];
+                    }
+                    buffer_copys[i] = nullptr;
+                }
+                delete[] buffer_copys;
+            }
+            buffer_copys = nullptr;
+            this->consistencyMutexes = std::exchange(b.consistencyMutexes, nullptr);
+            this->buffers = std::exchange(b.buffers, nullptr);
+            this->buffer_copys = std::exchange(b.buffer_copys, nullptr);
         }
         return *this;
     } // Move assignment
@@ -212,12 +264,31 @@ namespace io {
     std::shared_ptr<io::BufferedFrame2D<T>>
     DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
     {
-        std::lock_guard<std::mutex> guard(consistencyMutex);
+		std::unique_lock<std::mutex> l;
+		bool locked = false;
+		uint32_t mutexnum = 0;
+		for(uint32_t i = 0; i!= 1 + additionalBufferNum; i++)
+		{
+			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
+			if(!l.owns_lock())
+			{
+				locked = true;
+				mutexnum = i;
+				break;
+			}
+		}
+		if(!locked)
+		{
+			l = std::unique_lock<std::mutex>(consistencyMutexes[0]); 
+				mutexnum = 0;
+		}
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
+        uint8_t* buffer = buffers[mutexnum];
+        T* buffer_copy = buffer_copys[mutexnum];
         uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
-        for(int a = 0; a != sizex * sizey; a++)
+        for(uint32_t a = 0; a != sizex * sizey; a++)
         {
             buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
@@ -229,9 +300,27 @@ namespace io {
     template <typename T>
     void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID, T* outside_buffer)
     {
-        std::lock_guard<std::mutex> guard(consistencyMutex);
+		std::unique_lock<std::mutex> l;
+		bool locked = false;
+		uint32_t mutexnum = 0;
+		for(int i = 0; i!= 1 + additionalBufferNum; i++)
+		{
+			l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock); 
+			if(!l.owns_lock())
+			{
+				locked = true;
+				mutexnum = i;
+				break;
+			}
+		}
+		if(!locked)
+		{
+			l = std::unique_lock<std::mutex>(consistencyMutexes[0]); 
+			mutexnum = 0;
+		}
         // Mutex will be released as this goes out of scope.
         // To protect calling this method from another thread using the same block of memory
+        uint8_t* buffer = buffers[mutexnum];
         uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * sizex * sizey);
         for(int a = 0; a != sizex * sizey; a++)
