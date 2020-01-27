@@ -10,7 +10,7 @@
 #include "stringFormatter.h"
 
 namespace CTL {
-namespace io {
+namespace util {
     /**
      * @brief Class to provide run time information.
      *

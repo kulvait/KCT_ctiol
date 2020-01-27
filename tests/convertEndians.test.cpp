@@ -8,7 +8,7 @@
 
 // Internal libs
 #include "CTIOL.h"
-#include "RunTimeInfo.hpp"
+#include "PROG/RunTimeInfo.hpp"
 
 using namespace CTL;
 

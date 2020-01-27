@@ -5,7 +5,7 @@
 #include "stringFormatter.h"
 #include "DEN/DenFileInfo.hpp"
 #include "DEN/DenFrame2DReader.hpp"
-#include "RunTimeInfo.hpp"
+#include "PROG/RunTimeInfo.hpp"
 #include "littleEndianAlignment.h"
 
 using namespace CTL;
