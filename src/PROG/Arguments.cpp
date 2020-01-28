@@ -9,7 +9,7 @@ Arguments::Arguments(int argc, char* argv[], std::string appName)
     cliApp = std::make_shared<CLI::App>(appName);
 }
 
-int Arguments::parse()
+int Arguments::parse(bool helpOnError)
 {
     this->defineArguments();
     try
@@ -33,8 +33,11 @@ int Arguments::parse()
     } catch(const CLI::ParseError& e)
     {
         int exitcode = cliApp->exit(e);
-        LOGE << io::xprintf("There was perse error with exit code %d catched.\n %s", exitcode,
-                            cliApp->help().c_str());
+        LOGE << io::xprintf("There was perse error with exit code %d catched.", exitcode);
+        if(helpOnError)
+        {
+            std::cout << cliApp->help();
+        }
         return -1;
     } catch(...)
     {

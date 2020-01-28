@@ -25,12 +25,30 @@ void Program::startLog() { LOGI << io::xprintf("START %s", rti.getExecutableName
 
 void Program::endLog(bool reportTimings)
 {
+    using namespace std::chrono;
     if(reportTimings)
     {
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+        auto t = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::steady_clock::now() - start_time);
-        LOGI << io::xprintf("END %s, duration %0.3f s.", rti.getExecutableName().c_str(),
-                            float(duration.count() / 1000.0f));
+        auto min = duration_cast<minutes>(t);
+        t -= duration_cast<milliseconds>(min);
+        auto h = duration_cast<hours>(min);
+        min -= duration_cast<minutes>(h);
+        if(h.count() > 0)
+        {
+            LOGI << io::xprintf("END %s, duration %02dh %02dm %02.3fs.",
+                                rti.getExecutableName().c_str(), h.count(), min.count(),
+                                float(t.count() / 1000.0f));
+        } else if(min.count() > 0)
+        {
+            LOGI << io::xprintf("END %s, duration %02dm %02.3fs.",
+                                rti.getExecutableName().c_str(), min.count(),
+                                float(t.count() / 1000.0f));
+        } else
+        {
+            LOGI << io::xprintf("END %s, duration %02.3fs.", rti.getExecutableName().c_str(),
+                                float(t.count() / 1000.0f));
+        }
     } else
     {
         LOGI << io::xprintf("END %s", rti.getExecutableName().c_str());
