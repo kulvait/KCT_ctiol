@@ -38,10 +38,9 @@ namespace io {
     {
         //  LOGD << "Called readProjectionSliceToItkImage method, transpose???";
         typename itk::RawImageIO<T, 2>::Pointer rawImageIO = itk::RawImageIO<T, 2>::New();
-        rawImageIO->SetFileName(this->denFile); //(1) ... this is probably unnecessery
+        rawImageIO->SetFileName(this->getFileName()); //(1) ... this is probably unnecessery
         rawImageIO->SetFileTypeToBinary();
-        uint32_t offset = 6;
-        rawImageIO->SetHeaderSize(offset + i * this->elementByteSize * (this->sizex * this->sizey));
+        rawImageIO->SetHeaderSize(this->offset + i * this->elementByteSize * (this->sizex * this->sizey));
         rawImageIO->SetFileDimensionality(2);
 
         rawImageIO->SetOrigin(0, 0.0); // origin in millimeters
