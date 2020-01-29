@@ -21,7 +21,18 @@ Program::Program(
     start_time = std::chrono::steady_clock::now();
 }
 
-void Program::startLog() { LOGI << io::xprintf("START %s", rti.getExecutableName().c_str()); }
+void Program::startLog(bool reportArguments)
+{
+    std::string str = io::xprintf("START %s", rti.getExecutableName().c_str());
+    if(reportArguments)
+    {
+        for(int i = 1; i < argc; i++)
+        {
+            str = io::xprintf("%s %s", str.c_str(), argv[i]);
+        }
+    }
+    LOGI << io::xprintf("START %s", rti.getExecutableName().c_str());
+}
 
 void Program::endLog(bool reportTimings)
 {
@@ -41,9 +52,8 @@ void Program::endLog(bool reportTimings)
                                 float(t.count() / 1000.0f));
         } else if(min.count() > 0)
         {
-            LOGI << io::xprintf("END %s, duration %02dm %02.3fs.",
-                                rti.getExecutableName().c_str(), min.count(),
-                                float(t.count() / 1000.0f));
+            LOGI << io::xprintf("END %s, duration %02dm %02.3fs.", rti.getExecutableName().c_str(),
+                                min.count(), float(t.count() / 1000.0f));
         } else
         {
             LOGI << io::xprintf("END %s, duration %02.3fs.", rti.getExecutableName().c_str(),

@@ -2,10 +2,12 @@
 #include "catch.hpp"
 #include <plog/Log.h>
 #include "PROG/RunTimeInfo.hpp"
+#include "PROG/Program.hpp"
 using namespace CTL;
 
-TEST_CASE("TEST: RunTimeInfo.hpp", "RunTimeInfo")
+TEST_CASE("TEST: RunTimeInfo.hpp", "[RunTimeInfo][Program]")
 {
+	util::Program prog(0, nullptr);
 	util::RunTimeInfo rti;
 	std::string exe = rti.getExecutableName();
 	std::string path = rti.getExecutablePath();

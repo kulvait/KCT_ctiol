@@ -10,7 +10,7 @@ class Program
 {
 public:
     Program(int argc, char* argv[], plog::Severity debugLevel = plog::debug, bool logToFile = true, bool logToConsole = true);
-	void startLog();
+	void startLog(bool reportArguments=false);
 	void endLog(bool reportTimings=false);
 	util::RunTimeInfo getRunTimeInfo();
 	

@@ -29,6 +29,8 @@ IF(OpenCL_FOUND)
 	include_directories(${OpenCL_INCLUDE_DIRS})
 ENDIF()
 
+#CLI11 comand line parser library
+include_directories(${CMAKE_SOURCE_DIR}/submodules/CLI11/include)
 
 #Header directories for the project
 set(GLOBAL_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
@@ -75,7 +77,7 @@ include_directories(${MKL_INCLUDE_DIRS})
 #if (${OpenCV_VERSION_MAJOR} GREATER 2)
 
 add_definitions("-Dstrtk_no_tr1_or_boost")
-FILE( GLOB CTIOLSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/ARGPARSE/*.cpp )
+FILE( GLOB CTIOLSRC ${CMAKE_SOURCE_DIR}/src/*.cpp ${CMAKE_SOURCE_DIR}/src/PROG/*.cpp )
 add_library(CTIOL ${CTIOLSRC})
 set_target_properties(
     CTIOL 
