@@ -31,7 +31,7 @@ void Program::startLog(bool reportArguments)
             str = io::xprintf("%s %s", str.c_str(), argv[i]);
         }
     }
-    LOGI << io::xprintf("START %s", rti.getExecutableName().c_str());
+    LOGI << str;
 }
 
 void Program::endLog(bool reportTimings)
