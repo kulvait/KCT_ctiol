@@ -1,5 +1,5 @@
 #define CATCH_CONFIG_RUNNER
-#include "PlogSetup.h"
+#include "PLOG/PlogSetup.h"
 #include "catch.hpp"
 #include "PROG/RunTimeInfo.hpp"
 
@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
             = plog::debug; // Set to debug to see the debug messages, info messages
         std::string csvLogFile = "/tmp/imageRegistrationLog.csv"; // Set NULL to disable
         bool logToConsole = true;
-        util::PlogSetup plogSetup(verbosityLevel, csvLogFile, logToConsole);
+        plog::PlogSetup plogSetup(verbosityLevel, csvLogFile, logToConsole);
         plogSetup.initLogging();
     }
     int result = Catch::Session().run(argc, argv);
