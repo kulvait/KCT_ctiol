@@ -48,4 +48,50 @@ int Arguments::parse(bool helpOnError)
 }
 
 std::shared_ptr<CLI::App> Arguments::getCliApp() { return cliApp; }
+void Arguments::registerOption(std::string optName, CLI::Option* opt)
+{
+    if(cliOptions.find(optName) != cliOptions.end())
+    {
+        std::string err
+            = io::xprintf("Option with a name %s is already registered!", optName.c_str());
+        LOGE << err;
+        throw std::runtime_error(err);
+    }
+    cliOptions[optName] = opt;
+}
+
+void Arguments::registerOptionGroup(std::string optGroupName, CLI::Option_group* og)
+{
+    if(cliOptionGroups.find(optGroupName) != cliOptionGroups.end())
+    {
+        std::string err
+            = io::xprintf("Option with a name %s is already registered!", optGroupName.c_str());
+        LOGE << err;
+        throw std::runtime_error(err);
+    }
+    cliOptionGroups[optGroupName] = og;
+}
+
+CLI::Option_group* Arguments::getRegisteredOptionGroup(std::string optGroupName)
+{
+    if(cliOptionGroups.find(optGroupName) == cliOptionGroups.end())
+    {
+        return nullptr;
+    } else
+    {
+        return cliOptionGroups[optGroupName];
+    }
+}
+
+CLI::Option* Arguments::getRegisteredOption(std::string optName)
+{
+    if(cliOptions.find(optName) == cliOptions.end())
+    {
+        return nullptr;
+    } else
+    {
+        return cliOptions[optName];
+    }
+}
+
 } // namespace CTL::util
