@@ -13,7 +13,7 @@ public:
 	uint32_t threads = 0;
 
 protected:
-    void addThreadingArgs();
+    void addThreadingArgs(CLI::Option_group* og=nullptr);
 
 };
 
