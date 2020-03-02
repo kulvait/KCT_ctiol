@@ -35,13 +35,19 @@ namespace io {
         template <typename T>
         T getMinVal() const;
         template <typename T>
-        T getl2Square() const;
+        double getl2Square() const;
+        template <typename T>
+        double getMean() const;
+        template <typename T>
+        double getVariance() const;
 
     private:
         std::string fileName;
-		//Extended format means that the file has header 0,0,0 followed by the four dimensions so that the offset is 18 bytes and dimensions are stored in 6..9, 10..13 and 14..17 bytes as uint32_t
-		bool extended = false;
-		uint64_t offset = 6;
+        // Extended format means that the file has header 0,0,0 followed by the four dimensions so
+        // that the offset is 18 bytes and dimensions are stored in 6..9, 10..13 and 14..17 bytes as
+        // uint32_t
+        bool extended = false;
+        uint64_t offset = 6;
     };
 
     template <typename T>
@@ -207,7 +213,7 @@ namespace io {
      * @return |x|_2^2
      */
     template <typename T>
-    T DenFileInfo::getl2Square() const
+    double DenFileInfo::getl2Square() const
     {
         DenSupportedType dataType = getDataType();
         uint64_t dim_x = dimx();
@@ -273,6 +279,61 @@ namespace io {
             LOGE << errMsg;
             throw std::runtime_error(errMsg);
         }
+    }
+
+    template <typename T>
+    double DenFileInfo::getMean() const
+    {
+        DenSupportedType dataType = getDataType();
+        uint64_t dim_x = dimx();
+        uint64_t dim_y = dimy();
+        uint64_t dim_z = dimz();
+        uint64_t totalSize = dim_x * dim_y * dim_z;
+        uint64_t currentPosition;
+		uint32_t elementSize = elementByteSize();
+        double sum = 0.0;
+        double val;
+        uint8_t* buffer = new uint8_t[dim_x * dim_y * elementByteSize()];
+        for(uint64_t z = 0; z != dim_z; z++)
+        {
+            currentPosition = offset + z * dim_x * dim_y * elementSize;
+            io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * elementSize);
+            for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+            {
+                val = (double)util::getNextElement<T>(&buffer[pos * elementSize], dataType);
+                sum += val;
+            }
+        }
+        delete[] buffer;
+        return T(sum / totalSize);
+    }
+
+    template <typename T>
+    double DenFileInfo::getVariance() const
+    {
+        DenSupportedType dataType = getDataType();
+		uint32_t elementSize = elementByteSize();
+        uint64_t dim_x = dimx();
+        uint64_t dim_y = dimy();
+        uint64_t dim_z = dimz();
+        uint64_t totalSize = dim_x * dim_y * dim_z;
+        uint64_t currentPosition;
+        double sum = 0.0;
+        double val;
+        double mean = (double)getMean<T>();
+        uint8_t* buffer = new uint8_t[dim_x * dim_y * elementByteSize()];
+        for(uint64_t z = 0; z != dim_z; z++)
+        {
+            currentPosition = offset + z * dim_x * dim_y * elementSize;
+            io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * 2);
+            for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+            {
+                val = (double)util::getNextElement<T>(&buffer[pos * elementSize], dataType);
+                sum += (val - mean) * (val - mean);
+            }
+        }
+        delete[] buffer;
+        return T(sum / totalSize);
     }
 
 } // namespace io
