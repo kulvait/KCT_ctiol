@@ -6,7 +6,7 @@
 	url = https://github.com/catchorg/Catch2.git
 [submodule "submodules/CTMAL"]
 	path = submodules/CTMAL
-	url = ssh://git@gitlab.stimulate.ovgu.de:2200/vojtech.kulvait/CTMAL.git
+	url = ../CTMAL.git
 [submodule "submodules/CLI11"]
 	path = submodules/CLI11
 	url = https://github.com/CLIUtils/CLI11

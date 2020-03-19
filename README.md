@@ -5,13 +5,13 @@ Currently, mainly the DEN format read/write is implemented.
 This repository actually contains one basic library and separate library that depends on ITK and header files.
 
 ## Cloning repository:
-Basic clone can be done via
-```
-git clone https://gitlab.stimulate.ovgu.de/vojtech.kulvait/CTIOL.git
-```
-Or over ssh
+Clone over ssh, for those with ssh keys ready in gitlab
 ```
 git clone ssh://git@gitlab.stimulate.ovgu.de:2200/vojtech.kulvait/CTIOL.git
+```
+Basic clone over https
+```
+git clone https://gitlab.stimulate.ovgu.de/vojtech.kulvait/CTIOL.git
 ```
 However to populate submodules directories it is then needed to issue
 ```
@@ -48,6 +48,8 @@ or use the following command when cloning repository
 git clone --recurse-submodules
 ```
 
+We use relative [url](https://www.gniibe.org/memo/software/git/using-submodule.html) to improve experience for http protocol users.
+
 ### [Plog](https://github.com/SergiusTheBest/plog) logger
 
 Logger Plog is used for logging. It is licensed under the Mozilla Public License Version 2.0.
@@ -56,9 +58,9 @@ Logger Plog is used for logging. It is licensed under the Mozilla Public License
 
 Testing framework. Licensed under Boost Software License 1.0.
 
-### [Matrix template](ssh://git@gitlab.stimulate.ovgu.de:2200/robert-frysch/Matrix-Template.git)
+### [CTMAL](https://gitlab.stimulate.ovgu.de/vojtech.kulvait/CTMAL)
 
-Manipulations with matrices by Robert Frysch.
+Mathematic/Algebraic algorithms for supporting CT data manipulation.
 
 
 ## Documentation
