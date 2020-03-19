@@ -5,11 +5,12 @@ Currently, mainly the DEN format read/write is implemented.
 This repository actually contains one basic library and separate library that depends on ITK and header files.
 
 ## Cloning repository:
+
 Clone over ssh, for those with ssh keys ready in gitlab
 ```
 git clone ssh://git@gitlab.stimulate.ovgu.de:2200/vojtech.kulvait/CTIOL.git
 ```
-Basic clone over https
+Basic clone can be performed over https
 ```
 git clone https://gitlab.stimulate.ovgu.de/vojtech.kulvait/CTIOL.git
 ```
