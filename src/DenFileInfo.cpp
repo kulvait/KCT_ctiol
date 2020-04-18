@@ -22,6 +22,35 @@ namespace io {
 
     uint64_t DenFileInfo::getOffset() const { return offset; }
     bool DenFileInfo::isExtended() const { return extended; }
+    bool DenFileInfo::isValid() const
+    {
+        uint64_t fileSize = this->getSize();
+        uint64_t dataSize;
+        if(fileSize >= offset)
+        {
+            dataSize = this->getSize() - offset;
+        } else
+        {
+			return false;
+        }
+        uint64_t numPixels = this->getNumPixels();
+        if(dataSize == 0 && numPixels == 0)
+        {
+            return true;
+        }
+        if(dataSize < numPixels || dataSize % numPixels != 0)
+        {
+			return false;
+        }
+		uint64_t elmSize = dataSize / numPixels;
+		if(elmSize == 2 || elmSize == 4 || elmSize == 8)
+		{
+			return true;
+		}else
+		{
+			return false;
+		}
+    }
     /**X dimension*/
     uint32_t DenFileInfo::dimx() const
     {
@@ -119,39 +148,26 @@ namespace io {
 
     uint8_t DenFileInfo::elementByteSize() const
     {
+        std::string err;
+        uint64_t fileSize = this->getSize();
         uint64_t dataSize;
-        if(extended)
+        if(fileSize >= offset)
         {
-            dataSize = this->getSize() - 18;
+            dataSize = this->getSize() - offset;
         } else
         {
-            dataSize = this->getSize() - 6;
+            err = io::xprintf("File %s is not valid DEN file or extended DEN file, it does not "
+                              "have even correctly defined offset!",
+                              fileName.c_str());
+            LOGE << err;
+            throw std::runtime_error(err);
         }
         uint64_t numPixels = this->getNumPixels();
-        if(dataSize == 0)
+        if(dataSize == 0 && numPixels == 0)
         {
-            if(numPixels == 0)
-            {
-                return 0;
-            } else
-            {
-                std::stringstream errMsg;
-                errMsg << "File " << this->fileName << " is not valid DEN file.";
-                LOGE << errMsg.str();
-                throw std::runtime_error(errMsg.str());
-            }
+            return 0;
         }
-        if(dataSize < 0 || numPixels <= 0)
-        {
-            std::stringstream errMsg;
-            errMsg
-                << "File " << this->fileName
-                << " is not valid DEN file because it is shorter than 6 bytes or number of pixels "
-                   "is nonpositive.";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
-        }
-        if(dataSize % numPixels != 0)
+        if(dataSize < numPixels || dataSize % numPixels != 0)
         {
             std::stringstream errMsg;
             errMsg << "File " << this->fileName

@@ -27,6 +27,7 @@ namespace io {
         uint64_t getSize() const;
         uint64_t getNumPixels() const;
         bool isExtended() const;
+        bool isValid() const;
         uint64_t getOffset() const;
         DenSupportedType getDataType() const;
         uint8_t elementByteSize() const;

@@ -6,6 +6,7 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
+#include "DEN/DenFileInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
 
@@ -26,11 +27,28 @@ namespace io {
         mutable std::mutex writingMutex;
 
     public:
-        /*To write file is needed to specify its name and dimensions.*/
+        /**
+         *	Constructor using file name and sizeensions.
+         *	If file exists and have a same sizeensions, not overwrite but if it has different
+         *  dimensions, overwrites.
+         *
+         * @param projectionsFile
+         * @param sizex
+         * @param sizey
+         * @param sizez
+         */
         DenAsyncFrame2DWritter(std::string projectionsFile,
-                               uint32_t dimx,
-                               uint32_t dimy,
-                               uint32_t dimz);
+                               uint32_t sizex,
+                               uint32_t sizey,
+                               uint32_t sizez);
+
+        /**
+         * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
+         * zero the file.
+         *
+         * @param projectionsFile
+         */
+        DenAsyncFrame2DWritter(std::string projectionsFile);
 
         /**Writes i-th frame to the file.*/
         void writeFrame(const Frame2DI<T>& s, uint32_t i) override;
@@ -52,7 +70,9 @@ namespace io {
         /// Copy constructor
         DenAsyncFrame2DWritter(const DenAsyncFrame2DWritter<T>& b);
         // Copy assignment
-        DenAsyncFrame2DWritter<T>& operator=(const DenAsyncFrame2DWritter<T>& b);
+        DenAsyncFrame2DWritter<T>& operator=(const DenAsyncFrame2DWritter<T> b);
+        // Swap
+        static void swap(DenAsyncFrame2DWritter<T>& a, DenAsyncFrame2DWritter<T>& b);
         // Move constructor
         DenAsyncFrame2DWritter(DenAsyncFrame2DWritter<T>&& b);
         // Move assignment
@@ -103,7 +123,7 @@ namespace io {
             /*
                 LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
                                     projectionsFile.c_str(), totalFileSize);
-            */
+             */
         }
         uint8_t buf[18];
         if(extended)
@@ -125,12 +145,48 @@ namespace io {
         buffer = new uint8_t[sizeof(T) * this->dimx() * this->dimy()];
     }
 
+    template <typename T>
+    DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string projectionsFile)
+    {
+        std::string err;
+        if(!io::pathExists(projectionsFile))
+        {
+            err = io::xprintf("The file %s does not exist.", projectionsFile.c_str());
+            LOGE << err;
+            throw std::runtime_error(err);
+        }
+        io::DenFileInfo info(projectionsFile);
+        if(!info.isValid())
+        {
+            err = io::xprintf("The file %s is not valid DEN.", projectionsFile.c_str());
+            LOGE << err;
+            throw std::runtime_error(err);
+        }
+        uint64_t elementByteSize = sizeof(T);
+        if(info.elementByteSize() != elementByteSize)
+        {
+            err = io::xprintf("Element byte size %d of %s is incompatible with the size %d of "
+                              "current template type.",
+                              info.elementByteSize(), projectionsFile.c_str(), elementByteSize);
+            LOGE << err;
+            throw std::runtime_error(err);
+        }
+		extended = info.isExtended();
+        offset = info.getOffset();
+        this->projectionsFile = projectionsFile;
+        this->sizex = info.dimx();
+        this->sizey = info.dimy();
+        this->sizez = info.dimz();
+        buffer = new uint8_t[sizeof(T) * this->sizex * this->sizey];
+    }
+
     /// Guard for move constructor stealed objects
     template <typename T>
     DenAsyncFrame2DWritter<T>::~DenAsyncFrame2DWritter()
     {
         if(buffer != nullptr)
             delete[] buffer;
+        buffer = nullptr;
     }
 
     /// Copy constructor
@@ -144,24 +200,24 @@ namespace io {
     // Copy assignment
     template <typename T>
     DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::
-    operator=(const DenAsyncFrame2DWritter<T>& b)
+    operator=(const DenAsyncFrame2DWritter<T> b)
     {
         LOGD << "Caling Copy assignment constructor of DenAsyncFrame2DWritter";
-        if(&b != this) // To elegantly solve situation when assigning to itself
-        {
-            this->projectionsFile = b.projectionsFile;
-            this->sizex = b.dimx;
-            this->sizey = b.dimy;
-            this->sizez = b.dimz;
-            this->offset = offset;
-            this->extended = extended;
-            if(this->buffer != nullptr)
-            {
-                delete[] this->buffer;
-                this->buffer = nullptr;
-            }
-            this->buffer = new uint8_t[sizeof(T) * this->dimx() * this->dimy()];
-        }
+        swap(*this, b);
+        return *this;
+    }
+
+    template <typename T>
+    void DenAsyncFrame2DWritter<T>::swap(DenAsyncFrame2DWritter<T>& a,
+                                                DenAsyncFrame2DWritter<T>& b)
+    {
+        std::swap(a.projectionsFile, b.projectionsFile);
+        std::swap(a.sizex, b.sizex);
+        std::swap(a.sizey, b.sizey);
+        std::swap(a.sizez, b.sizez);
+        std::swap(a.offset, b.offset);
+        std::swap(a.extended, b.extended);
+        std::swap(a.buffer, b.buffer);
     }
 
     // Move constructor
@@ -170,13 +226,12 @@ namespace io {
     {
         LOGD << "Caling Move constructor of DenAsyncFrame2DWritter";
         this->projectionsFile = b.projectionsFile;
-        this->sizex = b.dimx;
-        this->sizey = b.dimy;
-        this->sizez = b.dimz;
+        this->sizex = b.sizex;
+        this->sizey = b.sizey;
+        this->sizez = b.sizez;
         this->offset = b.offset;
         this->extended = b.extended;
-        this->buffer = b.buffer;
-        b.buffer = nullptr;
+        this->buffer = std::exchange(b.buffer, nullptr);
     }
 
     // Move assignment
@@ -187,9 +242,9 @@ namespace io {
         if(&b != this) // To elegantly solve situation when assigning to itself
         {
             this->projectionsFile = b.projectionsFile;
-            this->sizex = b.dimx;
-            this->sizey = b.dimy;
-            this->sizez = b.dimz;
+            this->sizex = b.sizex;
+            this->sizey = b.sizey;
+            this->sizez = b.sizez;
             this->offset = b.offset;
             this->extended = b.extended;
             if(this->buffer != nullptr)
@@ -197,8 +252,7 @@ namespace io {
                 delete[] this->buffer;
                 this->buffer = nullptr;
             }
-            this->buffer = b.buffer;
-            b.buffer = nullptr;
+            this->buffer = std::exchange(b.buffer, nullptr);
         }
     }
 
