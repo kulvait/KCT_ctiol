@@ -2,8 +2,14 @@
 
 namespace CTL {
 namespace util {
+    uint32_t platformCount()
+    {
+        std::vector<cl::Platform> all_platforms;
+        cl::Platform::get(&all_platforms);
+        return all_platforms.size();
+    }
 
-    std::shared_ptr<cl::Platform> OpenCLManager::getPlatform(uint32_t id, bool verbose)
+    std::shared_ptr<cl::Platform> OpenCLManager::getPlatform(uint32_t platformID, bool verbose)
     {
         std::vector<cl::Platform> all_platforms;
         cl::Platform::get(&all_platforms);
@@ -29,8 +35,16 @@ namespace util {
         return std::make_shared<cl::Platform>(all_platforms[id]);
     }
 
+    uint32_t deviceCount(uint32_t platformID)
+    {
+        std::vector<cl::Device> all_devices;
+        std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
+        platform->getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+        return all_devices.size();
+    }
+
     std::shared_ptr<cl::Device>
-    OpenCLManager::getDevice(const cl::Platform& platform, uint32_t id, bool verbose)
+    OpenCLManager::getDevice(const cl::Platform& platform, uint32_t deviceID, bool verbose)
     {
         std::vector<cl::Device> all_devices;
         platform.getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
