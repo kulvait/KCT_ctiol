@@ -2,7 +2,7 @@
 
 namespace CTL {
 namespace util {
-    uint32_t platformCount()
+    uint32_t OpenCLManager::platformCount()
     {
         std::vector<cl::Platform> all_platforms;
         cl::Platform::get(&all_platforms);
@@ -18,24 +18,24 @@ namespace util {
             LOGE << "No platforms found. Check OpenCL installation!";
             return nullptr;
         }
-        if(all_platforms.size() <= id)
+        if(all_platforms.size() <= platformID)
         {
             LOGE << io::xprintf("There is just %d OpenCL platforms on the PC and you selected "
                                 "invalid zero based index %d.",
-                                all_platforms.size(), id);
+                                all_platforms.size(), platformID);
             return nullptr;
         }
         if(verbose)
         {
             LOGD << io::xprintf("There exists %d OpenCL platforms on the PC.",
                                 all_platforms.size());
-            LOGI << io::xprintf("Selected %d-th OpenCL platform: %s.", id,
-                                all_platforms[id].getInfo<CL_PLATFORM_NAME>().c_str());
+            LOGI << io::xprintf("Selected OpenCL platform %d: %s.", platformID,
+                                all_platforms[platformID].getInfo<CL_PLATFORM_NAME>().c_str());
         }
-        return std::make_shared<cl::Platform>(all_platforms[id]);
+        return std::make_shared<cl::Platform>(all_platforms[platformID]);
     }
 
-    uint32_t deviceCount(uint32_t platformID)
+    uint32_t OpenCLManager::deviceCount(uint32_t platformID)
     {
         std::vector<cl::Device> all_devices;
         std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
@@ -54,23 +54,23 @@ namespace util {
                                 platform.getInfo<CL_PLATFORM_NAME>().c_str());
             return nullptr;
         }
-        if(all_devices.size() <= id)
+        if(all_devices.size() <= deviceID)
         {
             LOGE << io::xprintf("There is just %d OpenCL devices on the platform %s and you "
                                 "selected invalid zero based index %d.",
                                 all_devices.size(), platform.getInfo<CL_PLATFORM_NAME>().c_str(),
-                                id);
+                                deviceID);
             return nullptr;
         }
         if(verbose)
         {
             LOGD << io::xprintf("There exists %d OpenCL devices for the platform %s.",
                                 all_devices.size(), platform.getInfo<CL_PLATFORM_NAME>().c_str());
-            LOGI << io::xprintf("Selected %d-th device on the platform %s: %s", id,
+            LOGI << io::xprintf("Selected device %d on the platform %s: %s", deviceID,
                                 platform.getInfo<CL_PLATFORM_NAME>().c_str(),
-                                all_devices[id].getInfo<CL_DEVICE_NAME>().c_str());
+                                all_devices[deviceID].getInfo<CL_DEVICE_NAME>().c_str());
         }
-        return std::make_shared<cl::Device>(all_devices[id]);
+        return std::make_shared<cl::Device>(all_devices[deviceID]);
     }
 
 } // namespace util
