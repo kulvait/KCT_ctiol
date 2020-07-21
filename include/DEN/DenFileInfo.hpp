@@ -18,6 +18,7 @@ namespace io {
     {
     public:
         DenFileInfo(std::string fileName);
+        std::string getFileName() const;
         uint32_t dimx() const;
         uint32_t dimy() const;
         uint32_t dimz() const;
@@ -291,7 +292,7 @@ namespace io {
         uint64_t dim_z = dimz();
         uint64_t totalSize = dim_x * dim_y * dim_z;
         uint64_t currentPosition;
-		uint32_t elementSize = elementByteSize();
+        uint32_t elementSize = elementByteSize();
         double sum = 0.0;
         double val;
         uint8_t* buffer = new uint8_t[dim_x * dim_y * elementByteSize()];
@@ -313,7 +314,7 @@ namespace io {
     double DenFileInfo::getVariance() const
     {
         DenSupportedType dataType = getDataType();
-		uint32_t elementSize = elementByteSize();
+        uint32_t elementSize = elementByteSize();
         uint64_t dim_x = dimx();
         uint64_t dim_y = dimy();
         uint64_t dim_z = dimz();

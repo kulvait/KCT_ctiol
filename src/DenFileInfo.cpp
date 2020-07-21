@@ -20,6 +20,8 @@ namespace io {
         }
     }
 
+    std::string DenFileInfo::getFileName() const { return this->fileName; }
+
     uint64_t DenFileInfo::getOffset() const { return offset; }
     bool DenFileInfo::isExtended() const { return extended; }
     bool DenFileInfo::isValid() const
@@ -31,7 +33,7 @@ namespace io {
             dataSize = this->getSize() - offset;
         } else
         {
-			return false;
+            return false;
         }
         uint64_t numPixels = this->getNumPixels();
         if(dataSize == 0 && numPixels == 0)
@@ -40,16 +42,16 @@ namespace io {
         }
         if(dataSize < numPixels || dataSize % numPixels != 0)
         {
-			return false;
+            return false;
         }
-		uint64_t elmSize = dataSize / numPixels;
-		if(elmSize == 2 || elmSize == 4 || elmSize == 8)
-		{
-			return true;
-		}else
-		{
-			return false;
-		}
+        uint64_t elmSize = dataSize / numPixels;
+        if(elmSize == 2 || elmSize == 4 || elmSize == 8)
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
     /**X dimension*/
     uint32_t DenFileInfo::dimx() const
