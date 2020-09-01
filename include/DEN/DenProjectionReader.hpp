@@ -129,7 +129,7 @@ namespace io {
         uint64_t position = this->offsetMatrix + ((uint64_t)sliceNum) * 3 * 4 * 8;
         io::readBytesFrom(this->projectionMatrixFile, position, buffer, 8 * 3 * 4);
         double matrixData[3 * 4];
-        for(int a = 0; a != 3 * 4; a++)
+        for(uint32_t a = 0; a != 3 * 4; a++)
         {
             matrixData[a] = util::nextDouble(&buffer[a * 8]);
         }
@@ -146,7 +146,7 @@ namespace io {
             = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];
-        for(int a = 0; a != sizex * sizey; a++)
+        for(uint32_t a = 0; a != sizex * sizey; a++)
         {
             buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
