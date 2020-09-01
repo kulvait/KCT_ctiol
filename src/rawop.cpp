@@ -54,7 +54,7 @@ namespace io {
         if(!file.is_open()) // cannot open file
         {
             std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << "failed with message" << strerror(errno)
+            errMsg << "Can not open file " << fileName << "failed with message: " << strerror(errno)
                    << ".";
             LOGE << errMsg.str();
             throw std::runtime_error(errMsg.str());
