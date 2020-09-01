@@ -1,6 +1,7 @@
 #pragma once
 
 // External
+#include <mutex>
 #include <string>
 
 // Internal
@@ -46,6 +47,9 @@ namespace io {
         uint32_t dimx() const override;
         uint32_t dimy() const override;
         uint32_t dimz() const override;
+
+    private:
+        mutable std::mutex matrixReadMutex;
     };
 
     template <typename T>
@@ -120,11 +124,14 @@ namespace io {
             data = np.fromfile(f, np.dtype('<f8'), 12)
             newdata = data.reshape((3, 4))
             return(newdata)
+                There was errors when multiple threads was reading the same part of memory.
+    Therefore I place mutex here
     */
     template <typename T>
     std::shared_ptr<matrix::ProjectionMatrix>
     DenProjectionReader<T>::readProjectionMatrix(int sliceNum)
     {
+        const std::lock_guard<std::mutex> lock(matrixReadMutex);
         uint8_t buffer[8 * 3 * 4];
         uint64_t position = this->offsetMatrix + ((uint64_t)sliceNum) * 3 * 4 * 8;
         io::readBytesFrom(this->projectionMatrixFile, position, buffer, 8 * 3 * 4);
