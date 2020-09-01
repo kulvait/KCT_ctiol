@@ -54,7 +54,8 @@ namespace io {
         if(!file.is_open()) // cannot open file
         {
             std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << ".";
+            errMsg << "Can not open file " << fileName << "failed with message" << strerror(errno)
+                   << ".";
             LOGE << errMsg.str();
             throw std::runtime_error(errMsg.str());
         }
@@ -184,7 +185,7 @@ namespace io {
     {
         return std::experimental::filesystem::is_directory(p);
     }
-	
+
     bool isRegularFile(const std::experimental::filesystem::path& p)
     {
         return std::experimental::filesystem::is_regular_file(p);
@@ -297,8 +298,8 @@ namespace io {
         {
             if(!isRegularFile(f))
             {
-                std::string ERR
-                    = io::xprintf("File %s from the files to concatenate is not regular file!", f.c_str());
+                std::string ERR = io::xprintf(
+                    "File %s from the files to concatenate is not regular file!", f.c_str());
                 LOGE << ERR;
                 throw std::ios_base::failure(ERR);
             }

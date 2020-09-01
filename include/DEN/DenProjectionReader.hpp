@@ -27,8 +27,8 @@ namespace io {
         std::string projectionMatrixFile;
         DenSupportedType dataType;
         uint32_t elementByteSize;
-		uint64_t offsetMatrix = 6;
-		uint64_t offsetProjections = 6;
+        uint64_t offsetMatrix = 6;
+        uint64_t offsetProjections = 6;
 
     public:
         DenProjectionReader(std::string projectionsFile, std::string projectionMatrixFile);
@@ -59,8 +59,8 @@ namespace io {
         this->sizex = pi.dimx();
         this->sizey = pi.dimy();
         this->sizez = pi.dimz();
-		this->offsetMatrix = mi.getOffset();
-		this->offsetProjections = mi.getOffset();
+        this->offsetMatrix = mi.getOffset();
+        this->offsetProjections = mi.getOffset();
         uint32_t cols, rows, matCount;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
@@ -142,7 +142,8 @@ namespace io {
     std::shared_ptr<io::Frame2DI<T>> DenProjectionReader<T>::readProjectionSlice(int sliceNum)
     {
         uint8_t* buffer = new uint8_t[elementByteSize * sizex * sizey];
-        uint64_t position = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position
+            = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         T* buffer_copy = new T[sizex * sizey];
         for(int a = 0; a != sizex * sizey; a++)
@@ -160,7 +161,8 @@ namespace io {
     void* DenProjectionReader<T>::readNakedMemory(int sliceNum)
     {
         uint8_t* buffer = new uint8_t[elementByteSize * sizex * sizey];
-        uint64_t position = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position
+            = this->offsetProjections + ((uint64_t)sliceNum) * elementByteSize * sizex * sizey;
         io::readBytesFrom(this->projectionsFile, position, buffer, elementByteSize * sizex * sizey);
         return buffer;
     }

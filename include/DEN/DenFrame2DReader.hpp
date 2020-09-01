@@ -50,13 +50,14 @@ namespace io {
         uint32_t dimz() const override;
         std::string getFileName() const;
         /**Returns file name of the underlying DEN file.**/
-	protected:
+    protected:
         std::string denFile;
         uint64_t offset;
         // protected: // Visible in inheritance structure
         uint32_t sizex, sizey, sizez;
         DenSupportedType dataType;
         int elementByteSize;
+
     private:
         mutable std::mutex* consistencyMutexes;
         uint8_t** buffers;
