@@ -35,6 +35,20 @@ namespace util {
         return std::make_shared<cl::Platform>(all_platforms[platformID]);
     }
 
+    std::string OpenCLManager::getPlatformName(uint32_t platformID)
+    {
+        std::vector<cl::Platform> all_platforms;
+        cl::Platform::get(&all_platforms);
+        if(all_platforms.size() <= platformID)
+        {
+            LOGE << io::xprintf("There is just %d OpenCL platforms on the PC and you selected "
+                                "invalplatformID zero based index %d.",
+                                all_platforms.size(), platformID);
+            return nullptr;
+        }
+        return all_platforms[platformID].getInfo<CL_PLATFORM_NAME>().c_str();
+    }
+
     uint32_t OpenCLManager::deviceCount(uint32_t platformID)
     {
         std::vector<cl::Device> all_devices;

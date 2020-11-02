@@ -15,7 +15,9 @@ namespace util {
     {
     public:
         static uint32_t platformCount();
-        static std::shared_ptr<cl::Platform> getPlatform(uint32_t platformID = 0, bool verbose = false);
+        static std::shared_ptr<cl::Platform> getPlatform(uint32_t platformID = 0,
+                                                         bool verbose = false);
+        static std::string getPlatformName(uint32_t platformID);
         static uint32_t deviceCount(uint32_t platformID);
         static std::shared_ptr<cl::Device>
         getDevice(const cl::Platform& platform, uint32_t deviceID = 0, bool verbose = false);
