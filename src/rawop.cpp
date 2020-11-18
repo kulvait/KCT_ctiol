@@ -286,6 +286,18 @@ namespace io {
                               bool overwrite,
                               std::initializer_list<std::string> inputFiles)
     {
+        std::vector<std::string> inputFilesVector;
+        for(std::string f : inputFiles)
+        {
+            inputFilesVector.push_back(f);
+        }
+        concatenateTextFiles(outputFile, overwrite, inputFilesVector);
+    }
+
+    void concatenateTextFiles(const std::string& outputFile,
+                              bool overwrite,
+                              std::vector<std::string>& inputFiles)
+    {
         if(pathExists(outputFile) && !overwrite)
         {
             std::string ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
