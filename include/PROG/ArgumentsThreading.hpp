@@ -10,12 +10,10 @@ public:
     ArgumentsThreading(int argc, char** argv, std::string prgName)
         : Arguments(argc, argv, prgName){};
 
-	uint32_t threads = 0;
+    uint32_t threads = 0;
 
 protected:
-    void addThreadingArgs(CLI::Option_group* og=nullptr);
-
+    void addThreadingArgs(CLI::Option_group* og = nullptr);
 };
 
 } // namespace CTL::util
-

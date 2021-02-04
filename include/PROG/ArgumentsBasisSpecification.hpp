@@ -45,11 +45,10 @@ public:
     bool halfPeriodicFunctions = false;
 
     CLI::Option_group* og_polynomial_basis = nullptr;
-	
-	CLI::Option_group* og_engineer_basis = nullptr;
-	bool fitSplinesToTheBasisBreakpoints = false;
-	float basisTimeShift = 0.0;
-	
+
+    CLI::Option_group* og_engineer_basis = nullptr;
+    bool fitSplinesToTheBasisBreakpoints = false;
+    float basisTimeShift = 0.0;
 
 protected:
     void addBasisSpecificationGroup();
