@@ -1,20 +1,20 @@
 #include "catch.hpp"
 
-//Internal libs
-#include "rawop.h"
-#include "stringFormatter.h"
+// Internal libs
 #include "DEN/DenFileInfo.hpp"
 #include "DEN/DenFrame2DReader.hpp"
 #include "PROG/RunTimeInfo.hpp"
 #include "littleEndianAlignment.h"
+#include "rawop.h"
+#include "stringFormatter.h"
 
 using namespace CTL;
 
-std::string basedir();//Defined in main file so that it will be accessible to linker
+std::string basedir(); // Defined in main file so that it will be accessible to linker
 
 TEST_CASE("TEST: CTL::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
 {
-	std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
+    std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
     io::DenFileInfo di(fileName);
     REQUIRE(di.getNumRows() == 3);
     REQUIRE(di.getNumCols() == 4);
@@ -30,8 +30,8 @@ TEST_CASE("TEST: CTL::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
 
 TEST_CASE("TEST: CTL::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
 {
-	std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
-	io::DenFrame2DReader<double> dfr(fileName);	
+    std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
+    io::DenFrame2DReader<double> dfr(fileName);
     REQUIRE(dfr.dimx() == 4);
     REQUIRE(dfr.dimy() == 3);
     REQUIRE(dfr.dimz() == 248);
