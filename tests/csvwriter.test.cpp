@@ -1,15 +1,15 @@
 #include "catch.hpp"
 // Internal libs
-#include "CSVWritter.hpp"
+#include "CSVWriter.hpp"
 
 using namespace CTL;
 
 std::string basedir(); // Defined in main file so that it will be accessible to linker
 
-TEST_CASE("TEST: CSVWritter", "[csvwritter][NOPRINT][NOVIZ]")
+TEST_CASE("TEST: CSVWriter", "[csvwritter][NOPRINT][NOVIZ]")
 {
     std::string fileName = "/tmp/test.csv";
-    io::CSVWritter csv(fileName, "\t", true);
+    io::CSVWriter csv(fileName, "\t", true);
     csv.writeLine("Ahoj");
     std::vector<double> val;
     for(int i = 0; i != 10; i++)

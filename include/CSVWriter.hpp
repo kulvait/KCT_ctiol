@@ -15,10 +15,10 @@ namespace io {
      *is called. The implementation might be also "fat implementation" that holds in memory
      *structure that source each call.
      */
-    class CSVWritter
+    class CSVWriter
     {
     public:
-        CSVWritter(std::string fileName, std::string separator, bool overwrite);
+        CSVWriter(std::string fileName, std::string separator, bool overwrite);
         void writeLine(std::string text);
         void writeText(std::string text);
         void writeSeparator();

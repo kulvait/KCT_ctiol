@@ -1,8 +1,8 @@
-#include "CSVWritter.hpp"
+#include "CSVWriter.hpp"
 
 using namespace CTL::io;
 
-CSVWritter::CSVWritter(std::string fileName, std::string separator, bool overwrite)
+CSVWriter::CSVWriter(std::string fileName, std::string separator, bool overwrite)
     : fileName(fileName)
     , separator(separator)
     , overwrite(overwrite)
@@ -23,18 +23,18 @@ CSVWritter::CSVWritter(std::string fileName, std::string separator, bool overwri
     }
 }
 
-void CSVWritter::writeText(std::string text) { ofs << text; }
+void CSVWriter::writeText(std::string text) { ofs << text; }
 
-void CSVWritter::writeLine(std::string text)
+void CSVWriter::writeLine(std::string text)
 {
     ofs << text;
     ofs << std::endl;
 }
 
-void CSVWritter::writeSeparator() { ofs << separator; }
-void CSVWritter::writeNewline() { ofs << std::endl; }
+void CSVWriter::writeSeparator() { ofs << separator; }
+void CSVWriter::writeNewline() { ofs << std::endl; }
 
-void CSVWritter::writeVector(std::string name, std::vector<double> vec)
+void CSVWriter::writeVector(std::string name, std::vector<double> vec)
 {
     writeText(name);
     for(double v : vec)
@@ -45,7 +45,7 @@ void CSVWritter::writeVector(std::string name, std::vector<double> vec)
     writeNewline();
 }
 
-void CSVWritter::close()
+void CSVWriter::close()
 {
     ofs.flush();
     ofs.close();
