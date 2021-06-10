@@ -28,6 +28,10 @@ namespace io {
         uint64_t getSize() const;
         uint64_t getNumPixels() const;
         bool isExtended() const;
+        // If true the array is sorted such that (x,y,z) = (0,0,0), (1,0,0), (0,1,0), (1,1,0),
+        // (0,0,1), (1,0,1), (0,1,1), (1,1,1)  If false the array is sorted such that (x,y,z) =
+        // (0,0,0), (0,1,0), (1,0,0), (1,1,0), (0,0,1), (0,1,1), (1,0,1) (1,1,1)
+        bool hasXMajorAlignment() const;
         bool isValid() const;
         uint64_t getOffset() const;
         DenSupportedType getDataType() const;
@@ -49,6 +53,7 @@ namespace io {
         // that the offset is 18 bytes and dimensions are stored in 6..9, 10..13 and 14..17 bytes as
         // uint32_t
         bool extended = false;
+        bool XMajorAlignment = true;
         uint64_t offset = 6;
     };
 

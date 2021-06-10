@@ -44,16 +44,18 @@ namespace io {
         DenFrame2DReader<T>& operator=(DenFrame2DReader<T>&& other);
         std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) override;
         std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(unsigned int i);
-        void readFrameIntoBuffer(unsigned int frameID, T* outside_buffer);
+        void
+        readFrameIntoBuffer(unsigned int frameID, T* outside_buffer, bool XMajorAlignment = true);
         uint32_t dimx() const override;
         uint32_t dimy() const override;
         uint32_t dimz() const override;
         std::string getFileName() const;
         /**Returns file name of the underlying DEN file.**/
     protected:
+        // protected: // Visible in inheritance structure
         std::string denFile;
         uint64_t offset;
-        // protected: // Visible in inheritance structure
+        bool XMajorAlignment;
         uint32_t sizex, sizey, sizez;
         DenSupportedType dataType;
         int elementByteSize;
@@ -75,6 +77,7 @@ namespace io {
         this->sizex = pi.dimx();
         this->sizey = pi.dimy();
         this->sizez = pi.dimz();
+        this->XMajorAlignment = pi.hasXMajorAlignment();
         this->dataType = pi.getDataType();
         this->elementByteSize = pi.elementByteSize();
         this->consistencyMutexes = new std::mutex[1 + additionalBufferNum];
@@ -85,8 +88,8 @@ namespace io {
             this->buffers[i] = new uint8_t[elementByteSize * sizex * sizey];
             this->buffer_copys[i] = new T[sizex * sizey];
         }
-        // Buffers are used for the alocation of new frames. Since this class uses the instance that
-        // copies memory, this memory might me reused.
+        // Buffers are used for the alocation of new frames. Since this class uses the
+        // instance that copies memory, this memory might me reused.
     }
 
     // This mumbo jumbo is for correctly deleting object after move assignment operation was
@@ -291,9 +294,22 @@ namespace io {
         uint32_t elmCount = sizex * sizey;
         uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * elmCount;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
-        for(uint32_t a = 0; a != elmCount; a++)
+        if(this->XMajorAlignment)
         {
-            buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+            for(uint32_t a = 0; a != elmCount; a++)
+            {
+                buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+            }
+        } else
+        { // Frame2D is implemented as row major container
+            for(uint32_t x = 0; x != sizex; x++)
+            {
+                for(uint32_t y = 0; y != sizey; y++)
+                {
+                    buffer_copy[x + sizex * y] = util::getNextElement<T>(
+                        &buffer[(y + sizey * x) * elementByteSize], dataType);
+                }
+            }
         }
         std::shared_ptr<BufferedFrame2D<T>> ps
             = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
@@ -301,7 +317,9 @@ namespace io {
     }
 
     template <typename T>
-    void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID, T* outside_buffer)
+    void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID,
+                                                  T* outside_buffer,
+                                                  bool XMajorAlignment)
     {
         std::unique_lock<std::mutex> l;
         bool locked = false;
@@ -327,9 +345,37 @@ namespace io {
         uint32_t elmCount = sizex * sizey;
         uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * elmCount;
         io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
-        for(uint32_t a = 0; a != elmCount; a++)
+        if(XMajorAlignment == this->XMajorAlignment)
         {
-            outside_buffer[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+            for(uint32_t a = 0; a != elmCount; a++)
+            {
+                outside_buffer[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+            }
+        } else
+        {
+            uint32_t innerIndex, outerIndex;
+            for(uint32_t x = 0; x != sizex; x++)
+            {
+                for(uint32_t y = 0; y != sizey; y++)
+                {
+                    if(this->XMajorAlignment)
+                    {
+                        innerIndex = x + sizex * y;
+                    } else
+                    {
+                        innerIndex = y + sizey * x;
+                    }
+                    if(XMajorAlignment)
+                    {
+                        outerIndex = x + sizex * y;
+                    } else
+                    {
+                        outerIndex = y + sizey * x;
+                    }
+                    outside_buffer[outerIndex]
+                        = util::getNextElement<T>(&buffer[innerIndex * elementByteSize], dataType);
+                }
+            }
         }
     }
 } // namespace io

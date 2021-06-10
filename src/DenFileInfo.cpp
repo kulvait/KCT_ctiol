@@ -6,17 +6,57 @@ namespace io {
     DenFileInfo::DenFileInfo(std::string fileName)
         : fileName(fileName)
     {
+        std::string ERR;
         uint8_t buffer[6];
         readBytesFrom(this->fileName, 0, buffer, 6);
-        if(util::nextUint16(buffer) == 0 && util::nextUint16(buffer + 2) == 0
-           && util::nextUint16(buffer + 4) == 0 && getSize() > 6)
+        uint32_t dimx, dimy, dimz;
+        uint64_t byteSize;
+        dimy = util::nextUint16(buffer);
+        dimx = util::nextUint16(buffer + 2);
+        dimz = util::nextUint16(buffer + 4);
+        byteSize = getSize();
+        // When dimx and dimy are 0 but Size is gt 6, we have extended format
+        if(dimx == 0 && dimy == 0 && byteSize > 6)
         {
+            if(dimz == 0)
+            { // In extended format dimz==0 means X major format
+                XMajorAlignment = true;
+            } else if(dimz == 1)
+            { // In extended format dimz==1 means Y major format
+                XMajorAlignment = false;
+            } else
+            {
+                ERR = io::xprintf("The file %s is not DEN nor DEN extended file as there is "
+                                  "signature dimy=%d, dimx=%d, dimz=%d and size %d that is not "
+                                  "valid combination.",
+                                  fileName.c_str(), dimy, dimx, dimz, byteSize);
+                LOGE << ERR;
+                throw std::runtime_error(ERR);
+            }
+            uint8_t buffer[12];
+            readBytesFrom(this->fileName, 6, buffer, 12);
+            dimy = util::nextUint32(buffer);
+            dimx = util::nextUint32(buffer + 4);
+            dimz = util::nextUint32(buffer + 8);
             extended = true;
             offset = 18;
         } else
         {
             extended = false;
+            XMajorAlignment = true;
             offset = 6;
+        }
+        byteSize -= offset;
+        uint64_t elementNum = (uint64_t)dimx * dimy * dimz;
+        if(elementNum * 2 != byteSize && elementNum * 4 != byteSize && elementNum * 8 != byteSize)
+        {
+            ERR = io::xprintf(
+                "The file %s is not DEN nor DEN extended file as there is "
+                "signature dimy=%d, dimx=%d, dimz=%d and size without header %d that is not "
+                "valid combination.",
+                fileName.c_str(), dimy, dimx, dimz, byteSize);
+            LOGE << ERR;
+            throw std::runtime_error(ERR);
         }
     }
 
@@ -24,6 +64,7 @@ namespace io {
 
     uint64_t DenFileInfo::getOffset() const { return offset; }
     bool DenFileInfo::isExtended() const { return extended; }
+    bool DenFileInfo::hasXMajorAlignment() const { return XMajorAlignment; }
     bool DenFileInfo::isValid() const
     {
         uint64_t fileSize = this->getSize();
