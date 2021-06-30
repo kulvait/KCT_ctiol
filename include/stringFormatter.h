@@ -27,13 +27,32 @@
 
 namespace CTL {
 namespace io {
-    std::string xprintf_va(const std::string fmt_str, va_list ap);
     std::string xprintf(const std::string fmt_str, ...);
-    std::string xprintf_red(const std::string fmt_str, ...);
-    std::string xprintf_green(const std::string fmt_str, ...);
-    std::string xprintf_blue(const std::string fmt_str, ...);
-    std::string xprintf_yellow(const std::string fmt_str, ...);
-    std::string xprintf_magenta(const std::string fmt_str, ...);
+    template <typename... Args>
+    std::string xprintf_red(const std::string fmt_str, Args... args)
+    {   
+        return xprintf(RED + fmt_str + RESET, args...);
+    }   
+    template <typename... Args>
+    std::string xprintf_green(const std::string fmt_str, Args... args)
+    {   
+        return xprintf(GREEN + fmt_str + RESET, args...);
+    }   
+    template <typename... Args>
+    std::string xprintf_blue(const std::string fmt_str, Args... args)
+    {   
+        return xprintf(BLUE + fmt_str + RESET, args...);
+    }   
+    template <typename... Args>
+    std::string xprintf_yellow(const std::string fmt_str, Args... args)
+    {   
+        return xprintf(YELLOW + fmt_str + RESET, args...);
+    }   
+    template <typename... Args>
+    std::string xprintf_magenta(const std::string fmt_str, Args... args)
+    {   
+        return xprintf(MAGENTA + fmt_str + RESET, args...);
+    }   
     void throwerr(const std::string fmt_str, ...);
 } // namespace io
 } // namespace CTL
