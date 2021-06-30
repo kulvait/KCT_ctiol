@@ -171,7 +171,7 @@ namespace io {
             LOGE << err;
             throw std::runtime_error(err);
         }
-		extended = info.isExtended();
+        extended = info.isExtended();
         offset = info.getOffset();
         this->projectionsFile = projectionsFile;
         this->sizex = info.dimx();
@@ -208,8 +208,7 @@ namespace io {
     }
 
     template <typename T>
-    void DenAsyncFrame2DWritter<T>::swap(DenAsyncFrame2DWritter<T>& a,
-                                                DenAsyncFrame2DWritter<T>& b)
+    void DenAsyncFrame2DWritter<T>::swap(DenAsyncFrame2DWritter<T>& a, DenAsyncFrame2DWritter<T>& b)
     {
         std::swap(a.projectionsFile, b.projectionsFile);
         std::swap(a.sizex, b.sizex);
