@@ -34,7 +34,7 @@ namespace io {
     template <typename... Args>
     std::string xprintf_red(const std::string fmt_str, Args... args)
     {
-        if(!isatty(fileno(stdin)))
+        if(!isatty(fileno(stdout)))
         {
             return xprintf(fmt_str, args...);
         }
@@ -44,7 +44,7 @@ namespace io {
     template <typename... Args>
     std::string xprintf_green(const std::string fmt_str, Args... args)
     {
-        if(!isatty(fileno(stdin)))
+        if(!isatty(fileno(stdout)))
         {
             return xprintf(fmt_str, args...);
         }
@@ -54,7 +54,7 @@ namespace io {
 
     std::string xprintf_blue(const std::string fmt_str, Args... args)
     {
-        if(!isatty(fileno(stdin)))
+        if(!isatty(fileno(stdout)))
         {
             return xprintf(fmt_str, args...);
         }
@@ -64,7 +64,7 @@ namespace io {
     template <typename... Args>
     std::string xprintf_yellow(const std::string fmt_str, Args... args)
     {
-        if(!isatty(fileno(stdin)))
+        if(!isatty(fileno(stdout)))
         {
             return xprintf(fmt_str, args...);
         }
@@ -74,7 +74,7 @@ namespace io {
     template <typename... Args>
     std::string xprintf_magenta(const std::string fmt_str, Args... args)
     {
-        if(!isatty(fileno(stdin)))
+        if(!isatty(fileno(stdout)))
         {
             return xprintf(fmt_str, args...);
         }
