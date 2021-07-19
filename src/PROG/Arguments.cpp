@@ -2,11 +2,12 @@
 
 namespace CTL::util {
 
-Arguments::Arguments(int argc, char* argv[], std::string appName)
+Arguments::Arguments(int argc, char* argv[], std::string prgInfo)
     : argc(argc)
     , argv(argv)
+    , prgInfo(prgInfo)
 {
-    cliApp = std::make_shared<CLI::App>(appName);
+    cliApp = std::make_shared<CLI::App>(prgInfo);
 }
 
 int Arguments::parse(bool helpOnError)
