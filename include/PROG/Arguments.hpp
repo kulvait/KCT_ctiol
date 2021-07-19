@@ -30,10 +30,10 @@ public:
 
 protected:
     std::shared_ptr<CLI::App> cliApp;
-    std::string prgInfo;
     std::map<std::string, CLI::Option_group*> cliOptionGroups;
     std::map<std::string, CLI::Option*> cliOptions;
     int argc;
     char** argv;
+    std::string prgInfo;
 };
 } // namespace CTL::util
