@@ -126,9 +126,9 @@ namespace io {
          *
          *The object itself is not modified.
          */
-        std::shared_ptr<io::Frame2DI<T>> transposed()
+        std::shared_ptr<io::BufferedFrame2D<T>> transposed()
         {
-            std::shared_ptr<io::Frame2DI<T>> ft
+            std::shared_ptr<io::BufferedFrame2D<T>> ft
                 = std::make_shared<BufferedFrame2D<T>>(nullptr, sizey, sizex);
             for(int x = 0; x != sizex; x++)
                 for(int y = 0; y != sizey; y++)
@@ -144,7 +144,7 @@ namespace io {
          *Dangerous operation since it is structure managed by the object.
          *This array is destroyed after the object is destroyed.
          */
-        void* getDataPointer() { return (void*)slice; }
+        T* getDataPointer() { return slice; }
 
     private:
         T* slice;
