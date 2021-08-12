@@ -131,9 +131,9 @@ namespace io {
             util::putUint16(0, &buf[0]);
             util::putUint16(0, &buf[2]);
             util::putUint16(0, &buf[4]);
-            util::putUint32(dimy, &buf[0]);
-            util::putUint32(dimx, &buf[2]);
-            util::putUint32(dimz, &buf[4]);
+            util::putUint32(dimy, &buf[6]);
+            util::putUint32(dimx, &buf[10]);
+            util::putUint32(dimz, &buf[14]);
             io::writeFirstBytes(projectionsFile, buf, 18);
         } else
         {
