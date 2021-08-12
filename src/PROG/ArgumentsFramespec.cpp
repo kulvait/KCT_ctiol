@@ -32,6 +32,10 @@ void ArgumentsFramespec::addFramespecArgs()
 void ArgumentsFramespec::fillFramesVector(uint32_t dimz)
 {
     frames.clear();
+    if(frameSpecification != "" || reverseOrder || eachKth > 1)
+    {
+        framesSpecified = true;
+    }
     frames = processFramesSpecification(frameSpecification, dimz);
     if(reverseOrder)
     {
@@ -51,8 +55,8 @@ void ArgumentsFramespec::fillFramesVector(uint32_t dimz)
     }
 }
 
-std::vector<int>
-ArgumentsFramespec::processFramesSpecification(std::string frameSpecification, int dimz)
+std::vector<int> ArgumentsFramespec::processFramesSpecification(std::string frameSpecification,
+                                                                int dimz)
 {
     // Remove spaces
     frameSpecification.erase(
