@@ -370,5 +370,32 @@ namespace io {
         }
         return nfc;
     }
+
+    /**Number of nonzero values in the Frame2DI.
+     *
+     *For uint16 is always 0.
+     *For floats or doubles it calls isfinite on every element. Val returned is umber of nonfinites.
+     *From std::isfinite reference: Determines if the given floating point number arg has finite
+     *value i.e. it is normal, subnormal or zero, but not infinite or NaN.
+     *
+     */
+    template <typename T>
+    uint64_t sumNonzeroValues(const Frame2DI<T>& f)
+    {
+        uint32_t dimx = f.dimx();
+        uint32_t dimy = f.dimy();
+        uint64_t sum = 0;
+        for(uint32_t i = 0; i != dimx; i++)
+        {
+            for(uint32_t j = 0; j != dimy; j++)
+            {
+                if(f.get(i, j) != T(0))
+                {
+                    sum++;
+                }
+            }
+        }
+        return sum;
+    }
 } // namespace io
 } // namespace CTL
