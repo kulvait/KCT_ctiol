@@ -6,7 +6,7 @@
 	url = https://github.com/catchorg/Catch2.git
 [submodule "submodules/CTMAL"]
 	path = submodules/CTMAL
-	url = git@bitbucket.org:kulvait/kct_ctmal.git
+	url = ../kct_ctmal.git
 [submodule "submodules/CLI11"]
 	path = submodules/CLI11
 	url = https://github.com/CLIUtils/CLI11
