@@ -46,6 +46,13 @@ namespace io {
         double getMean() const;
         template <typename T>
         double getVariance() const;
+        static void
+        createDenHeader(std::string fileName, uint32_t dimx, uint32_t dimy, uint32_t dimz);
+        static void createDenExtendedHeader(std::string fileName,
+                                            uint32_t dimx,
+                                            uint32_t dimy,
+                                            uint32_t dimz,
+                                            bool XMajorAlignment = true);
 
     private:
         std::string fileName;

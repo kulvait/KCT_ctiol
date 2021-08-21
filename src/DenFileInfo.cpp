@@ -237,5 +237,52 @@ namespace io {
         }
     }
 
+    void
+    DenFileInfo::createDenHeader(std::string fileName, uint32_t dimx, uint32_t dimy, uint32_t dimz)
+    {
+        uint32_t uint16max = 65535;
+        uint8_t buf[18];
+        io::createEmptyFile(fileName, 0, true);
+        if(dimx <= uint16max && dimy <= uint16max && dimz <= uint16max)
+        {
+            util::putUint16((uint16_t)dimy, &buf[0]);
+            util::putUint16((uint16_t)dimx, &buf[2]);
+            util::putUint16((uint16_t)dimz, &buf[4]);
+            io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)6);
+        } else
+        {
+            util::putUint16(0, &buf[0]);
+            util::putUint16(0, &buf[2]);
+            util::putUint16(0, &buf[4]);
+            util::putUint32(dimy, &buf[6]);
+            util::putUint32(dimx, &buf[10]);
+            util::putUint32(dimz, &buf[14]);
+            io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)18);
+        }
+    }
+
+    void DenFileInfo::createDenExtendedHeader(std::string fileName,
+                                                     uint32_t dimx,
+                                                     uint32_t dimy,
+                                                     uint32_t dimz,
+                                                     bool XMajorAlignment)
+    {
+        uint8_t buf[18];
+        io::createEmptyFile(fileName, 0, true);
+        util::putUint16(0, &buf[0]);
+        util::putUint16(0, &buf[2]);
+        if(XMajorAlignment)//Default
+        {
+            util::putUint16(0, &buf[4]);
+        } else
+        {
+            util::putUint16(0, &buf[4]);
+        }
+        util::putUint32(dimy, &buf[6]);
+        util::putUint32(dimx, &buf[10]);
+        util::putUint32(dimz, &buf[14]);
+        io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)18);
+    }
+
 } // namespace io
 } // namespace CTL
