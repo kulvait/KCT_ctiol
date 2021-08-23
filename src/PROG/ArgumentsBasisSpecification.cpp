@@ -188,9 +188,18 @@ void ArgumentsBasisSpecification::addEngineerBasisSpecificationArgs()
 {
 
     addEngineerBasisSpecificationGroup();
-    og_engineer_basis->add_flag("--spline-fit", fitSplinesToTheBasisBreakpoints,
-                                "Fit splines instead of step functions.");
-    og_engineer_basis->add_option(
-        "--basis-time-shift", basisTimeShift,
-        "Time shift applied to the basis functions relative to the requested time of evaluation.");
+    std::string optstr;
+    optstr = "Fit splines instead of step functions [defaults to";
+    if(fitSplinesToTheBasisBreakpoints)
+    {
+        optstr = optstr + " true].";
+    } else
+    {
+        optstr = optstr + " false].";
+    }
+    og_engineer_basis->add_flag("--spline-fit", fitSplinesToTheBasisBreakpoints, optstr);
+    optstr = io::xprintf("Time shift applied to the basis functions relative to the requested time "
+                         "of evaluation [defaults to %f].",
+                         basisTimeShift);
+    og_engineer_basis->add_option("--basis-time-shift", basisTimeShift, optstr);
 }
