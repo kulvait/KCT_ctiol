@@ -9,7 +9,7 @@
 #include "rawop.h"
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace util {
     /**
      * @brief Class to provide run time information.
@@ -44,4 +44,4 @@ namespace util {
         std::string executablePath;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

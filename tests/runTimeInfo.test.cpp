@@ -3,7 +3,7 @@
 #include <plog/Log.h>
 #include "PROG/RunTimeInfo.hpp"
 #include "PROG/Program.hpp"
-using namespace CTL;
+using namespace KCT;
 
 TEST_CASE("TEST: RunTimeInfo.hpp", "[RunTimeInfo][Program]")
 {

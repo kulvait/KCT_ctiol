@@ -27,7 +27,7 @@
 #define BOLDWHITE "\033[1m\033[37m" /* Bold White */
 #endif
 
-namespace CTL {
+namespace KCT {
 namespace io {
     std::string xprintf(const std::string fmt_str, ...);
 
@@ -83,4 +83,4 @@ namespace io {
 
     void throwerr(const std::string fmt_str, ...);
 } // namespace io
-} // namespace CTL
+} // namespace KCT

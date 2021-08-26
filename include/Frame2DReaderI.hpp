@@ -4,7 +4,7 @@
 // Internal libraries
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading Frame2D objects.
@@ -27,4 +27,4 @@ namespace io {
         /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

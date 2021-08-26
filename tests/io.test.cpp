@@ -8,11 +8,11 @@
 #include "rawop.h"
 #include "stringFormatter.h"
 
-using namespace CTL;
+using namespace KCT;
 
 std::string basedir(); // Defined in main file so that it will be accessible to linker
 
-TEST_CASE("TEST: CTL::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
+TEST_CASE("TEST: KCT::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
 {
     std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
     io::DenFileInfo di(fileName);
@@ -28,7 +28,7 @@ TEST_CASE("TEST: CTL::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
     REQUIRE(di.elementByteSize() == 8);
 }
 
-TEST_CASE("TEST: CTL::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
+TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
 {
     std::string fileName = io::xprintf("%s/tests/testFiles/CAMERA.matrices", basedir().c_str());
     io::DenFrame2DReader<double> dfr(fileName);

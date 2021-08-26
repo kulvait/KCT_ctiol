@@ -1,6 +1,6 @@
 #include "PROG/parseArgs.h"
 
-namespace CTL {
+namespace KCT {
 namespace util {
 
     std::vector<int> processFramesSpecification(std::string frameSpecification, int dimz)
@@ -71,4 +71,4 @@ namespace util {
     }
 
 } // namespace util
-} // namespace CTL
+} // namespace KCT

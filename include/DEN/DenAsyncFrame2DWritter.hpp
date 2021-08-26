@@ -10,7 +10,7 @@
 #include "littleEndianAlignment.h"
 #include "rawop.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
     Interface for writing images. It is not necessery to write matrices along them.
@@ -298,4 +298,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

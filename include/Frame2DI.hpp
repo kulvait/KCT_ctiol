@@ -2,7 +2,7 @@
 
 #include "DEN/DenSupportedType.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /** Interface to access one two dimensional slice of the multidimensional source data
      *
@@ -30,4 +30,4 @@ namespace io {
         virtual uint32_t dimy() const = 0;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

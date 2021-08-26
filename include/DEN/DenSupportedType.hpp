@@ -4,7 +4,7 @@
 
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
     enum DenSupportedType { uint16_t_, float_, double_ };
@@ -43,4 +43,4 @@ namespace io {
 #pragma GCC diagnostic pop
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

@@ -10,7 +10,7 @@
 #include "CTIOL.h"
 #include "PROG/RunTimeInfo.hpp"
 
-using namespace CTL;
+using namespace KCT;
 
 std::string basedir();
 

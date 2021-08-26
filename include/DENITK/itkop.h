@@ -10,7 +10,7 @@
 // Internal
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     template <typename T>
     int writeImage(typename itk::Image<T, 2>::Pointer img, std::string outputFile);
@@ -31,4 +31,4 @@ namespace io {
                          double minvalue = std::numeric_limits<double>::infinity(),
                          double maxvalue = -std::numeric_limits<double>::infinity());
 } // namespace io
-} // namespace CTL
+} // namespace KCT

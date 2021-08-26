@@ -1,6 +1,6 @@
 #include "PROG/RunTimeInfo.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace util {
     RunTimeInfo::RunTimeInfo()
         : RunTimeInfo(0, nullptr)
@@ -30,4 +30,4 @@ namespace util {
     std::string RunTimeInfo::getExecutableDirectoryPath() { return io::getParent(executablePath); }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

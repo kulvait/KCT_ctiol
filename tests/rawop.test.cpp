@@ -9,7 +9,7 @@
 // Internal libs
 #include "CTIOL.h"
 
-using namespace CTL;
+using namespace KCT;
 
 std::string basedir();//Included in main
 

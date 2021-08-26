@@ -9,7 +9,7 @@
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
 #pragma GCC diagnostic push
@@ -398,4 +398,4 @@ namespace io {
         return sum;
     }
 } // namespace io
-} // namespace CTL
+} // namespace KCT

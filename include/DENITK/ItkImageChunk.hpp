@@ -2,7 +2,7 @@
 
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /// Interface to read one two dimensional slice of the multidimensional source data
     /**
@@ -47,4 +47,4 @@ namespace io {
         }
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

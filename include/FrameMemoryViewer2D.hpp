@@ -3,7 +3,7 @@
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /** Provide view of the memory in the form of Frame2DI. Do not manage the memory.
      *
@@ -43,4 +43,4 @@ namespace io {
         int sizex, sizey;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

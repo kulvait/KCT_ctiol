@@ -1,6 +1,6 @@
 #include "DEN/DenFileInfo.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**Constructor*/
     DenFileInfo::DenFileInfo(std::string fileName)
@@ -285,4 +285,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

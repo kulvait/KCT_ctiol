@@ -18,7 +18,7 @@
 #include "DENITK/AsyncFrame2DWritterItkI.hpp"
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
     template <typename T>
@@ -381,4 +381,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

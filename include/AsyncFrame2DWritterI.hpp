@@ -3,7 +3,7 @@
 // Internal libraries
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
     Interface for writing images. It is not necessery to write matrices along them.
@@ -25,4 +25,4 @@ namespace io {
         virtual uint32_t dimz() const = 0;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

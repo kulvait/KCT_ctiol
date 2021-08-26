@@ -6,7 +6,7 @@
 //#include "matrix.h"
 #include "MATRIX/ProjectionMatrix.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading projections and related projection matrices in the format specified in
@@ -33,4 +33,4 @@ namespace io {
         /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

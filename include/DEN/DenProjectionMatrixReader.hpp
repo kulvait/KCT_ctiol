@@ -6,7 +6,7 @@
 #include "DEN/DenFileInfo.hpp"
 #include "ProjectionMatrixReaderI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading Projection matrices objects.
@@ -31,4 +31,4 @@ namespace io {
         uint32_t count() const override;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

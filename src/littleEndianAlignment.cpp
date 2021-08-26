@@ -1,6 +1,6 @@
 #include "littleEndianAlignment.h"
 
-namespace CTL {
+namespace KCT {
 namespace util {
     // I decided to put data into the char* array instead of uint8_t* for the systems where byte
     // size is not 8bit, where reading should work bite wise and alignment considerations raised by
@@ -126,4 +126,4 @@ namespace util {
     }
 
 } // namespace util
-} // namespace CTL
+} // namespace KCT

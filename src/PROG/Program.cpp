@@ -1,6 +1,6 @@
 #include "PROG/Program.hpp"
 
-namespace CTL::util {
+namespace KCT::util {
 
 Program::Program(
     int argc, char* argv[], plog::Severity debugLevel, bool logToFile, bool logToConsole)
@@ -67,4 +67,4 @@ void Program::endLog(bool reportTimings)
 
 util::RunTimeInfo Program::getRunTimeInfo() { return rti; }
 
-} // namespace CTL::util
+} // namespace KCT::util

@@ -6,7 +6,7 @@
 // Internal
 #include "DENITK/Frame2DReaderItkI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      * Chunk2D reader implementation that is also capable to read these chunks as ITK images.
@@ -65,4 +65,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

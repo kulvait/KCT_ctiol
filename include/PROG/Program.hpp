@@ -4,7 +4,7 @@
 #include "PROG/RunTimeInfo.hpp"
 #include "PLOG/PlogSetup.h"
 
-namespace CTL::util {
+namespace KCT::util {
 
 class Program
 {
@@ -21,4 +21,4 @@ private:
 	int argc;
 	char ** argv;
 };
-} // namespace CTL
+} // namespace KCT

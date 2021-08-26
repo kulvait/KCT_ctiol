@@ -4,7 +4,7 @@
 // Internal libraries
 #include "MATRIX/ProjectionMatrix.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading projection matrices.
@@ -22,4 +22,4 @@ namespace io {
         virtual unsigned int count() const = 0;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

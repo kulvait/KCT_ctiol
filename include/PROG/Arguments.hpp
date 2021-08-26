@@ -3,7 +3,7 @@
 #include "CLI/CLI.hpp" //Command line parser
 #include "PROG/parseArgs.h"
 
-namespace CTL::util {
+namespace KCT::util {
 
 class Arguments
 {
@@ -36,4 +36,4 @@ protected:
     char** argv;
     std::string prgInfo;
 };
-} // namespace CTL::util
+} // namespace KCT::util

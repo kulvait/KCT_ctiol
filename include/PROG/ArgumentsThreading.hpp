@@ -3,7 +3,7 @@
 #include "CLI/CLI.hpp" //Command line parser
 #include "PROG/Arguments.hpp"
 
-namespace CTL::util {
+namespace KCT::util {
 class ArgumentsThreading : public virtual Arguments
 {
 public:
@@ -16,4 +16,4 @@ protected:
     void addThreadingArgs(CLI::Option_group* og = nullptr);
 };
 
-} // namespace CTL::util
+} // namespace KCT::util

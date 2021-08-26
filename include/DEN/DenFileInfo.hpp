@@ -11,7 +11,7 @@
 #include "DEN/DenSupportedType.hpp"
 #include "rawop.h" //To get number of rows...
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
     class DenFileInfo
@@ -351,4 +351,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

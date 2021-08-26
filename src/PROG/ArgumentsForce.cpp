@@ -1,7 +1,7 @@
 #include "PROG/ArgumentsForce.hpp" //Command line parser
 
-using namespace CTL;
-using namespace CTL::util;
+using namespace KCT;
+using namespace KCT::util;
 
 void ArgumentsForce::addForceArgs()
 {

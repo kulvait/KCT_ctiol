@@ -1,7 +1,7 @@
 #include "DENITK/itkop.h"
 #include "frameop.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
     template <typename T>
@@ -254,4 +254,4 @@ namespace io {
                                          double minvalue,
                                          double maxvalue);
 } // namespace io
-} // namespace CTL
+} // namespace KCT

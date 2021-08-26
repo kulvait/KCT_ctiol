@@ -3,7 +3,7 @@
 // Internal
 #include "Frame2DI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**Implementation of Frame2DI in the underlying structure of naked array.
      *
@@ -151,4 +151,4 @@ namespace io {
         int sizex, sizey;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

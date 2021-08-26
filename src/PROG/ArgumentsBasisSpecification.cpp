@@ -1,7 +1,7 @@
 #include "PROG/ArgumentsBasisSpecification.hpp"
 
-using namespace CTL;
-using namespace CTL::util;
+using namespace KCT;
+using namespace KCT::util;
 
 void ArgumentsBasisSpecification::addBasisSpecificationGroup()
 {

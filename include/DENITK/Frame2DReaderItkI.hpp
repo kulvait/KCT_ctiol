@@ -8,7 +8,7 @@
 // Internal libraries
 #include "Frame2DReaderI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading frames from sources with a posibility to interpret them as ITK images.
@@ -27,4 +27,4 @@ namespace io {
         /*Returns i-th frame in the source as itk::Image<T,2>.*/
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

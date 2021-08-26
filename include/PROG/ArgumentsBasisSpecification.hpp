@@ -3,7 +3,7 @@
 #include "CLI/CLI.hpp" //Command line parser
 #include "PROG/Arguments.hpp"
 
-namespace CTL::util {
+namespace KCT::util {
 // Using virtual inheritance to include only one copy of Arguments class into the pegigree
 class ArgumentsBasisSpecification : public virtual Arguments
 {
@@ -65,4 +65,4 @@ protected:
 private:
 };
 
-} // namespace CTL::util
+} // namespace KCT::util

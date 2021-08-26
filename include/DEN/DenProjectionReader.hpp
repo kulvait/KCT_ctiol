@@ -12,7 +12,7 @@
 #include "MATRIX/ProjectionMatrix.hpp"
 #include "ProjectionReaderI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      * Implementation of the ProjectionReader for projections and projection matrices stored in the
@@ -175,4 +175,4 @@ namespace io {
     }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

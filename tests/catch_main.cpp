@@ -3,7 +3,7 @@
 #include "PROG/RunTimeInfo.hpp"
 #include "catch.hpp"
 
-using namespace CTL;
+using namespace KCT;
 
 int main(int argc, char* argv[])
 {

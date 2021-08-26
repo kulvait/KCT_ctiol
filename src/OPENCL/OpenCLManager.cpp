@@ -1,6 +1,6 @@
 #include "OPENCL/OpenCLManager.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace util {
     uint32_t OpenCLManager::platformCount()
     {
@@ -88,4 +88,4 @@ namespace util {
     }
 
 } // namespace util
-} // namespace CTL
+} // namespace KCT

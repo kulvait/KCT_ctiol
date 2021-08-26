@@ -3,7 +3,7 @@
 #include "CLI/CLI.hpp" //Command line parser
 #include "PROG/Arguments.hpp"
 
-namespace CTL::util {
+namespace KCT::util {
 // Virtual inheritance to have only one instance of Arguments in the pedigree
 class ArgumentsForce : public virtual Arguments
 {
@@ -17,4 +17,4 @@ protected:
     void addForceArgs();
 };
 
-} // namespace CTL::util
+} // namespace KCT::util

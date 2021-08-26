@@ -1,7 +1,7 @@
 // Logging on the top
 #include "rawop.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
 
     void readFirstBytes(std::string fileName, uint8_t* buffer, int numBytes)
@@ -322,4 +322,4 @@ namespace io {
         ofs.close();
     }
 } // namespace io
-} // namespace CTL
+} // namespace KCT

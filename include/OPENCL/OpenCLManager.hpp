@@ -9,7 +9,7 @@
 // Internal libraries
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace util {
     class OpenCLManager
     {
@@ -23,4 +23,4 @@ namespace util {
         getDevice(const cl::Platform& platform, uint32_t deviceID = 0, bool verbose = false);
     };
 } // namespace util
-} // namespace CTL
+} // namespace KCT

@@ -1,6 +1,6 @@
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**Formats string in a printf way and returns std::string as a result.
      */
@@ -55,4 +55,4 @@ namespace io {
         throw std::runtime_error(msg);
     }
 } // namespace io
-} // namespace CTL
+} // namespace KCT

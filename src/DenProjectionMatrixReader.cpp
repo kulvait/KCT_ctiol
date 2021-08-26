@@ -1,6 +1,6 @@
 #include "DEN/DenProjectionMatrixReader.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     DenProjectionMatrixReader::DenProjectionMatrixReader(std::string projectionMatrixFile)
     {
@@ -43,4 +43,4 @@ namespace io {
     uint32_t DenProjectionMatrixReader::count() const { return countMatrices; }
 
 } // namespace io
-} // namespace CTL
+} // namespace KCT

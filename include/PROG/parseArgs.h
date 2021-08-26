@@ -16,8 +16,8 @@
 #include <string>
 #include <vector>
 
-namespace CTL {
+namespace KCT {
 namespace util {
     std::vector<int> processFramesSpecification(std::string frameSpecification, int dimz);
 }
-} // namespace CTL
+} // namespace KCT

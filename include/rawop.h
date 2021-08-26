@@ -16,7 +16,7 @@
 #include "littleEndianAlignment.h"
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     void readFirstBytes(std::string fileName, uint8_t* buffer, int numBytes);
     void readBytesFrom(std::string fileName,
@@ -61,4 +61,4 @@ namespace io {
                               bool overwrite,
                               std::vector<std::string>& inputFiles);
 } // namespace io
-} // namespace CTL
+} // namespace KCT

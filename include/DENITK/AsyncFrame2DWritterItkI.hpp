@@ -4,7 +4,7 @@
 #include "itkImage.h"
 // Internal libraries
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
     Interface for writing images. It is not necessery to write matrices along them.
@@ -26,4 +26,4 @@ namespace io {
         /**Returns y dimension.*/
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

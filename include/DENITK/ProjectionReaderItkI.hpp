@@ -10,7 +10,7 @@
 #include "MATRIX/ProjectionMatrix.hpp"
 #include "ProjectionReaderI.hpp"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading projections and related projection matrices in the format specified in
@@ -30,4 +30,4 @@ namespace io {
         /*Returns i-th projection slice in the source as itk::Image<T,2>.*/
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

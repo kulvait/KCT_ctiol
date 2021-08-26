@@ -1,6 +1,6 @@
 #include "PROG/Arguments.hpp"
 
-namespace CTL::util {
+namespace KCT::util {
 
 Arguments::Arguments(int argc, char* argv[], std::string prgInfo)
     : argc(argc)
@@ -95,4 +95,4 @@ CLI::Option* Arguments::getRegisteredOption(std::string optName)
     }
 }
 
-} // namespace CTL::util
+} // namespace KCT::util

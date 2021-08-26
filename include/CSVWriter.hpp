@@ -6,7 +6,7 @@
 // Internal libraries
 #include "rawop.h"
 
-namespace CTL {
+namespace KCT {
 namespace io {
     /**
      *Interface for reading Frame2D objects.
@@ -33,4 +33,4 @@ namespace io {
         std::ofstream ofs;
     };
 } // namespace io
-} // namespace CTL
+} // namespace KCT

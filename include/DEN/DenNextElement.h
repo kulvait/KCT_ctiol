@@ -12,7 +12,7 @@
 #include "littleEndianAlignment.h"
 #include "stringFormatter.h"
 
-namespace CTL {
+namespace KCT {
 namespace util {
 
     template <typename T>
@@ -34,4 +34,4 @@ namespace util {
         }
     }
 } // namespace util
-} // namespace CTL
+} // namespace KCT

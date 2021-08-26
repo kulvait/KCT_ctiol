@@ -7,7 +7,7 @@
 #include <cstring>
 #include <string>
 
-namespace CTL {
+namespace KCT {
 namespace util {
 
     uint8_t nextUint8(uint8_t* buffer);
@@ -50,4 +50,4 @@ namespace util {
     }
 
 } // namespace util
-} // namespace CTL
+} // namespace KCT

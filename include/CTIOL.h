@@ -1,12 +1,12 @@
 #pragma once
-/**All headers of the CTL::io*/
+/**All headers of the KCT::io*/
 // Types without internal dependence
 #include "DEN/DenSupportedType.hpp" //Data type used in DEN file, INCLUDES NOTHING
 
 // Headers of functions
 #include "stringFormatter.h" //Formating strings, INCLUDES NOTHING
 // Ghost #include "utils/convertEndians.h" //includes io/DenSupportedType.hpp, io/stringFormatter.h
-#include "rawop.h" //Raw reading of the part file into the uint8_t buffer Functions:readBytesFrom, includes from CTL: utils/convertEndians.h(io/DenSupportedType.hpp, io/stringFormatter.h)
+#include "rawop.h" //Raw reading of the part file into the uint8_t buffer Functions:readBytesFrom, includes from KCT: utils/convertEndians.h(io/DenSupportedType.hpp, io/stringFormatter.h)
 
 // Classes
 #include "DEN/DenFileInfo.hpp" //Provide information about particular den file, includes io/DenSupportedType.hpp, io/rawop.h, utils/convertEndians.h, io/DenSupportedType.hpp, io/stringFormatter.h

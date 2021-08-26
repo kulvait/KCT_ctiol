@@ -1,7 +1,7 @@
 #include "PROG/ArgumentsThreading.hpp" //Command line parser
 
-using namespace CTL;
-using namespace CTL::util;
+using namespace KCT;
+using namespace KCT::util;
 
 void ArgumentsThreading::addThreadingArgs(CLI::Option_group* og)
 {

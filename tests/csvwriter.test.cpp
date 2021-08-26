@@ -2,7 +2,7 @@
 // Internal libs
 #include "CSVWriter.hpp"
 
-using namespace CTL;
+using namespace KCT;
 
 std::string basedir(); // Defined in main file so that it will be accessible to linker
 

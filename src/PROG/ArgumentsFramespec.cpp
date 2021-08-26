@@ -1,7 +1,7 @@
 #include "PROG/ArgumentsFramespec.hpp" //Command line parser
 
-using namespace CTL;
-using namespace CTL::util;
+using namespace KCT;
+using namespace KCT::util;
 
 void ArgumentsFramespec::addFramespecArgs()
 {
