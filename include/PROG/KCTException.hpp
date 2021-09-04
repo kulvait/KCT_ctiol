@@ -1,36 +1,40 @@
 #pragma once
-#include <exception>
 #include "stringFormatter.h"
+#include <exception>
 
 // https://stackoverflow.com/questions/2849832/c-c-line-number
-#define KCTERR(msg) throw KCT::util::CBCTException(msg, __FILE__, __LINE__, __func__);
+#define KCTERR(msg) throw KCT::util::KCTException(msg, __FILE__, __LINE__, __func__);
 
 namespace KCT::util {
+using namespace std;
 
 class KCTException : public exception
 {
     const char* file;
-    int line;
+    const int line;
     const char* function;
-    const char* info;
+    const std::string msg;
+    const std::string returnedMessage;
 
 public:
-    KCTException(const char* msg, const char* file, int line, const char* function)
-        : std::exception(msg)
-        , file(file)
+    KCTException(std::string& msg, const char* file, int line, const char* function)
+        : file(file)
         , line(line)
         , function(function)
-        , info(msg)
+        , msg(msg)
+        , returnedMessage(
+              io::xprintf("KCTException in [%s@%s:%d]: %s", function, file, line, msg.c_str()))
     {
     }
 
     const char* get_file() const { return file; }
     int get_line() const { return line; }
     const char* get_function() const { return function; }
-    const char* get_info() const { return info; }
+    const std::string get_msg() const { return msg; }
     const char* what() const throw()
     {
-        return io::xprintf("%s:%d %s: Exception %s", file, line, function, info);
+        // Do not return c_str() of the string that gets destructed, ex returned from io::xprintf
+        return returnedMessage.c_str();
     }
 };
 } // namespace KCT::util
