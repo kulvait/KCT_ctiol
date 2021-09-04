@@ -7,7 +7,7 @@
 
 namespace KCT::util {
 
-struct KCTException : public exception
+class KCTException : public exception
 {
     const char* file;
     int line;
