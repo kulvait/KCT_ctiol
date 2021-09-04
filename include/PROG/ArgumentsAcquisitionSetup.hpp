@@ -12,7 +12,7 @@ public:
         : Arguments(argc, argv, prgName){};
 
     // Acquisition setup parameters
-   CLI::Option_group* og_acquisition = nullptr;
+    CLI::Option_group* og_acquisition = nullptr;
     /**
      *Size of pause between sweeps [ms].
      *
@@ -27,11 +27,12 @@ public:
      */
     float frame_time = 16.8;
     uint32_t sweep_count = 10;
-	uint32_t angles_per_sweep = 248;
+    uint32_t angles_per_sweep = 248;
 
 protected:
     void addCarmAcquisitionSetupGroup();
-    void addCarmAcquisitionSetupArgs(bool sweepCountAsConfigurableArgument = false, bool anglesPerSweepAsConfigurableArgument = false);
+    void addCarmAcquisitionSetupArgs(bool sweepCountAsConfigurableArgument = false,
+                                     bool anglesPerSweepAsConfigurableArgument = false);
 
 private:
 };
