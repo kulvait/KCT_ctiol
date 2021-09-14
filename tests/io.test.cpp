@@ -3,6 +3,7 @@
 // Internal libs
 #include "DEN/DenFileInfo.hpp"
 #include "DEN/DenFrame2DReader.hpp"
+#include "PROG/KCTException.hpp"
 #include "PROG/RunTimeInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
@@ -35,4 +36,17 @@ TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
     REQUIRE(dfr.dimx() == 4);
     REQUIRE(dfr.dimy() == 3);
     REQUIRE(dfr.dimz() == 248);
+}
+
+TEST_CASE("TEST: KCT::io::KCTException", "[NOPRINT][NOVIZ]")
+{
+    std::string msg = "Test exception handling";
+    try
+    {
+        KCTERR(msg);
+    } catch(util::KCTException& e)
+    {
+        std::string str = e.get_msg();
+        REQUIRE(str.find(msg) != std::string::npos);
+    }
 }

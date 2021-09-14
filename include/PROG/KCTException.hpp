@@ -30,7 +30,7 @@ public:
     const char* get_file() const { return file; }
     int get_line() const { return line; }
     const char* get_function() const { return function; }
-    const std::string get_msg() const { return msg; }
+    const std::string& get_msg() const { return msg; }
     const char* what() const throw()
     {
         // Do not return c_str() of the string that gets destructed, ex returned from io::xprintf
