@@ -27,9 +27,6 @@ namespace io {
             if(buffer != nullptr)
             {
                 memcpy(this->slice, buffer, sizex * sizey * sizeof(T));
-            } else
-            {
-                LOGD << "Created BufferedFrame2D without actual data inside.";
             }
             this->sizex = sizex;
             this->sizey = sizey;
