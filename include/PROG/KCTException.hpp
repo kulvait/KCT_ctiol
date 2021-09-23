@@ -17,7 +17,7 @@ class KCTException : public exception
     const std::string returnedMessage;
 
 public:
-    KCTException(std::string& msg, const char* file, int line, const char* function)
+    KCTException(std::string msg, const char* file, int line, const char* function)
         : file(file)
         , line(line)
         , function(function)
