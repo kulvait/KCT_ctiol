@@ -71,7 +71,8 @@ void ArgumentsBasisSpecification::addOutsideBasisSpecificationGroup()
 }
 
 void ArgumentsBasisSpecification::addBasisSpecificationArgs(bool includeBasisSize,
-                                                            bool includeBasisSetSelectionArgs)
+                                                            bool includeBasisSetSelectionArgs,
+                                                            bool includeFittingOptions)
 {
     addBasisSpecificationGroup();
     std::string optstr;
@@ -108,53 +109,57 @@ void ArgumentsBasisSpecification::addBasisSpecificationArgs(bool includeBasisSiz
                      ->check(CLI::Range(1, 65535));
         registerOption("basis_size", option);
     }
-    optstr = io::xprintf(
-        "From frame_time and pause_size is computed the scan time and time of "
-        "acquisition of particular frames. In reality time dynamics might apply after "
-        "some delay from the acquisition of the first frame due to the mask image or "
-        "contrast delay. This parameter controls the lenght of the time interval [ms] "
-        "from the start of the acquisition to the time when the basis functions are "
-        "used to estimate dynamics. Before this time basis functions are considered "
-        "having the same value as at the beggining of their support [defaults to %.1f].",
-        start_offset);
-    option = og_basis->add_option("-i,--start-offset", start_offset, optstr)
-                 ->check(CLI::Range(0.0, 100000.0));
-    registerOption("start_offset", option);
+    if(includeFittingOptions)
+    {
+        optstr = io::xprintf(
+            "From frame_time and pause_size is computed the scan time and time of "
+            "acquisition of particular frames. In reality time dynamics might apply after "
+            "some delay from the acquisition of the first frame due to the mask image or "
+            "contrast delay. This parameter controls the lenght of the time interval [ms] "
+            "from the start of the acquisition to the time when the basis functions are "
+            "used to estimate dynamics. Before this time basis functions are considered "
+            "having the same value as at the beggining of their support [defaults to %.1f].",
+            start_offset);
+        option = og_basis->add_option("-i,--start-offset", start_offset, optstr)
+                     ->check(CLI::Range(0.0, 100000.0));
+        registerOption("start_offset", option);
 
-    optstr = io::xprintf(
-        "From frame_time and pause_size is computed the scan time and time of the "
-        "acquisition of particular frames. In reality we can assume that time dynamic "
-        "does not affect the beginning and the end of the acquisition. This parameter "
-        "controls the length of the time interval [ms] before the end of the "
-        "acquisition in which all basis functions are considered having the same value "
-        "as at the end of their support [defaults to %.1f].",
-        end_offset);
-    option = og_basis->add_option("-e,--end-offset", end_offset, optstr)
-                 ->check(CLI::Range(0.0, 100000.0));
-    registerOption("end_offset", option);
-    addOutsideBasisSpecificationGroup();
-    optstr
-        = io::xprintf("In the interval outside [start_offset, acquisition - end_offset] is still "
-                      "performed the fitting when the parameter is false, when the parameter is "
-                      "true, data outside of this interval is not used at all [defaults to %s].",
-                      removeOutsideInterval ? "true" : "false");
-    option = og_outside_basis->add_flag("--remove-outside-interval", removeOutsideInterval, optstr);
-    registerOption("remove_outside_interval", option);
+        optstr = io::xprintf(
+            "From frame_time and pause_size is computed the scan time and time of the "
+            "acquisition of particular frames. In reality we can assume that time dynamic "
+            "does not affect the beginning and the end of the acquisition. This parameter "
+            "controls the length of the time interval [ms] before the end of the "
+            "acquisition in which all basis functions are considered having the same value "
+            "as at the end of their support [defaults to %.1f].",
+            end_offset);
+        option = og_basis->add_option("-e,--end-offset", end_offset, optstr)
+                     ->check(CLI::Range(0.0, 100000.0));
+        registerOption("end_offset", option);
+        addOutsideBasisSpecificationGroup();
+        optstr = io::xprintf(
+            "In the interval outside [start_offset, acquisition - end_offset] is still "
+            "performed the fitting when the parameter is false, when the parameter is "
+            "true, data outside of this interval is not used at all [defaults to %s].",
+            removeOutsideInterval ? "true" : "false");
+        option = og_outside_basis->add_flag("--remove-outside-interval", removeOutsideInterval,
+                                            optstr);
+        registerOption("remove_outside_interval", option);
 
-    optstr = io::xprintf("Data outside interval are fitted on the first function endinterval, "
-                         "other functions zero [defaults to %s].",
-                         constantOutsideInterval ? "true" : "false");
-    option = og_outside_basis->add_flag("--constant-outside-interval", constantOutsideInterval,
-                                        optstr);
-    registerOption("constant_outside_interval", option);
+        optstr = io::xprintf("Data outside interval are fitted on the first function endinterval, "
+                             "other functions zero [defaults to %s].",
+                             constantOutsideInterval ? "true" : "false");
+        option = og_outside_basis->add_flag("--constant-outside-interval", constantOutsideInterval,
+                                            optstr);
+        registerOption("constant_outside_interval", option);
 
-    optstr = io::xprintf(
-        "Extended endvalues of the basis functions outside interval [defaults to %s].",
-        endvalueOutsideInterval ? "true" : "false");
-    option = og_outside_basis->add_flag("--endvalue-outside-interval", endvalueOutsideInterval,
-                                        optstr);
-    registerOption("endvalue_outside_interval", option);
-    og_outside_basis->require_option(1);
+        optstr = io::xprintf(
+            "Extended endvalues of the basis functions outside interval [defaults to %s].",
+            endvalueOutsideInterval ? "true" : "false");
+        option = og_outside_basis->add_flag("--endvalue-outside-interval", endvalueOutsideInterval,
+                                            optstr);
+        registerOption("endvalue_outside_interval", option);
+        og_outside_basis->require_option(1);
+    }
 }
 
 void ArgumentsBasisSpecification::addFourierBasisSpecificationArgs()
