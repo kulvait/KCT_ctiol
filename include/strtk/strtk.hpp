@@ -1248,7 +1248,8 @@ inline std::size_t remove_inplace(Predicate predicate, const range::adapter<T>& 
 template <typename Predicate,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline std::size_t remove_inplace(Predicate predicate, Sequence<T, Allocator>& sequence)
 {
     const std::size_t removal_count = remove_inplace(predicate, sequence.begin(), sequence.end());
@@ -1356,7 +1357,7 @@ namespace details {
 #else
     inline std::size_t strnlength(const char* s, const std::size_t& n) { return strnlen(s, n); }
 #endif
-}
+} // namespace details
 
 inline void remove_consecutives_inplace(const char* rem_chars, std::string& s)
 {
@@ -2079,7 +2080,8 @@ inline std::size_t find_all(const Iterator pattern_begin,
 template <typename Iterator,
           typename Range,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline std::size_t find_all(const Iterator pattern_begin,
                             const Iterator pattern_end,
                             const Iterator begin,
@@ -4341,8 +4343,7 @@ convert_bin_to_base64(const unsigned char* begin, const unsigned char* end, unsi
     {
         switch(rounds)
         {
-        case 1:
-        {
+        case 1: {
             unsigned int block = (unsigned char)(*itr) << 16;
             *(out++) = bin_to_base64[(block >> 18) & 0x3F];
             *(out++) = bin_to_base64[(block >> 12) & 0x3F];
@@ -4351,8 +4352,7 @@ convert_bin_to_base64(const unsigned char* begin, const unsigned char* end, unsi
         }
         break;
 
-        case 2:
-        {
+        case 2: {
             unsigned int block = *(itr++) << 16;
             block |= *(itr++) << 8;
             *(out++) = bin_to_base64[(block >> 18) & 0x3F];
@@ -4451,16 +4451,14 @@ convert_base64_to_bin(const unsigned char* begin, const unsigned char* end, unsi
     {
         switch(remainder)
         {
-        case 2:
-        {
+        case 2: {
             unsigned int block = base64_to_bin[*(itr++)] << 18;
             block |= base64_to_bin[*(itr++)] << 12;
             (*out) = static_cast<unsigned char>((block >> 16) & 0xFF);
         }
         break;
 
-        case 3:
-        {
+        case 3: {
             unsigned int block = base64_to_bin[*(itr++)] << 18;
             block |= base64_to_bin[*(itr++)] << 12;
             block |= base64_to_bin[*(itr++)] << 6;
@@ -8590,7 +8588,8 @@ inline std::size_t parse(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline std::size_t parse(const std::pair<InputIterator, InputIterator>& range,
                          const std::string& delimiters,
                          Sequence<T, Allocator>& sequence,
@@ -8713,7 +8712,8 @@ namespace details {
         template <typename T,
                   typename Comparator,
                   typename Allocator,
-                  template <typename, typename, typename> class Set>
+                  template <typename, typename, typename>
+                  class Set>
         class set_adder_impl : public container_adder_base
         {
         public:
@@ -8814,7 +8814,7 @@ namespace details {
         template <typename T, typename Comparator, typename Allocator>
         container_adder(std::multiset<T, Comparator, Allocator>& multiset)
             : container_adder_base_(
-                  new(buffer) set_adder_impl<T, Comparator, Allocator, std::multiset>(multiset))
+                new(buffer) set_adder_impl<T, Comparator, Allocator, std::multiset>(multiset))
         {
         }
 
@@ -9500,7 +9500,8 @@ inline std::size_t parse_n(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline std::size_t parse_n(const std::pair<InputIterator, InputIterator>& range,
                            const std::string& delimiters,
                            const std::size_t& n,
@@ -11287,7 +11288,8 @@ inline void join_if(std::string& output,
 template <typename T,
           typename Predicate,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline void join_if(std::string& output,
                     const std::string& delimiter,
                     Predicate predicate,
@@ -11340,7 +11342,8 @@ inline std::string join_if(const std::string& delimiter,
 template <typename T,
           typename Predicate,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline std::string
 join_if(const std::string& delimiter, Predicate predicate, const Sequence<T, Allocator>& sequence)
 {
@@ -11955,7 +11958,8 @@ inline void random_permutation(const Iterator begin,
 
 template <typename T,
           typename Allocator,
-          template <typename, typename> class Sequence,
+          template <typename, typename>
+          class Sequence,
           typename OutputIterator>
 inline void random_permutation(const Sequence<T, Allocator>& sequence,
                                OutputIterator out,
@@ -12007,7 +12011,8 @@ inline void random_combination(const Iterator begin,
 
 template <typename T,
           typename Allocator,
-          template <typename, typename> class Sequence,
+          template <typename, typename>
+          class Sequence,
           typename OutputIterator>
 inline void random_combination(const Sequence<T, Allocator>& sequence,
                                const std::size_t& set_size,
@@ -13544,8 +13549,7 @@ namespace fast {
         switch(n)
         {
 #define case_stmt(N)                                                                               \
-    case N:                                                                                        \
-    {                                                                                              \
+    case N: {                                                                                      \
         details::numeric_convert_impl<T, Iterator, N>::process(itr, t);                            \
         return true;                                                                               \
     }
@@ -13631,7 +13635,7 @@ namespace binary {
             static const bool __le_result = false;
             static const bool __be_result = true;
 #endif
-        }
+        } // namespace details_endian
 
         static inline bool is_little_endian()
         {
@@ -18305,7 +18309,8 @@ public:
 
     template <typename DelimiterPredicate,
               typename Allocator,
-              template <typename, typename> class Sequence>
+              template <typename, typename>
+              class Sequence>
     inline std::size_t split(const DelimiterPredicate& p,
                              Sequence<std::string, Allocator>& seq,
                              const split_options::type split_option
@@ -18326,7 +18331,8 @@ public:
 
     template <typename DelimiterPredicate,
               typename Allocator,
-              template <typename, typename> class Sequence>
+              template <typename, typename>
+              class Sequence>
     inline std::size_t split_n(const DelimiterPredicate& p,
                                const std::size_t& n,
                                Sequence<std::string, Allocator>& seq,
@@ -21547,7 +21553,8 @@ namespace util {
               typename Comparator,
               typename MapAllocator,
               typename SequenceAllocator,
-              template <typename, typename> class Sequence>
+              template <typename, typename>
+              class Sequence>
     inline void make_value_list(const std::multimap<Key, T, Comparator, MapAllocator>& map,
                                 const Key& key,
                                 Sequence<T, SequenceAllocator>& sequence)
@@ -21633,7 +21640,8 @@ namespace util {
     template <typename Predicate,
               typename T,
               typename Allocator,
-              template <typename, typename> class Sequence>
+              template <typename, typename>
+              class Sequence>
     inline void delete_if(const Predicate& p, Sequence<T*, Allocator>& sequence)
     {
         typename Sequence<T*, Allocator>::iterator itr = sequence.begin();
@@ -23399,7 +23407,8 @@ namespace details {
 template <std::size_t N,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline typename details::compose_st_selector_impl<T, N>::type
 column_selector(const details::column_list_impl<N>& col_list, Sequence<T, Allocator>& seq)
 {
@@ -23765,7 +23774,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23782,7 +23792,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23799,7 +23810,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23815,7 +23827,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23831,7 +23844,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23847,7 +23861,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23862,7 +23877,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23877,7 +23893,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23892,7 +23909,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23906,7 +23924,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23920,7 +23939,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,
@@ -23934,7 +23954,8 @@ inline bool parse_columns(const InputIterator begin,
 template <typename InputIterator,
           typename T,
           typename Allocator,
-          template <typename, typename> class Sequence>
+          template <typename, typename>
+          class Sequence>
 inline bool parse_columns(const InputIterator begin,
                           const InputIterator end,
                           const std::string& delimiters,

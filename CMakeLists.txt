@@ -15,6 +15,7 @@ set(BUILD_SHARED_LIBS True)
 #ITK
 find_package(ITK)
 IF(ITK_FOUND)
+	add_compile_definitions(WITHITK)
 	include( ${ITK_USE_FILE} )
 ENDIF()
 
@@ -145,7 +146,9 @@ FILE( GLOB TST_SRC ${CMAKE_SOURCE_DIR}/tests/*.cpp )
 add_executable(test_ctiol ${TST_SRC})
 target_link_libraries(test_ctiol Catch)
 target_link_libraries(test_ctiol CTIOL)
+IF(ITK_FOUND)
 target_link_libraries(test_ctiol CTIOL_DENITK)
+ENDIF()
 target_link_libraries(test_ctiol ctmal)
 target_link_libraries(test_ctiol stdc++fs)
 add_custom_target(formatWebkit

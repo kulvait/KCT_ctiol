@@ -54,7 +54,9 @@ protected:
     void addBasisSpecificationGroup();
     void addOutsideBasisSpecificationGroup();
     void addBasisTypeGroup();
-    void addBasisSpecificationArgs(bool includeBasisSize, bool includeBasisSetSelectionArgs, bool includeFittingOptions = true);
+    void addBasisSpecificationArgs(bool includeBasisSize,
+                                   bool includeBasisSetSelectionArgs,
+                                   bool includeFittingOptions = true);
     void addFourierBasisSpecificationGroup();
     void addFourierBasisSpecificationArgs();
     void addPolynomialBasisSpecificationGroup();

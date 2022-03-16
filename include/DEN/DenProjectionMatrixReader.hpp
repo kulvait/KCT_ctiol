@@ -20,7 +20,7 @@ namespace io {
     private:
         std::string projectionMatrixFile;
         uint32_t countMatrices;
-		uint64_t offset;
+        uint64_t offset;
 
     public:
         DenProjectionMatrixReader(std::string projectionMatrixFile);

@@ -78,8 +78,8 @@ namespace io {
 
     private:
         T* buffer;
-		uint64_t offsetMatrix = 6;
-		uint64_t offsetProjections = 6;
+        uint64_t offsetMatrix = 6;
+        uint64_t offsetProjections = 6;
     };
 
     template <typename T>
@@ -94,8 +94,8 @@ namespace io {
         this->sizey = pi.getNumRows();
         this->sizex = pi.getNumCols();
         this->sizez = pi.getNumSlices();
-		this->offsetMatrix = mi.getOffset();
-		this->offsetProjections = mi.getOffset();
+        this->offsetMatrix = mi.getOffset();
+        this->offsetProjections = mi.getOffset();
         int cols, rows, matCount;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
@@ -182,7 +182,8 @@ namespace io {
     template <typename T>
     std::shared_ptr<io::Frame2DI<T>> DenProjectionNakedReader<T>::readProjectionSlice(int sliceNum)
     {
-        uint64_t position = this->offsetProjections + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
+        uint64_t position
+            = this->offsetProjections + uint64_t(sliceNum) * elementByteSize * sizex * sizey;
         uint8_t* tmp = new uint8_t[elementByteSize * sizex * sizey];
         io::readBytesFrom(this->projectionsFile, position, tmp, elementByteSize * sizex * sizey);
         for(int a = 0; a != sizex * sizey; a++)

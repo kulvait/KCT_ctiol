@@ -40,7 +40,8 @@ namespace io {
         typename itk::RawImageIO<T, 2>::Pointer rawImageIO = itk::RawImageIO<T, 2>::New();
         rawImageIO->SetFileName(this->getFileName()); //(1) ... this is probably unnecessery
         rawImageIO->SetFileTypeToBinary();
-        rawImageIO->SetHeaderSize(this->offset + i * this->elementByteSize * (this->sizex * this->sizey));
+        rawImageIO->SetHeaderSize(this->offset
+                                  + i * this->elementByteSize * (this->sizex * this->sizey));
         rawImageIO->SetFileDimensionality(2);
 
         rawImageIO->SetOrigin(0, 0.0); // origin in millimeters

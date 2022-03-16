@@ -98,7 +98,7 @@ namespace io {
         {
             if(&other != this)
             {
-                if(this.slice != nullptr)
+                if(this->slice != nullptr)
                 {
                     delete[] this->slice;
                 }

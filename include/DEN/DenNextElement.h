@@ -28,7 +28,7 @@ namespace util {
             return nextDouble(buffer);
         default:
             std::string errMsg
-                = io::xprintf("Unsupported data type %s.", io::DenSupportedTypeToString(dataType));
+                = io::xprintf("Unsupported data type %s.", io::DenSupportedTypeToString(dataType).c_str());
             LOGE << errMsg;
             throw std::runtime_error(errMsg);
         }

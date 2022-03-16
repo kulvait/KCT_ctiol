@@ -10,7 +10,7 @@ CSVWriter::CSVWriter(std::string fileName, std::string separator, bool overwrite
     std::string err;
     if(io::pathExists(fileName))
     {
-        if(overwrite)
+        if(this->overwrite)
         {
             ofs.open(fileName);
         } else

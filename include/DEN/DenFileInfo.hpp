@@ -74,8 +74,7 @@ namespace io {
         uint64_t currentPosition;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::uint16_t_: {
             uint16_t max = 0;
             uint8_t* buffer = new uint8_t[rows * cols * 2];
             for(uint64_t z = 0; z != zdim; z++)
@@ -92,8 +91,7 @@ namespace io {
             delete[] buffer;
             return max;
         }
-        case io::DenSupportedType::float_:
-        {
+        case io::DenSupportedType::float_: {
             float max = -std::numeric_limits<float>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 4];
             for(uint64_t z = 0; z != zdim; z++)
@@ -113,8 +111,7 @@ namespace io {
             delete[] buffer;
             return max;
         }
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::double_: {
             double max = -std::numeric_limits<double>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 8];
             for(uint64_t z = 0; z != zdim; z++)
@@ -152,8 +149,7 @@ namespace io {
         uint64_t currentPosition;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::uint16_t_: {
             uint16_t min = 65535;
             uint8_t* buffer = new uint8_t[rows * cols * 2];
             for(uint64_t z = 0; z != zdim; z++)
@@ -170,8 +166,7 @@ namespace io {
             delete[] buffer;
             return min;
         }
-        case io::DenSupportedType::float_:
-        {
+        case io::DenSupportedType::float_: {
             float min = std::numeric_limits<float>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 4];
             for(uint64_t z = 0; z != zdim; z++)
@@ -191,8 +186,7 @@ namespace io {
             delete[] buffer;
             return min;
         }
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::double_: {
             double min = std::numeric_limits<double>::infinity();
             uint8_t* buffer = new uint8_t[rows * cols * 8]; // This is problematic should be new
             for(uint64_t z = 0; z != zdim; z++)
@@ -238,8 +232,7 @@ namespace io {
         double val;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::uint16_t_: {
             uint8_t* buffer = new uint8_t[dim_x * dim_y * 2];
             for(uint64_t z = 0; z != dim_z; z++)
             {
@@ -254,8 +247,7 @@ namespace io {
             delete[] buffer;
             return sum;
         }
-        case io::DenSupportedType::float_:
-        {
+        case io::DenSupportedType::float_: {
             uint8_t* buffer = new uint8_t[dim_y * dim_x * 4];
             for(uint64_t z = 0; z != dim_z; z++)
             {
@@ -270,8 +262,7 @@ namespace io {
             delete[] buffer;
             return sum;
         }
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::double_: {
             uint8_t* buffer = new uint8_t[dim_y * dim_x * 8]; // This is problematic should be new
             for(uint64_t z = 0; z != dim_z; z++)
             {

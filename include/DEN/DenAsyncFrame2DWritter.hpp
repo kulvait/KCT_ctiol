@@ -199,8 +199,8 @@ namespace io {
 
     // Copy assignment
     template <typename T>
-    DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::
-    operator=(const DenAsyncFrame2DWritter<T> b)
+    DenAsyncFrame2DWritter<T>&
+    DenAsyncFrame2DWritter<T>::operator=(const DenAsyncFrame2DWritter<T> b)
     {
         LOGD << "Caling Copy assignment constructor of DenAsyncFrame2DWritter";
         swap(*this, b);
