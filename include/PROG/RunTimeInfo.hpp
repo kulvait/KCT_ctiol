@@ -33,6 +33,8 @@ class RunTimeInfo
 public:
     RunTimeInfo(int argc, char* argv[]);
     RunTimeInfo();
+    int getArgc();
+    char** getArgv();
     std::string getExecutablePath();
     std::string getExecutableName();
     std::string getExecutableDirectoryPath();
