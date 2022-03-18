@@ -6,7 +6,7 @@ namespace io {
     {
         this->projectionMatrixFile = projectionMatrixFile;
         DenFileInfo mi = DenFileInfo(this->projectionMatrixFile);
-		this->offset = mi.getOffset();
+        this->offset = mi.getOffset();
         uint32_t cols, rows;
         cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
         rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
