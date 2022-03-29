@@ -19,7 +19,8 @@ namespace io {
         /*Returns i-th projection slice in the source.*/
         virtual matrix::ProjectionMatrix readMatrix(int i) = 0;
         /**Number of projection matrices in the source.*/
-        virtual unsigned int count() const = 0;
+        virtual uint32_t count() const = 0;
+        virtual ~ProjectionMatrixReaderI() = default;
     };
 } // namespace io
 } // namespace KCT

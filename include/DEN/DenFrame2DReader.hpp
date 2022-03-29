@@ -49,6 +49,8 @@ public:
     uint32_t dimz() const override;
     std::string getFileName() const;
     /**Returns file name of the underlying DEN file.**/
+    DenSupportedType getDataType() const;
+
 protected:
     // protected: // Visible in inheritance structure
     std::string denFile;
@@ -375,5 +377,11 @@ void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID,
             }
         }
     }
+}
+
+template <typename T>
+DenSupportedType DenFrame2DReader<T>::getDataType() const
+{
+    return dataType;
 }
 } // namespace KCT::io

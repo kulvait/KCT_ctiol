@@ -3,6 +3,7 @@
 // External libraries
 #include <mutex>
 #include <string>
+#include <typeinfo>
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
@@ -18,10 +19,11 @@ template <typename T>
 class DenAsyncFrame2DWritter : public AsyncFrame2DWritterI<T>
 {
 private:
-    std::string projectionsFile;
+    std::string denFile;
     uint32_t sizex, sizey, sizez;
     uint64_t offset;
     bool extended;
+    bool XMajor;
     uint8_t* buffer;
     mutable std::mutex writingMutex;
 
@@ -31,23 +33,21 @@ public:
      *	If file exists and have a same sizeensions, not overwrite but if it has different
      *  dimensions, overwrites.
      *
-     * @param projectionsFile
+     * @param denFile
      * @param sizex
      * @param sizey
      * @param sizez
      */
-    DenAsyncFrame2DWritter(std::string projectionsFile,
-                           uint32_t sizex,
-                           uint32_t sizey,
-                           uint32_t sizez);
+    DenAsyncFrame2DWritter(
+        std::string denFile, uint32_t sizex, uint32_t sizey, uint32_t sizez, bool XMajor = true);
 
     /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
      * zero the file.
      *
-     * @param projectionsFile
+     * @param denFile
      */
-    DenAsyncFrame2DWritter(std::string projectionsFile);
+    DenAsyncFrame2DWritter(std::string denFile);
 
     /**Writes i-th frame to the file.*/
     void writeFrame(const Frame2DI<T>& s, uint32_t i) override;
@@ -79,85 +79,58 @@ public:
 };
 
 template <typename T>
-DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string projectionsFile,
-                                                  uint32_t dimx,
-                                                  uint32_t dimy,
-                                                  uint32_t dimz)
+DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
+    std::string denFile, int32_t dimx, uint32_t dimy, uint32_t dimz, bool XMajor = true)
+    : denFile(denFile)
+    , dimx(dimx)
+    , dimy(dimy)
+    , dimz(dimz)
+    , XMajor(XMajor)
 {
-    if(dimx < 1 || dimy < 1 || dimz < 1)
+    DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
+    offset = 4096;
+    if(io::pathExists(denFile))
     {
-        std::string msg = io::xprintf("One of the dimensions is nonpositive x=%d, y=%d, z=%d.",
-                                      dimx, dimy, dimz);
-        LOGE << msg;
-        throw std::runtime_error(msg);
-    }
-    extended = false;
-    offset = 6;
-    if(dimx > 65535 || dimy > 65535 || dimz > 65535)
-    {
-        extended = true;
-        offset = 18;
-    }
-    this->projectionsFile = projectionsFile;
-    this->sizex = dimx;
-    this->sizey = dimy;
-    this->sizez = dimz;
-    uint64_t elementByteSize = sizeof(T);
-    uint64_t totalFileSize = offset + elementByteSize * dimx * dimy * dimz;
-    if(io::pathExists(projectionsFile))
-    {
-        uint64_t fileSize = io::getFileSize(projectionsFile);
-        if(fileSize != totalFileSize)
+        try
         {
-            io::createEmptyFile(projectionsFile, totalFileSize, true);
-            LOGD << io::xprintf(
-                "Just overwritten the file %s with empty file of the size %ld bytes.",
-                projectionsFile.c_str(), totalFileSize);
+            DenFileInfo inf(denFile);
+            if(inf.isValid() && inf.dimCount() == 3 && inf.getDataType() == type
+               && inf.hasXMajorAlignment() == XMajor)
+            {
+                LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
+                offset = inf.getOffset();
+            } else
+            {
+                DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
+                LOGD << io::xprintf("Just overwritten the file %s with empty file.",
+                                    denFile.c_str());
+            }
+        } catch(KCTException e)
+        {
+            DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
+            LOGD << io::xprintf("Just overwritten the file %s with empty file.", denFile.c_str());
         }
-        LOGD << io::xprintf("Will be writting to existing file %s of %ld bytes.",
-                            projectionsFile.c_str(), totalFileSize);
     } else
     {
-        io::createEmptyFile(projectionsFile, totalFileSize, true);
-        /*
-            LOGD << io::xprintf("New file %s of the size %ld bytes was created.",
-                                projectionsFile.c_str(), totalFileSize);
-         */
-    }
-    uint8_t buf[18];
-    if(extended)
-    {
-        util::putUint16(0, &buf[0]);
-        util::putUint16(0, &buf[2]);
-        util::putUint16(0, &buf[4]);
-        util::putUint32(dimy, &buf[6]);
-        util::putUint32(dimx, &buf[10]);
-        util::putUint32(dimz, &buf[14]);
-        io::writeFirstBytes(projectionsFile, buf, 18);
-    } else
-    {
-        util::putUint16((uint16_t)dimy, &buf[0]);
-        util::putUint16((uint16_t)dimx, &buf[2]);
-        util::putUint16((uint16_t)dimz, &buf[4]);
-        io::writeFirstBytes(projectionsFile, buf, 6);
+        DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
     }
     buffer = new uint8_t[sizeof(T) * this->dimx() * this->dimy()];
 }
 
 template <typename T>
-DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string projectionsFile)
+DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
 {
     std::string err;
-    if(!io::pathExists(projectionsFile))
+    if(!io::pathExists(denFile))
     {
-        err = io::xprintf("The file %s does not exist.", projectionsFile.c_str());
+        err = io::xprintf("The file %s does not exist.", denFile.c_str());
         LOGE << err;
         throw std::runtime_error(err);
     }
-    io::DenFileInfo info(projectionsFile);
+    io::DenFileInfo info(denFile);
     if(!info.isValid())
     {
-        err = io::xprintf("The file %s is not valid DEN.", projectionsFile.c_str());
+        err = io::xprintf("The file %s is not valid DEN.", denFile.c_str());
         LOGE << err;
         throw std::runtime_error(err);
     }
@@ -166,13 +139,13 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string projectionsFile)
     {
         err = io::xprintf("Element byte size %d of %s is incompatible with the size %d of "
                           "current template type.",
-                          info.elementByteSize(), projectionsFile.c_str(), elementByteSize);
+                          info.elementByteSize(), denFile.c_str(), elementByteSize);
         LOGE << err;
         throw std::runtime_error(err);
     }
     extended = info.isExtended();
     offset = info.getOffset();
-    this->projectionsFile = projectionsFile;
+    this->denFile = denFile;
     this->sizex = info.dimx();
     this->sizey = info.dimy();
     this->sizez = info.dimz();
@@ -208,7 +181,7 @@ DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::operator=(const DenAsyncFr
 template <typename T>
 void DenAsyncFrame2DWritter<T>::swap(DenAsyncFrame2DWritter<T>& a, DenAsyncFrame2DWritter<T>& b)
 {
-    std::swap(a.projectionsFile, b.projectionsFile);
+    std::swap(a.denFile, b.denFile);
     std::swap(a.sizex, b.sizex);
     std::swap(a.sizey, b.sizey);
     std::swap(a.sizez, b.sizez);
@@ -222,7 +195,7 @@ template <typename T>
 DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(DenAsyncFrame2DWritter<T>&& b)
 {
     LOGD << "Caling Move constructor of DenAsyncFrame2DWritter";
-    this->projectionsFile = b.projectionsFile;
+    this->denFile = b.denFile;
     this->sizex = b.sizex;
     this->sizey = b.sizey;
     this->sizez = b.sizez;
@@ -238,7 +211,7 @@ DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::operator=(DenAsyncFrame2DW
     LOGD << "Caling Move assignment constructor of DenAsyncFrame2DWritter";
     if(&b != this) // To elegantly solve situation when assigning to itself
     {
-        this->projectionsFile = b.projectionsFile;
+        this->denFile = b.denFile;
         this->sizex = b.sizex;
         this->sizey = b.sizey;
         this->sizez = b.sizez;
@@ -256,7 +229,7 @@ DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::operator=(DenAsyncFrame2DW
 template <typename T>
 std::string DenAsyncFrame2DWritter<T>::getFileName() const
 {
-    return this->projectionsFile;
+    return this->denFile;
 }
 
 template <typename T>
@@ -286,11 +259,17 @@ void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& s, uint32_t i)
     {
         for(std::size_t k = 0; k != this->dimx(); k++)
         {
-            util::setNextElement<T>(s(k, j), &buffer[(j * this->dimx() + k) * sizeof(T)]);
+            if(XMajor)
+            {
+                util::setNextElement<T>(s(k, j), &buffer[(j * this->dimx() + k) * sizeof(T)]);
+            } else
+            {
+                util::setNextElement<T>(s(k, j), &buffer[(k * this->dimy() + j) * sizeof(T)]);
+            }
         }
     }
     uint64_t position = offset + ((uint64_t)sizeof(T)) * i * this->dimx() * this->dimy();
-    io::writeBytesFrom(projectionsFile, position, buffer, sizeof(T) * this->dimx() * this->dimy());
+    io::writeBytesFrom(denFile, position, buffer, sizeof(T) * this->dimx() * this->dimy());
     return;
 }
 

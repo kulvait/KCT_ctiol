@@ -19,11 +19,11 @@ T getNextElement(uint8_t* buffer, io::DenSupportedType dataType)
 {
     switch(dataType)
     {
-    case io::DenSupportedType::uint16_t_:
+    case io::DenSupportedType::UINT16:
         return nextUint16(buffer);
-    case io::DenSupportedType::float_:
+    case io::DenSupportedType::FLOAT32:
         return nextFloat(buffer);
-    case io::DenSupportedType::double_:
+    case io::DenSupportedType::FLOAT64:
         return nextDouble(buffer);
     default:
         std::string errMsg = io::xprintf("Unsupported data type %s.",

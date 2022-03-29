@@ -23,6 +23,8 @@ namespace io {
 
         /**Returns z dimension.*/
         virtual uint32_t dimz() const = 0;
+
+        virtual ~AsyncFrame2DWritterI() = default;
     };
 } // namespace io
 } // namespace KCT

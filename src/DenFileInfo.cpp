@@ -7,56 +7,82 @@ namespace io {
         : fileName(fileName)
     {
         std::string ERR;
-        uint8_t buffer[6];
-        readBytesFrom(this->fileName, 0, buffer, 6);
-        uint32_t dimx, dimy, dimz;
-        uint64_t byteSize;
-        dimy = util::nextUint16(buffer);
-        dimx = util::nextUint16(buffer + 2);
-        dimz = util::nextUint16(buffer + 4);
-        byteSize = getSize();
-        // When dimx and dimy are 0 but Size is gt 6, we have extended format
-        if(dimx == 0 && dimy == 0 && byteSize > 6)
+        _fileSize = getSize();
+        uint16_t h0, h1, h2, h3, h4;
+        std::array<uint8_t, 74> buffer;
+        readBytesFrom(this->fileName, 0, std::begin(buffer), 6);
+        h0 = util::nextUint16(std::begin(buffer));
+        h1 = util::nextUint16(std::begin(buffer) + 2);
+        h2 = util::nextUint16(std::begin(buffer) + 4);
+        if(h0 == 0 && _fileSize > 4095)
         {
-            if(dimz == 0)
-            { // In extended format dimz==0 means X major format
-                XMajorAlignment = true;
-            } else if(dimz == 1)
-            { // In extended format dimz==1 means Y major format
-                XMajorAlignment = false;
+            readBytesFrom(this->fileName, 0, std::begin(buffer), 74);
+            h3 = util::nextUint16(std::begin(buffer) + 6);
+            h4 = util::nextUint16(std::begin(buffer) + 8);
+            extended = true;
+            offset = 4096;
+            if(h1 > 16)
+            {
+                KCTERR(io::xprintf("Maximum 16 dimensions is allowed by specification but h1=%d.",
+                                   h1));
             } else
             {
-                ERR = io::xprintf("The file %s is not DEN nor DEN extended file as there is "
-                                  "signature dimy=%d, dimx=%d, dimz=%d and size %d that is not "
-                                  "valid combination.",
-                                  fileName.c_str(), dimy, dimx, dimz, byteSize);
-                LOGE << ERR;
-                throw std::runtime_error(ERR);
+                _dimCount = h1;
             }
-            uint8_t buffer[12];
-            readBytesFrom(this->fileName, 6, buffer, 12);
-            dimy = util::nextUint32(buffer);
-            dimx = util::nextUint32(buffer + 4);
-            dimz = util::nextUint32(buffer + 8);
-            extended = true;
-            offset = 18;
+            _elementByteSize = h2;
+            if(h3 > 1)
+            {
+                KCTERR(io::xprintf("Values 0 or 1 are allowed by specification but h3=%d.", h3));
+            }
+            if(h3 == 0)
+            {
+                XMajorAlignment = true;
+            } else
+            {
+                XMajorAlignment = false;
+            }
+            _elementType = getDenSupportedTypeByID(h4);
+            uint32_t elementByteSize = DenSupportedTypeElementByteSize(_elementType);
+            if(_elementByteSize != elementByteSize)
+            {
+                KCTERR(io::xprintf(
+                    "Element byte size in file is %d but for the type %s it shall be %d.",
+                    _elementByteSize, DenSupportedTypeToString(_elementType).c_str(),
+                    elementByteSize));
+            }
+            for(uint32_t i = 0; i != _dimCount; i++)
+            {
+                _dim[i] = util::nextUint32(std::begin(buffer) + 10 + i * 4);
+            }
         } else
         {
             extended = false;
             XMajorAlignment = true;
             offset = 6;
+            _dimCount = 3;
+            _dim[0] = h1;
+            _dim[1] = h0;
+            _dim[2] = h2;
+            uint64_t elementCount = uint64_t(_dim[0]) * uint64_t(_dim[1]) * uint64_t(_dim[2]);
+            uint64_t dataByteCount = _fileSize - offset;
+            if(dataByteCount == elementCount * 2)
+            {
+                _elementType = DenSupportedType::UINT16;
+            } else if(dataByteCount == elementCount * 4)
+            {
+                _elementType = DenSupportedType::FLOAT32;
+            } else if(dataByteCount == elementCount * 8)
+            {
+                _elementType = DenSupportedType::FLOAT64;
+            } else
+            {
+                KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
+            }
         }
-        byteSize -= offset;
-        uint64_t elementNum = (uint64_t)dimx * dimy * dimz;
-        if(elementNum * 2 != byteSize && elementNum * 4 != byteSize && elementNum * 8 != byteSize)
+        _elementByteSize = DenSupportedTypeElementByteSize(_elementType);
+        if(!isValid())
         {
-            ERR = io::xprintf(
-                "The file %s is not DEN nor DEN extended file as there is "
-                "signature dimy=%d, dimx=%d, dimz=%d and size without header %d that is not "
-                "valid combination.",
-                fileName.c_str(), dimy, dimx, dimz, byteSize);
-            LOGE << ERR;
-            throw std::runtime_error(ERR);
+            KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
         }
     }
 
@@ -67,26 +93,16 @@ namespace io {
     bool DenFileInfo::hasXMajorAlignment() const { return XMajorAlignment; }
     bool DenFileInfo::isValid() const
     {
-        uint64_t fileSize = this->getSize();
         uint64_t dataSize;
-        if(fileSize >= offset)
+        if(_fileSize >= offset)
         {
-            dataSize = this->getSize() - offset;
+            dataSize = _fileSize - offset;
         } else
         {
             return false;
         }
-        uint64_t numPixels = this->getNumPixels();
-        if(dataSize == 0 && numPixels == 0)
-        {
-            return true;
-        }
-        if(dataSize < numPixels || dataSize % numPixels != 0)
-        {
-            return false;
-        }
-        uint64_t elmSize = dataSize / numPixels;
-        if(elmSize == 2 || elmSize == 4 || elmSize == 8)
+        uint64_t n = this->elementCount();
+        if(n * _elementByteSize == dataSize)
         {
             return true;
         } else
@@ -95,52 +111,13 @@ namespace io {
         }
     }
     /**X dimension*/
-    uint32_t DenFileInfo::dimx() const
-    {
-        if(extended)
-        {
-            uint8_t buffer[4];
-            readBytesFrom(this->fileName, 6 + 4, buffer, 4);
-            return (util::nextUint32(buffer));
-        } else
-        {
-            uint8_t buffer[2];
-            readBytesFrom(this->fileName, 2, buffer, 2);
-            return (util::nextUint16(buffer));
-        }
-    }
+    uint32_t DenFileInfo::dimx() const { return _dim[0]; }
 
     /**Y dimension*/
-    uint32_t DenFileInfo::dimy() const
-    {
-        if(extended)
-        {
-            uint8_t buffer[4];
-            readBytesFrom(this->fileName, 6, buffer, 4);
-            return (util::nextUint32(buffer));
-        } else
-        {
-            uint8_t buffer[2];
-            readBytesFrom(this->fileName, 0, buffer, 2);
-            return (util::nextUint16(buffer));
-        }
-    }
+    uint32_t DenFileInfo::dimy() const { return _dim[1]; }
 
     /**Z dimension*/
-    uint32_t DenFileInfo::dimz() const
-    {
-        if(extended)
-        {
-            uint8_t buffer[4];
-            readBytesFrom(this->fileName, 6 + 8, buffer, 4);
-            return (util::nextUint32(buffer));
-        } else
-        {
-            uint8_t buffer[2];
-            readBytesFrom(this->fileName, 4, buffer, 2);
-            return (util::nextUint16(buffer));
-        }
-    }
+    uint32_t DenFileInfo::dimz() const { return _dim[2]; }
 
     /**Y dimension*/
     uint32_t DenFileInfo::getNumRows() const { return this->dimy(); }
@@ -151,8 +128,21 @@ namespace io {
     /**Z dimension*/
     uint32_t DenFileInfo::getNumSlices() const { return this->dimz(); }
 
-    /**File size
-     */
+    uint32_t DenFileInfo::dim(uint32_t n) const
+    {
+        if(n < _dimCount)
+        {
+
+            return _dim[n];
+        } else
+        {
+            KCTERR(io::xprintf("Dimension %d out of range of %d dimensional file %s.", n, _dimCount,
+                               fileName.c_str()));
+        }
+    }
+
+    uint16_t DenFileInfo::dimCount() const { return _dimCount; }
+
     uint64_t DenFileInfo::getSize() const
     {
         std::ifstream ifs(this->fileName, std::ifstream::ate | std::ifstream::binary);
@@ -161,127 +151,173 @@ namespace io {
         return size;
     }
 
-    /**Total number of pixels as a product of dimensions
+    /**Total number of elements as a product of dimensions
      */
-    uint64_t DenFileInfo::getNumPixels() const
+    uint64_t DenFileInfo::elementCount() const
     {
-        return uint64_t(this->dimx()) * uint64_t(this->dimy()) * uint64_t(this->dimz());
+        uint64_t n = 1;
+        for(uint32_t i = 0; i != _dimCount; i++)
+        {
+            n *= uint64_t(_dim[i]);
+        }
+        return n;
     }
 
-    DenSupportedType DenFileInfo::getDataType() const
-    {
-        int elementByteSize = this->elementByteSize();
-        switch(elementByteSize)
-        {
-        case 2:
-            return DenSupportedType::uint16_t_;
-        case 4:
-            return DenSupportedType::float_;
-        case 8:
-            return DenSupportedType::double_;
-        default:
-            std::stringstream errMsg;
-            errMsg << "File " << this->fileName
-                   << " is not valid DEN file because it has datatype of the length "
-                   << elementByteSize << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
-        }
-    }
+    DenSupportedType DenFileInfo::getDataType() const { return _elementType; }
 
-    uint8_t DenFileInfo::elementByteSize() const
-    {
-        std::string err;
-        uint64_t fileSize = this->getSize();
-        uint64_t dataSize;
-        if(fileSize >= offset)
-        {
-            dataSize = this->getSize() - offset;
-        } else
-        {
-            err = io::xprintf("File %s is not valid DEN file or extended DEN file, it does not "
-                              "have even correctly defined offset!",
-                              fileName.c_str());
-            LOGE << err;
-            throw std::runtime_error(err);
-        }
-        uint64_t numPixels = this->getNumPixels();
-        if(dataSize == 0 && numPixels == 0)
-        {
-            return 0;
-        }
-        if(dataSize < numPixels || dataSize % numPixels != 0)
-        {
-            std::stringstream errMsg;
-            errMsg << "File " << this->fileName
-                   << " is not valid DEN file because its data are not aligned with a pixels "
-                      "represented.";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
-        }
-        switch(dataSize / numPixels)
-        {
-        case 2:
-            return 2;
-        case 4:
-            return 4;
-        case 8:
-            return 8;
-        default:
-            std::stringstream errMsg;
-            errMsg << "File " << this->fileName
-                   << " is not valid DEN file because it has datatype of the length "
-                   << dataSize / numPixels << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
-        }
-    }
+    uint16_t DenFileInfo::elementByteSize() const { return _elementByteSize; }
 
-    void
-    DenFileInfo::createDenHeader(std::string fileName, uint32_t dimx, uint32_t dimy, uint32_t dimz)
+    void DenFileInfo::createLegacyDenHeader(std::string fileName,
+                                            uint16_t dimx,
+                                            uint16_t dimy,
+                                            uint16_t dimz)
     {
-        uint32_t uint16max = 65535;
-        uint8_t buf[18];
+        // uint32_t uint16max = 65535;
+        std::array<uint8_t, 6> buf;
         io::createEmptyFile(fileName, 0, true);
-        if(dimx <= uint16max && dimy <= uint16max && dimz <= uint16max)
-        {
-            util::putUint16((uint16_t)dimy, &buf[0]);
-            util::putUint16((uint16_t)dimx, &buf[2]);
-            util::putUint16((uint16_t)dimz, &buf[4]);
-            io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)6);
-        } else
-        {
-            util::putUint16(0, &buf[0]);
-            util::putUint16(0, &buf[2]);
-            util::putUint16(0, &buf[4]);
-            util::putUint32(dimy, &buf[6]);
-            util::putUint32(dimx, &buf[10]);
-            util::putUint32(dimz, &buf[14]);
-            io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)18);
-        }
+        util::putUint16((uint16_t)dimy, std::begin(buf));
+        util::putUint16((uint16_t)dimx, std::begin(buf) + 2);
+        util::putUint16((uint16_t)dimz, std::begin(buf) + 4);
+        io::appendBytes(fileName, std::begin(buf), (uint64_t)6);
     }
 
-    void DenFileInfo::createDenExtendedHeader(std::string fileName,
-                                                     uint32_t dimx,
-                                                     uint32_t dimy,
-                                                     uint32_t dimz,
-                                                     bool XMajorAlignment)
+    void DenFileInfo::create3DDenHeader(std::string fileName,
+                                        DenSupportedType dst,
+                                        uint32_t dimx,
+                                        uint32_t dimy,
+                                        uint32_t dimz,
+                                        bool XMajorAlignment)
     {
-        uint8_t buf[18];
-        io::createEmptyFile(fileName, 0, true);
-        util::putUint16(0, &buf[0]);
-        util::putUint16(0, &buf[2]);
-        if(XMajorAlignment)//Default
+        std::array<uint8_t, 4096> buf;
+        util::putUint16(0, std::begin(buf));
+        util::putUint16(3, std::begin(buf) + 2); // 3D
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        if(XMajorAlignment) // Default
         {
-            util::putUint16(0, &buf[4]);
+            util::putUint16(0, std::begin(buf) + 6);
         } else
         {
-            util::putUint16(0, &buf[4]);
+            util::putUint16(1, std::begin(buf) + 6);
         }
-        util::putUint32(dimy, &buf[6]);
-        util::putUint32(dimx, &buf[10]);
-        util::putUint32(dimz, &buf[14]);
-        io::appendBytes(fileName, (uint8_t*)buf, (uint64_t)18);
+        util::putUint16(DenSupportedTypeID(dst), std::begin(buf) + 8);
+        util::putUint32(dimx, std::begin(buf) + 10);
+        util::putUint32(dimy, std::begin(buf) + 14);
+        util::putUint32(dimz, std::begin(buf) + 18);
+        io::createEmptyFile(fileName, 0, true);
+        io::appendBytes(fileName, std::begin(buf), (uint64_t)4096);
+    }
+
+    void DenFileInfo::createDenHeader(std::string fileName,
+                                      DenSupportedType dst,
+                                      uint16_t dimCount,
+                                      uint32_t* dim,
+                                      bool XMajorAlignment)
+    {
+        std::array<uint8_t, 4096> buf;
+        util::putUint16(0, std::begin(buf));
+        util::putUint16(3, std::begin(buf) + 2); // 3D
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        if(XMajorAlignment) // Default
+        {
+            util::putUint16(0, std::begin(buf) + 6);
+        } else
+        {
+            util::putUint16(1, std::begin(buf) + 6);
+        }
+        util::putUint16(DenSupportedTypeID(dst), std::begin(buf) + 8);
+        for(uint16_t i = 0; i != dimCount; i++)
+        {
+            util::putUint32(dim[i], std::begin(buf) + 10 + 4 * i);
+        }
+        io::createEmptyFile(fileName, 0, true);
+        io::appendBytes(fileName, std::begin(buf), (uint64_t)4096);
+    }
+
+    void DenFileInfo::createEmptyLegacyDenFile(
+        std::string fileName, DenSupportedType dst, uint16_t dimx, uint16_t dimy, uint16_t dimz)
+    {
+        uint64_t totalElementCount = uint64_t(dimx) * uint64_t(dimy) * uint64_t(dimz);
+        if(dst != DenSupportedType::UINT16 && dst != DenSupportedType::FLOAT32
+           && dst != DenSupportedType::FLOAT64)
+        {
+            std::string ERR = io::xprintf("Legacy Den file can not have type %s.",
+                                          DenSupportedTypeToString(dst).c_str());
+            KCTERR(ERR);
+        }
+        uint64_t elementSize = DenSupportedTypeElementByteSize(dst);
+        uint64_t totalFileSize = 6 + totalElementCount * elementSize;
+        std::array<uint8_t, 6> buf;
+        util::putUint16((uint16_t)dimy, std::begin(buf));
+        util::putUint16((uint16_t)dimx, std::begin(buf) + 2);
+        util::putUint16((uint16_t)dimz, std::begin(buf) + 4);
+        io::createEmptyFile(fileName, totalFileSize, true);
+        io::writeFirstBytes(fileName, std::begin(buf), 6);
+    }
+
+    void DenFileInfo::createEmpty3DDenFile(std::string fileName,
+                                           DenSupportedType dst,
+                                           uint32_t dimx,
+                                           uint32_t dimy,
+                                           uint32_t dimz,
+                                           bool XMajorAlignment)
+    {
+        uint64_t totalElementCount = uint64_t(dimx) * uint64_t(dimy) * uint64_t(dimz);
+        uint64_t elementSize = DenSupportedTypeElementByteSize(dst);
+        uint64_t totalFileSize = 4096 + totalElementCount * elementSize;
+        std::array<uint8_t, 4096> buf;
+        util::putUint16(0, std::begin(buf));
+        util::putUint16(3, std::begin(buf) + 2); // 3D
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        if(XMajorAlignment) // Default
+        {
+            util::putUint16(0, std::begin(buf) + 6);
+        } else
+        {
+            util::putUint16(1, std::begin(buf) + 6);
+        }
+        util::putUint16(DenSupportedTypeID(dst), std::begin(buf) + 8);
+        util::putUint32(dimx, std::begin(buf) + 10);
+        util::putUint32(dimy, std::begin(buf) + 14);
+        util::putUint32(dimz, std::begin(buf) + 18);
+        io::createEmptyFile(fileName, totalFileSize, true);
+        io::writeFirstBytes(fileName, std::begin(buf), 4096);
+    }
+
+    void DenFileInfo::createEmptyDenFile(std::string fileName,
+                                         DenSupportedType dst,
+                                         uint16_t dimCount,
+                                         uint32_t* dim,
+                                         bool XMajorAlignment)
+    {
+        uint64_t totalElementCount = 1;
+        if(dimCount == 0)
+        {
+            totalElementCount = 0;
+        }
+        for(uint16_t i = 0; i != dimCount; i++)
+        {
+            totalElementCount *= dim[i];
+        }
+        uint64_t elementSize = DenSupportedTypeElementByteSize(dst);
+        uint64_t totalFileSize = 4096 + totalElementCount * elementSize;
+        std::array<uint8_t, 4096> buf;
+        util::putUint16(0, std::begin(buf));
+        util::putUint16(3, std::begin(buf) + 2); // 3D
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        if(XMajorAlignment) // Default
+        {
+            util::putUint16(0, std::begin(buf) + 6);
+        } else
+        {
+            util::putUint16(1, std::begin(buf) + 6);
+        }
+        util::putUint16(DenSupportedTypeID(dst), std::begin(buf) + 8);
+        for(uint16_t i = 0; i != dimCount; i++)
+        {
+            util::putUint32(dim[i], std::begin(buf) + 10 + 4 * i);
+        }
+        io::createEmptyFile(fileName, totalFileSize, true);
+        io::writeFirstBytes(fileName, std::begin(buf), 4096);
     }
 
 } // namespace io

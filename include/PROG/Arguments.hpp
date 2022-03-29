@@ -22,6 +22,7 @@ public:
     virtual void defineArguments() = 0;
     virtual int preParse() = 0;
     virtual int postParse() = 0;
+    virtual ~Arguments() = default;
 
     void registerOption(std::string optName, CLI::Option* opt);
     void registerOptionGroup(std::string optGroupName, CLI::Option_group* og);

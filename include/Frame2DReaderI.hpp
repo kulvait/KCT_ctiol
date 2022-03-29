@@ -25,6 +25,7 @@ namespace io {
         /**Returns y dimension.*/
         virtual uint32_t dimz() const = 0;
         /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
+        virtual ~Frame2DReaderI() = default;
     };
 } // namespace io
 } // namespace KCT

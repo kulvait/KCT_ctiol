@@ -7,6 +7,8 @@
 #include <cstring>
 #include <string>
 
+#include "PROG/KCTException.hpp"
+
 namespace KCT {
 namespace util {
 
@@ -32,21 +34,68 @@ namespace util {
     void putFloat(float val, uint8_t* buffer);
     void putDouble(double val, uint8_t* buffer);
 
+    // Read about template specialization
+    // https://en.cppreference.com/w/cpp/language/template_specialization
     template <typename T>
     void setNextElement(T val, uint8_t* buffer)
     {
-        switch(sizeof(T))
-        {
-        case 2:
-            putUint16(val, buffer);
-            break;
-        case 4:
-            putFloat(val, buffer);
-            break;
-        case 8:
-            putDouble(val, buffer);
-            break;
-        }
+        KCTERR("There is no specialized template for handling given type!");
+    }
+
+    // See
+    // https://stackoverflow.com/questions/4445654/multiple-definition-of-template-specialization-when-using-different-objects
+    template <>
+    inline void setNextElement<uint16_t>(uint16_t val, uint8_t* buffer)
+    {
+        putUint16(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<int16_t>(int16_t val, uint8_t* buffer)
+    {
+        putInt16(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<uint32_t>(uint32_t val, uint8_t* buffer)
+    {
+        putUint32(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<int32_t>(int32_t val, uint8_t* buffer)
+    {
+        putInt32(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<uint64_t>(uint64_t val, uint8_t* buffer)
+    {
+        putUint64(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<int64_t>(int64_t val, uint8_t* buffer)
+    {
+        putInt64(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<float>(float val, uint8_t* buffer)
+    {
+        putFloat(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<double>(double val, uint8_t* buffer)
+    {
+        putDouble(val, buffer);
+    }
+
+    template <>
+    inline void setNextElement<uint8_t>(uint8_t val, uint8_t* buffer)
+    {
+        putUint8(val, buffer);
     }
 
 } // namespace util

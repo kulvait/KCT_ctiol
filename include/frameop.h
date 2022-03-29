@@ -5,6 +5,7 @@
 #include <plog/Log.h>
 
 #include <cmath>
+#include <typeinfo>
 
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
@@ -22,13 +23,13 @@ namespace io {
     template <typename T>
     T minFrameValue(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        // const std::type_info& inf(typeid(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         int dimx = f.dimx();
         int dimy = f.dimy();
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::UINT16: {
             uint16_t min = 65535;
             uint16_t a;
             for(int i = 0; i != dimx; i++)
@@ -39,8 +40,7 @@ namespace io {
                 }
             return min;
         }
-        case io::DenSupportedType::float_:
-        {
+        case io::DenSupportedType::FLOAT32: {
             float min = std::numeric_limits<float>::quiet_NaN(); // Comparing to NAN results false
                                                                  // according to IEEE standard
             float a;
@@ -55,8 +55,7 @@ namespace io {
                 }
             return min;
         }
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT64: {
             double min = std::numeric_limits<double>::quiet_NaN(); // Comparing to NAN results false
                                                                    // according to IEEE standard
             double a;
@@ -72,8 +71,9 @@ namespace io {
             return min;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
             // This function actually throws an error.
+            KCTERR(io::xprintf("Unsupported type %s!",
+                               io::DenSupportedTypeToString(dataType).c_str()));
         }
     }
 
@@ -85,13 +85,12 @@ namespace io {
     template <typename T>
     T maxFrameValue(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         int dimx = f.dimx();
         int dimy = f.dimy();
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::UINT16: {
             uint16_t max = 0;
             uint16_t a;
             for(int i = 0; i != dimx; i++)
@@ -102,8 +101,7 @@ namespace io {
                 }
             return max;
         }
-        case io::DenSupportedType::float_:
-        {
+        case io::DenSupportedType::FLOAT32: {
             float max = std::numeric_limits<float>::quiet_NaN(); // Comparing to NAN results false
                                                                  // according to IEEE standard
             float a;
@@ -118,8 +116,7 @@ namespace io {
                 }
             return max;
         }
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT64: {
             double max = std::numeric_limits<double>::quiet_NaN(); // Comparing to NAN results false
                                                                    // according to IEEE standard
             double a;
@@ -135,7 +132,8 @@ namespace io {
             return max;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            KCTERR(io::xprintf("Unsupported type %s!",
+                               io::DenSupportedTypeToString(dataType).c_str()));
             // This function actually throws an error.
         }
     }
@@ -151,15 +149,14 @@ namespace io {
     template <typename T>
     T medianFrameValue(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         int dimx = f.dimx();
         int dimy = f.dimy();
         std::vector<T> vec;
         vec.reserve(dimx * dimy);
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::UINT16: {
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
@@ -167,9 +164,8 @@ namespace io {
                 }
             break;
         }
-        case io::DenSupportedType::float_:
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT32:
+        case io::DenSupportedType::FLOAT64: {
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
@@ -181,7 +177,8 @@ namespace io {
             break;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            KCTERR(io::xprintf("Unsupported type %s!",
+                               io::DenSupportedTypeToString(dataType).c_str()));
         }
 
         std::sort(vec.begin(), vec.end());
@@ -199,8 +196,8 @@ namespace io {
     {
         if(normExponent < 1)
         {
-            io::throwerr("Lx norm is computed for positive integers but the exponent is %d.",
-                         normExponent);
+            KCTERR(io::xprintf("Lx norm is computed for positive integers but the exponent is %d.",
+                               normExponent));
         }
 
         if(sumNonfiniteValues(f) > 0)
@@ -254,15 +251,14 @@ namespace io {
     template <typename T>
     double meanFrameValue(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         uint16_t dimx = f.dimx();
         uint16_t dimy = f.dimy();
         double sum = 0;
         uint32_t nonNanCount = 0;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
-        {
+        case io::DenSupportedType::UINT16: {
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
@@ -271,9 +267,8 @@ namespace io {
             nonNanCount = dimx * dimy;
             break;
         }
-        case io::DenSupportedType::float_:
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT32:
+        case io::DenSupportedType::FLOAT64: {
             for(int i = 0; i != dimx; i++)
                 for(int j = 0; j != dimy; j++)
                 {
@@ -286,7 +281,9 @@ namespace io {
             break;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
+            std::string errMsg = io::xprintf("Unsupported data type %s.",
+                                             io::DenSupportedTypeToString(dataType).c_str());
+            KCTERR(errMsg);
         }
         return sum / nonNanCount;
     }
@@ -300,15 +297,14 @@ namespace io {
     template <typename T>
     uint32_t sumNanValues(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         uint32_t nnv = 0;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
+        case io::DenSupportedType::UINT16:
             break;
-        case io::DenSupportedType::float_:
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT32:
+        case io::DenSupportedType::FLOAT64: {
             uint16_t dimx = f.dimx();
             uint16_t dimy = f.dimy();
             for(uint16_t i = 0; i != dimx; i++)
@@ -324,8 +320,9 @@ namespace io {
             break;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
-            break;
+            std::string errMsg = io::xprintf("Unsupported data type %s.",
+                                             io::DenSupportedTypeToString(dataType).c_str());
+            KCTERR(errMsg);
         }
         return nnv;
     }
@@ -341,15 +338,14 @@ namespace io {
     template <typename T>
     uint32_t sumNonfiniteValues(const Frame2DI<T>& f)
     {
-        DenSupportedType dataType = io::getSupportedTypeByByteLength(sizeof(T));
+        DenSupportedType dataType = io::getDenSupportedTypeByTypeID(typeid(T));
         uint32_t nfc = 0;
         switch(dataType)
         {
-        case io::DenSupportedType::uint16_t_:
+        case io::DenSupportedType::UINT16:
             break;
-        case io::DenSupportedType::float_:
-        case io::DenSupportedType::double_:
-        {
+        case io::DenSupportedType::FLOAT32:
+        case io::DenSupportedType::FLOAT64: {
             uint16_t dimx = f.dimx();
             uint16_t dimy = f.dimy();
             for(uint16_t i = 0; i != dimx; i++)
@@ -365,8 +361,9 @@ namespace io {
             break;
         }
         default:
-            io::throwerr("Unsupported type %s!", io::DenSupportedTypeToString(dataType));
-            break;
+            std::string errMsg = io::xprintf("Unsupported data type %s.",
+                                             io::DenSupportedTypeToString(dataType).c_str());
+            KCTERR(errMsg);
         }
         return nfc;
     }
