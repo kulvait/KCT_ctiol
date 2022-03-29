@@ -80,11 +80,11 @@ public:
 
 template <typename T>
 DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
-    std::string denFile, int32_t dimx, uint32_t dimy, uint32_t dimz, bool XMajor = true)
+    std::string denFile, uint32_t dimx, uint32_t dimy, uint32_t dimz, bool XMajor)
     : denFile(denFile)
-    , dimx(dimx)
-    , dimy(dimy)
-    , dimz(dimz)
+    , sizex(dimx)
+    , sizey(dimy)
+    , sizez(dimz)
     , XMajor(XMajor)
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
@@ -105,7 +105,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
                 LOGD << io::xprintf("Just overwritten the file %s with empty file.",
                                     denFile.c_str());
             }
-        } catch(KCTException e)
+        } catch(util::KCTException e)
         {
             DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
             LOGD << io::xprintf("Just overwritten the file %s with empty file.", denFile.c_str());
