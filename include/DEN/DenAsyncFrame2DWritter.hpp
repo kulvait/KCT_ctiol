@@ -105,7 +105,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
                 LOGD << io::xprintf("Just overwritten the file %s with empty file.",
                                     denFile.c_str());
             }
-        } catch(util::KCTException e)
+        } catch(util::KCTException const &e)
         {
             DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
             LOGD << io::xprintf("Just overwritten the file %s with empty file.", denFile.c_str());
