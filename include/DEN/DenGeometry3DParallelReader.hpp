@@ -23,10 +23,23 @@ private:
     std::shared_ptr<DenFrame2DReader<double>> matrixReader = nullptr;
     std::shared_ptr<DenFrame2DReader<double>> detectorTiltReader = nullptr;
     uint32_t geometriesCount;
+    void initObject();
 
 public:
-    void initObject();
+    /**
+     * Creates reader with given projectionMatrixFile, assumes all the tilts are 1.0 that means
+     * detector orthogonal to the incomming rays.
+     *
+     * @param projectionMatrixFile FLOAT64(4,2,count)
+     */
     DenGeometry3DParallelReader(std::string projectionMatrixFile);
+    /**
+     * Creates reader with given projectionMatrixFile and detectorTilt file.
+     *
+     * @param projectionMatrixFile Den file FLOAT64(4,2,count).
+     * @param detectorTiltFile Den file FLOAT64(1,1,count), if empty string is passed, behaves as if
+     * the file would not be specified and assumes all the tilts being 1.0.
+     */
     DenGeometry3DParallelReader(std::string projectionMatrixFile, std::string detectorTiltFile);
 
     /*Returns i-th geometry.*/

@@ -43,11 +43,8 @@ void DenGeometry3DParallelReader::initObject()
 }
 
 DenGeometry3DParallelReader::DenGeometry3DParallelReader(std::string projectionMatrixFile)
-    : projectionMatrixFile(projectionMatrixFile)
+    : DenGeometry3DParallelReader(projectionMatrixFile, "")
 {
-    matrixReader = std::make_shared<DenFrame2DReader<double>>(this->projectionMatrixFile);
-    detectorTiltReader = nullptr;
-    initObject();
 }
 
 DenGeometry3DParallelReader::DenGeometry3DParallelReader(std::string projectionMatrixFile,
@@ -56,7 +53,13 @@ DenGeometry3DParallelReader::DenGeometry3DParallelReader(std::string projectionM
     , detectorTiltFile(detectorTiltFile)
 {
     matrixReader = std::make_shared<DenFrame2DReader<double>>(this->projectionMatrixFile);
-    detectorTiltReader = std::make_shared<DenFrame2DReader<double>>(this->detectorTiltFile);
+    if(detectorTiltFile.empty())
+    {
+        detectorTiltReader = nullptr;
+    } else
+    {
+        detectorTiltReader = std::make_shared<DenFrame2DReader<double>>(this->detectorTiltFile);
+    }
     initObject();
 }
 
