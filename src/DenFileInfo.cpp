@@ -110,14 +110,83 @@ namespace io {
             return false;
         }
     }
-    /**X dimension*/
-    uint32_t DenFileInfo::dimx() const { return _dim[0]; }
 
-    /**Y dimension*/
-    uint32_t DenFileInfo::dimy() const { return _dim[1]; }
+    /**X dimension flat*/
+    uint32_t DenFileInfo::dimx() const
+    {
+        if(_dimCount < 1)
+        {
+            return 0;
+        } else
+        {
+            return _dim[0];
+        }
+    }
 
-    /**Z dimension*/
-    uint32_t DenFileInfo::dimz() const { return _dim[2]; }
+    /**Y dimension flat*/
+    uint32_t DenFileInfo::dimy() const
+    {
+        if(_dimCount < 2)
+        {
+            return 1;
+        } else
+        {
+            return _dim[1];
+        }
+    }
+
+    /**Z dimension flat*/
+    uint32_t DenFileInfo::dimz() const
+    {
+        const uint32_t UINT32_MAXXX = ((uint32_t)-1);
+        if(_dimCount < 3)
+        {
+            return 1;
+        } else if(_dimCount == 3)
+        {
+            return _dim[2];
+        } else
+        {
+            uint64_t flatdimz = 1;
+            for(int i = 2; i != _dimCount; i++)
+            {
+                flatdimz *= _dim[i];
+            }
+            if(flatdimz > UINT32_MAXXX)
+            {
+                KCTERR(io::xprintf("Flat dim z is not representable by uint32_t as it is %lu.",
+                                   flatdimz));
+            }
+            return (uint32_t)flatdimz;
+        }
+    }
+
+    /**Z dimension flat*/
+    uint64_t DenFileInfo::dimflatz() const
+    {
+        if(_dimCount < 3)
+        {
+            return 1;
+        } else if(_dimCount == 3)
+        {
+            return _dim[2];
+        } else
+        {
+            uint64_t flatdimz = 1;
+            for(int i = 2; i != _dimCount; i++)
+            {
+                flatdimz *= _dim[i];
+            }
+            return flatdimz;
+        }
+    }
+
+    uint64_t DenFileInfo::frameSize() const
+    {
+        uint64_t _dimx = dimx();
+        uint64_t _dimy = dimy();
+        return _dimx * _dimy;
+    }
 
     /**Y dimension*/
     uint32_t DenFileInfo::getNumRows() const { return this->dimy(); }

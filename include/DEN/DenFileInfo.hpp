@@ -21,6 +21,8 @@ public:
     uint32_t dimx() const;
     uint32_t dimy() const;
     uint32_t dimz() const;
+    uint64_t dimflatz() const;
+    uint64_t frameSize() const;
     /**
      * Get n-th dimension
      * @param n Dimension index x=0, y=1, z=2, ....
@@ -58,6 +60,13 @@ public:
     double getMean() const;
     template <typename T>
     double getVariance() const;
+    template <typename T>
+    void readFlatFrameIntoBuffer(uint64_t flatZIndex,
+                                 T* bufferToFill,
+                                 bool fillXMajor,
+                                 uint8_t* tmpbuffer) const;
+    template <typename T>
+    void readIntoBuffer(T* buffer, bool xmajor = true);
     static void
     createLegacyDenHeader(std::string fileName, uint16_t dimx, uint16_t dimy, uint16_t dimz);
     static void create3DDenHeader(std::string fileName,
@@ -372,6 +381,72 @@ double DenFileInfo::getVariance() const
     }
     delete[] buffer;
     return T(sum / totalSize);
+}
+
+template <typename T>
+void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
+                                          T* bufferToFill,
+                                          bool fillXMajor,
+                                          uint8_t* tmpbuffer) const
+{
+    uint64_t _frameSize = this->frameSize();
+    uint64_t frameByteSize = _frameSize * _elementByteSize;
+    uint64_t position = this->offset + flatZIndex * frameByteSize;
+    io::readBytesFrom(this->fileName, position, tmpbuffer, frameByteSize);
+    if(fillXMajor == this->XMajorAlignment)
+    {
+        for(uint64_t a = 0; a != _frameSize; a++)
+        {
+            bufferToFill[a]
+                = util::getNextElement<T>(&tmpbuffer[a * _elementByteSize], _elementType);
+        }
+    } else
+    {
+        uint64_t innerIndex, outerIndex;
+        uint64_t _dimx = dimx();
+        uint64_t _dimy = dimy();
+        for(uint64_t x = 0; x != _dimx; x++)
+        {
+            for(uint64_t y = 0; y != _dimy; y++)
+            {
+                if(this->XMajorAlignment)
+                {
+                    innerIndex = x + _dimx * y;
+                } else
+                {
+                    innerIndex = y + _dimy * x;
+                }
+                if(fillXMajor)
+                {
+                    outerIndex = x + _dimx * y;
+                } else
+                {
+                    outerIndex = y + _dimy * x;
+                }
+                bufferToFill[outerIndex] = util::getNextElement<T>(
+                    &tmpbuffer[innerIndex * _elementByteSize], _elementType);
+            }
+        }
+    }
+}
+
+template <typename T>
+void DenFileInfo::readIntoBuffer(T* buffer, bool xmajor)
+{
+    if(getDenSupportedTypeByTypeID(typeid(T)) != _elementType)
+    {
+        KCTERR(io::xprintf("Buffer of incompatible type, need to fill buffer of %s.",
+                           DenSupportedTypeToString(_elementType).c_str()))
+    }
+
+    uint64_t _dimflatz = dimflatz();
+    uint64_t _framesize = this->frameSize();
+    uint8_t* tmpbuffer = new uint8_t[_framesize * _elementByteSize];
+    for(uint64_t k = 0; k != _dimflatz; k++)
+    {
+        this->readFlatFrameIntoBuffer(k, buffer + k * _framesize, xmajor, tmpbuffer);
+    }
+    delete[] tmpbuffer;
 }
 
 } // namespace KCT::io

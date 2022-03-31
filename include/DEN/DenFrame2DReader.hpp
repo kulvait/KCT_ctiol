@@ -43,10 +43,12 @@ public:
     DenFrame2DReader<T>& operator=(DenFrame2DReader<T>&& other);
     std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) override;
     std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(unsigned int i);
-    void readFrameIntoBuffer(unsigned int frameID, T* outside_buffer, bool XMajorAlignment = true);
+    void
+    readFrameIntoBuffer(uint64_t flatFrameIndex, T* outside_buffer, bool XMajorAlignment = true);
     uint32_t dimx() const override;
     uint32_t dimy() const override;
     uint32_t dimz() const override;
+    uint64_t dimflatz() const;
     std::string getFileName() const;
     /**Returns file name of the underlying DEN file.**/
     DenSupportedType getDataType() const;
@@ -56,7 +58,7 @@ protected:
     std::string denFile;
     uint64_t offset;
     bool XMajorAlignment;
-    uint32_t sizex, sizey, sizez;
+    uint64_t sizex, sizey, sizez;
     DenSupportedType dataType;
     int elementByteSize;
 
@@ -76,7 +78,7 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
     this->sizey = pi.dimy();
-    this->sizez = pi.dimz();
+    this->sizez = pi.dimflatz();
     this->XMajorAlignment = pi.hasXMajorAlignment();
     this->dataType = pi.getDataType();
     this->elementByteSize = pi.elementByteSize();
@@ -317,7 +319,7 @@ DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
 }
 
 template <typename T>
-void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID,
+void DenFrame2DReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
                                               T* outside_buffer,
                                               bool XMajorAlignment)
 {
@@ -342,12 +344,12 @@ void DenFrame2DReader<T>::readFrameIntoBuffer(unsigned int frameID,
     // Mutex will be released as this goes out of scope.
     // To protect calling this method from another thread using the same block of memory
     uint8_t* buffer = buffers[mutexnum];
-    uint32_t elmCount = sizex * sizey;
-    uint64_t position = this->offset + uint64_t(frameID) * elementByteSize * elmCount;
-    io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
+    uint32_t frameSize = sizex * sizey;
+    uint64_t position = this->offset + uint64_t(flatZIndex) * elementByteSize * frameSize;
+    io::readBytesFrom(this->denFile, position, buffer, elementByteSize * frameSize);
     if(XMajorAlignment == this->XMajorAlignment)
     {
-        for(uint32_t a = 0; a != elmCount; a++)
+        for(uint32_t a = 0; a != frameSize; a++)
         {
             outside_buffer[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
         }
