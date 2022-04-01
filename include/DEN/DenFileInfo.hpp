@@ -9,6 +9,7 @@
 // Internal libraries
 #include "DEN/DenNextElement.h"
 #include "DEN/DenSupportedType.hpp"
+#include "littleEndianAlignment.h"
 #include "rawop.h" //To get number of rows...
 
 namespace KCT::io {
@@ -61,12 +62,41 @@ public:
     template <typename T>
     double getVariance() const;
     template <typename T>
+    /**
+     * Given buffer will be writtern to the given frame indexed by flat z index.
+     *
+     * @param flatZIndex Flat z index of the frame.
+     * @param bufferToWrite c style array, must be compatible with den type, unchecked
+     * @param bufferXMajor if the alignment of the buffer is xmajor
+     * @param tmpbuffer buffer of the size framesize*sizeof(t)
+     */
+    void writeBufferIntoFlatFrame(uint64_t flatZIndex,
+                                  T* bufferToWrite,
+                                  bool bufferXMajor,
+                                  uint8_t* tmpbuffer) const;
+
+    /**
+     * Flat frame with given z index will be read to the buffer.
+     *
+     * @param flatZIndex Flat z index of the frame.
+     * @param bufferToWrite c style array, must be compatible with den type, unchecked
+     * @param bufferXMajor if the alignment of the buffer will be xmajor
+     * @param tmpbuffer buffer of the size framesize*sizeof(t)
+     */
+    template <typename T>
     void readFlatFrameIntoBuffer(uint64_t flatZIndex,
                                  T* bufferToFill,
                                  bool fillXMajor,
                                  uint8_t* tmpbuffer) const;
+    /**
+     * Read underlying DEN file into the c_array.
+     *
+     * @param c_array Array to read file into.
+     * @param c_array_xmajor Xmajor alignment of the frames in resulting array, defaults to true.
+     */
     template <typename T>
-    void readIntoBuffer(T* buffer, bool xmajor = true);
+    void readIntoArray(T* c_array, bool c_array_xmajor = true);
+
     static void
     createLegacyDenHeader(std::string fileName, uint16_t dimx, uint16_t dimy, uint16_t dimz);
     static void create3DDenHeader(std::string fileName,
@@ -95,6 +125,25 @@ public:
                                    uint16_t dimCount,
                                    uint32_t* dim,
                                    bool XMajorAlignment = true);
+
+    template <typename T>
+    static void create3DDenFileFromArray(T* c_array,
+                                         bool c_array_xmajor,
+                                         std::string fileName,
+                                         DenSupportedType dst,
+                                         uint32_t dimx,
+                                         uint32_t dimy,
+                                         uint32_t dimz,
+                                         bool XMajorAlignment = true);
+
+    template <typename T>
+    static void createDenFileFromArray(T* c_array,
+                                       bool c_array_xmajor,
+                                       std::string fileName,
+                                       DenSupportedType dst,
+                                       uint16_t dimCount,
+                                       uint32_t* dim,
+                                       bool XMajorAlignment = true);
 
 private:
     std::string fileName;
@@ -384,6 +433,52 @@ double DenFileInfo::getVariance() const
 }
 
 template <typename T>
+void DenFileInfo::writeBufferIntoFlatFrame(uint64_t flatZIndex,
+                                           T* bufferToWrite,
+                                           bool bufferXMajor,
+                                           uint8_t* tmpbuffer) const
+{
+    uint64_t _frameSize = this->frameSize();
+    uint64_t frameByteSize = _frameSize * _elementByteSize;
+    uint64_t position = this->offset + flatZIndex * frameByteSize;
+    if(bufferXMajor == this->XMajorAlignment)
+    {
+        for(uint64_t a = 0; a != _frameSize; a++)
+        {
+            util::setNextElement<T>(bufferToWrite[a], &tmpbuffer[a * _elementByteSize]);
+        }
+    } else
+    {
+        uint64_t innerIndex, outerIndex;
+        uint64_t _dimx = dimx();
+        uint64_t _dimy = dimy();
+        for(uint64_t x = 0; x != _dimx; x++)
+        {
+            for(uint64_t y = 0; y != _dimy; y++)
+            {
+                if(this->XMajorAlignment)
+                {
+                    innerIndex = x + _dimx * y;
+                } else
+                {
+                    innerIndex = y + _dimy * x;
+                }
+                if(bufferXMajor)
+                {
+                    outerIndex = x + _dimx * y;
+                } else
+                {
+                    outerIndex = y + _dimy * x;
+                }
+                util::setNextElement<T>(bufferToWrite[outerIndex],
+                                        &tmpbuffer[innerIndex * _elementByteSize]);
+            }
+        }
+    }
+    io::writeBytesFrom(this->fileName, position, tmpbuffer, frameByteSize);
+}
+
+template <typename T>
 void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
                                           T* bufferToFill,
                                           bool fillXMajor,
@@ -431,7 +526,7 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
 }
 
 template <typename T>
-void DenFileInfo::readIntoBuffer(T* buffer, bool xmajor)
+void DenFileInfo::readIntoArray(T* c_array, bool c_array_xmajor)
 {
     if(getDenSupportedTypeByTypeID(typeid(T)) != _elementType)
     {
@@ -444,7 +539,51 @@ void DenFileInfo::readIntoBuffer(T* buffer, bool xmajor)
     uint8_t* tmpbuffer = new uint8_t[_framesize * _elementByteSize];
     for(uint64_t k = 0; k != _dimflatz; k++)
     {
-        this->readFlatFrameIntoBuffer(k, buffer + k * _framesize, xmajor, tmpbuffer);
+        this->readFlatFrameIntoBuffer(k, c_array + k * _framesize, c_array_xmajor, tmpbuffer);
+    }
+    delete[] tmpbuffer;
+}
+template <typename T>
+void DenFileInfo::create3DDenFileFromArray(T* c_array,
+                                           bool c_array_xmajor,
+                                           std::string fileName,
+                                           DenSupportedType dst,
+                                           uint32_t dimx,
+                                           uint32_t dimy,
+                                           uint32_t dimz,
+                                           bool XMajorAlignment)
+{
+    std::array<uint32_t, 3> dim = { dimx, dimy, dimz };
+    createDenFileFromArray<T>(c_array, c_array_xmajor, fileName, dst, 3, std::begin(dim),
+                              XMajorAlignment);
+}
+
+template <typename T>
+void DenFileInfo::createDenFileFromArray(T* c_array,
+                                         bool c_array_xmajor,
+                                         std::string fileName,
+                                         DenSupportedType dst,
+                                         uint16_t dimCount,
+                                         uint32_t* dim,
+                                         bool XMajorAlignment)
+{
+    if(getDenSupportedTypeByTypeID(typeid(T)) != dst)
+    {
+        KCTERR(io::xprintf("Buffer of incompatible type, need to fill buffer of %s.",
+                           DenSupportedTypeToString(dst).c_str()))
+    }
+    if(dim == nullptr)
+    {
+        KCTERR("Null pointer exception!");
+    }
+    createEmptyDenFile(fileName, dst, dimCount, dim, XMajorAlignment);
+    DenFileInfo fileInfo(fileName);
+    uint64_t _dimflatz = fileInfo.dimflatz();
+    uint64_t _framesize = fileInfo.frameSize();
+    uint8_t* tmpbuffer = new uint8_t[_framesize * fileInfo._elementByteSize];
+    for(uint64_t k = 0; k != _dimflatz; k++)
+    {
+        fileInfo.writeBufferIntoFlatFrame(k, c_array + k * _framesize, c_array_xmajor, tmpbuffer);
     }
     delete[] tmpbuffer;
 }
