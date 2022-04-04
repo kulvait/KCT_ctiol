@@ -1,6 +1,11 @@
 #pragma once
 #include "stringFormatter.h"
+#include <cstdlib>
 #include <exception>
+#include <sstream>
+#include <string>
+#include <sys/types.h>
+#include <unistd.h>
 
 // https://stackoverflow.com/questions/2849832/c-c-line-number
 #define KCTERR(msg) throw KCT::util::KCTException(msg, __FILE__, __LINE__, __func__);
@@ -25,6 +30,15 @@ public:
         , returnedMessage(
               io::xprintf("KCTException in [%s@%s:%d]: %s", function, file, line, msg.c_str()))
     {
+// Print stack
+#ifdef DEBUG
+        pid_t myPid = getpid();
+        std::string pstackCommand = "pstack ";
+        std::stringstream ss;
+        ss << myPid;
+        pstackCommand += ss.str();
+        system(pstackCommand.c_str());
+#endif
     }
 
     const char* get_file() const { return file; }
