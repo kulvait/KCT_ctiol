@@ -17,7 +17,7 @@ namespace KCT::io {
 class DenFileInfo
 {
 public:
-    DenFileInfo(std::string fileName);
+    DenFileInfo(std::string fileName, bool exceptInvalid = true);
     std::string getFileName() const;
     uint32_t dimx() const;
     uint32_t dimy() const;
@@ -47,7 +47,7 @@ public:
     // (0,0,1), (1,0,1), (0,1,1), (1,1,1)  If false the array is sorted such that (x,y,z) =
     // (0,0,0), (0,1,0), (1,0,0), (1,1,0), (0,0,1), (0,1,1), (1,0,1) (1,1,1)
     bool hasXMajorAlignment() const;
-    bool isValid() const;
+    bool isValid();
     uint64_t getOffset() const;
     DenSupportedType getDataType() const;
     uint16_t elementByteSize() const;
@@ -155,6 +155,7 @@ private:
     uint64_t _fileSize;
     bool extended = false;
     bool XMajorAlignment = true;
+    bool valid = true;
     uint64_t offset = 6;
 };
 

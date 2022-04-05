@@ -29,6 +29,6 @@ public:
     virtual uint32_t dimy() const = 0;
 
     // see https://stackoverflow.com/a/10024812
-    virtual ~Frame2DI(){};
+    virtual ~Frame2DI() = default;
 };
 } // namespace KCT::io

@@ -3,11 +3,24 @@
 namespace KCT {
 namespace io {
     /**Constructor*/
-    DenFileInfo::DenFileInfo(std::string fileName)
+    DenFileInfo::DenFileInfo(std::string fileName, bool exceptInvalid)
         : fileName(fileName)
     {
         std::string ERR;
+        valid = true;
         _fileSize = getSize();
+        if(_fileSize < 6)
+        {
+            if(exceptInvalid)
+            {
+                KCTERR(io::xprintf("The file %s is not valid DEN file, it has size %lu bytes.",
+                                   fileName.c_str(), _fileSize))
+            } else
+            {
+                valid = false;
+                return;
+            }
+        }
         uint16_t h0, h1, h2, h3, h4;
         std::array<uint8_t, 74> buffer;
         readBytesFrom(this->fileName, 0, std::begin(buffer), 6);
@@ -23,8 +36,15 @@ namespace io {
             offset = 4096;
             if(h1 > 16)
             {
-                KCTERR(io::xprintf("Maximum 16 dimensions is allowed by specification but h1=%d.",
-                                   h1));
+                if(exceptInvalid)
+                {
+                    KCTERR(io::xprintf(
+                        "Maximum 16 dimensions is allowed by specification but h1=%d.", h1));
+                } else
+                {
+                    valid = false;
+                    return;
+                }
             } else
             {
                 _dimCount = h1;
@@ -32,7 +52,15 @@ namespace io {
             _elementByteSize = h2;
             if(h3 > 1)
             {
-                KCTERR(io::xprintf("Values 0 or 1 are allowed by specification but h3=%d.", h3));
+                if(exceptInvalid)
+                {
+                    KCTERR(
+                        io::xprintf("Values 0 or 1 are allowed by specification but h3=%d.", h3));
+                } else
+                {
+                    valid = false;
+                    return;
+                }
             }
             if(h3 == 0)
             {
@@ -45,10 +73,17 @@ namespace io {
             uint32_t elementByteSize = DenSupportedTypeElementByteSize(_elementType);
             if(_elementByteSize != elementByteSize)
             {
-                KCTERR(io::xprintf(
-                    "Element byte size in file is %d but for the type %s it shall be %d.",
-                    _elementByteSize, DenSupportedTypeToString(_elementType).c_str(),
-                    elementByteSize));
+                if(exceptInvalid)
+                {
+                    KCTERR(io::xprintf(
+                        "Element byte size in file is %d but for the type %s it shall be %d.",
+                        _elementByteSize, DenSupportedTypeToString(_elementType).c_str(),
+                        elementByteSize));
+                } else
+                {
+                    valid = false;
+                    return;
+                }
             }
             for(uint32_t i = 0; i != _dimCount; i++)
             {
@@ -76,13 +111,27 @@ namespace io {
                 _elementType = DenSupportedType::FLOAT64;
             } else
             {
-                KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
+                if(exceptInvalid)
+                {
+                    KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
+                } else
+                {
+                    valid = false;
+                    return;
+                }
             }
         }
         _elementByteSize = DenSupportedTypeElementByteSize(_elementType);
         if(!isValid())
         {
-            KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
+            if(exceptInvalid)
+            {
+                KCTERR(io::xprintf("The file %s is not valid DEN file.", fileName.c_str()))
+            } else
+            {
+                valid = false;
+                return;
+            }
         }
     }
 
@@ -91,14 +140,19 @@ namespace io {
     uint64_t DenFileInfo::getOffset() const { return offset; }
     bool DenFileInfo::isExtended() const { return extended; }
     bool DenFileInfo::hasXMajorAlignment() const { return XMajorAlignment; }
-    bool DenFileInfo::isValid() const
+    bool DenFileInfo::isValid()
     {
+        if(valid == false)
+        {
+            return false;
+        }
         uint64_t dataSize;
         if(_fileSize >= offset)
         {
             dataSize = _fileSize - offset;
         } else
         {
+            valid = false;
             return false;
         }
         uint64_t n = this->elementCount();
@@ -107,6 +161,7 @@ namespace io {
             return true;
         } else
         {
+            valid = false;
             return false;
         }
     }
