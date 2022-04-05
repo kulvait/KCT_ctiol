@@ -91,21 +91,13 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     offset = 4096;
     if(io::pathExists(denFile))
     {
-        try
+        DenFileInfo inf(denFile, false);
+        if(inf.isValid() && inf.dimCount() == 3 && inf.getDataType() == type
+           && inf.hasXMajorAlignment() == XMajor)
         {
-            DenFileInfo inf(denFile);
-            if(inf.isValid() && inf.dimCount() == 3 && inf.getDataType() == type
-               && inf.hasXMajorAlignment() == XMajor)
-            {
-                LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
-                offset = inf.getOffset();
-            } else
-            {
-                DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
-                LOGD << io::xprintf("Just overwritten the file %s with empty file.",
-                                    denFile.c_str());
-            }
-        } catch(util::KCTException const &e)
+            LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
+            offset = inf.getOffset();
+        } else
         {
             DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
             LOGD << io::xprintf("Just overwritten the file %s with empty file.", denFile.c_str());
@@ -124,15 +116,13 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
     if(!io::pathExists(denFile))
     {
         err = io::xprintf("The file %s does not exist.", denFile.c_str());
-        LOGE << err;
-        throw std::runtime_error(err);
+        KCTERR(err);
     }
     io::DenFileInfo info(denFile);
     if(!info.isValid())
     {
         err = io::xprintf("The file %s is not valid DEN.", denFile.c_str());
-        LOGE << err;
-        throw std::runtime_error(err);
+        KCTERR(err);
     }
     uint64_t elementByteSize = sizeof(T);
     if(info.elementByteSize() != elementByteSize)
@@ -140,8 +130,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
         err = io::xprintf("Element byte size %d of %s is incompatible with the size %d of "
                           "current template type.",
                           info.elementByteSize(), denFile.c_str(), elementByteSize);
-        LOGE << err;
-        throw std::runtime_error(err);
+        KCTERR(err);
     }
     extended = info.isExtended();
     offset = info.getOffset();
