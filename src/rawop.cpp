@@ -245,8 +245,7 @@ namespace io {
             std::stringstream errMsg;
             errMsg << "File " << fileName
                    << " already exist, set overwrite flag if it should be overwritten.";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            KCTERR(errMsg.str());
         }
     }
 
@@ -262,14 +261,12 @@ namespace io {
         if(!pathExists(f))
         {
             std::string ERR = io::xprintf("File %s does not exist.", f.c_str());
-            LOGE << ERR;
-            io::throwerr(ERR);
+            KCTERR(ERR);
         }
         if(!isRegularFile(f))
         {
             std::string ERR = io::xprintf("File %s is not a regular file.", f.c_str());
-            LOGE << ERR;
-            io::throwerr(ERR);
+            KCTERR(ERR);
         }
         std::ifstream ifs(f.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 
@@ -302,8 +299,7 @@ namespace io {
         {
             std::string ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
                                           outputFile.c_str());
-            LOGE << ERR;
-            throw std::ios_base::failure(ERR);
+            KCTERR(ERR);
         }
         std::ofstream ofs(outputFile, std::ios_base::binary | std::ios::trunc);
         for(std::string f : inputFiles)
@@ -312,14 +308,24 @@ namespace io {
             {
                 std::string ERR = io::xprintf(
                     "File %s from the files to concatenate is not regular file!", f.c_str());
-                LOGE << ERR;
-                throw std::ios_base::failure(ERR);
+                // can throw std::ios_base::failure(ERR);
+                KCTERR(ERR);
             }
             std::ifstream ifs(f, std::ios_base::binary);
             ofs << ifs.rdbuf();
             ifs.close();
+            // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
+            if(ifs.fail())
+            {
+                KCTERR(io::xprintf("Failure reading %s.", f.c_str()));
+            }
         }
         ofs.close();
+        // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
+        if(ofs.fail())
+        {
+            KCTERR(io::xprintf("Failure writing %s.", outputFile.c_str()));
+        }
     }
 } // namespace io
 } // namespace KCT
