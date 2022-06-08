@@ -77,21 +77,19 @@ namespace io {
     {
         if(CHAR_BIT != 8)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
-                   << CHAR_BIT << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            std::string errMsg;
+            errMsg = io::xprintf(
+                "Can not use this platform since CHAR_BIT size is not 8, it is %d.", CHAR_BIT);
+            KCTERR(errMsg);
         }
         std::ofstream file(fileName,
                            std::ios::binary | std::ios::out
                                | std::ios::in); // Open binary, for output, for input
         if(!file.is_open()) // cannot open file
         {
-            std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            std::string errMsg;
+            errMsg = io::xprintf("Can not open file %s.", fileName.c_str());
+            KCTERR(errMsg);
         }
 
         file.write((char*)buffer, numBytes);
@@ -99,11 +97,9 @@ namespace io {
         file.close();
         if(num != (int64_t)numBytes)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not read first " << numBytes << "bytes from the file " << fileName
-                   << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            std::string errMsg;
+            errMsg = io::xprintf("Can not read first %d bytes from file %s.", numBytes, fileName.c_str());
+            KCTERR(errMsg);
         }
     }
 
