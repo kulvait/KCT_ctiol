@@ -12,6 +12,7 @@
 #include <stdarg.h> // For va_start, etc.
 #include <string>
 #include <sys/stat.h>
+#include <cstdio>
 
 #include "littleEndianAlignment.h"
 #include "stringFormatter.h"

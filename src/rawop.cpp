@@ -98,7 +98,8 @@ namespace io {
         if(num != (int64_t)numBytes)
         {
             std::string errMsg;
-            errMsg = io::xprintf("Can not read first %d bytes from file %s.", numBytes, fileName.c_str());
+            errMsg = io::xprintf("Can not read first %d bytes from file %s.", numBytes,
+                                 fileName.c_str());
             KCTERR(errMsg);
         }
     }
@@ -224,6 +225,25 @@ namespace io {
 
     void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite)
     {
+        if(pathExists(fileName))
+        {
+            if(overwrite)
+            {
+                std::remove(fileName.c_str());
+                if(pathExists(fileName))
+                {
+                    std::string ERR = io::xprintf("Can not delete %f", fileName.c_str());
+                    KCTERR(ERR);
+                }
+            } else
+            {
+                std::stringstream errMsg;
+                errMsg << "Path " << fileName
+                       << " already exist, set overwrite flag to overwritte.";
+                KCTERR(errMsg.str());
+                return;
+            }
+        }
         if(!pathExists(fileName) || overwrite)
         {
             std::ofstream ofs(
@@ -236,12 +256,6 @@ namespace io {
                 ofs.write("", 1);
             }
             ofs.close();
-        } else
-        {
-            std::stringstream errMsg;
-            errMsg << "File " << fileName
-                   << " already exist, set overwrite flag if it should be overwritten.";
-            KCTERR(errMsg.str());
         }
     }
 
