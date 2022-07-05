@@ -93,7 +93,8 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     {
         DenFileInfo inf(denFile, false);
         if(inf.isValid() && inf.dimCount() == 3 && inf.getDataType() == type
-           && inf.hasXMajorAlignment() == XMajor)
+           && inf.hasXMajorAlignment() == XMajor && inf.dimx() == dimx && inf.dimy() == dimy
+           && inf.dimz() == dimz)
         {
             LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
             offset = inf.getOffset();
