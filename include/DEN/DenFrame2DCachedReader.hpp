@@ -1,6 +1,7 @@
 #pragma once
 
 // External
+#include <algorithm>
 #include <mutex>
 #include <string>
 
@@ -12,36 +13,47 @@
 
 namespace KCT::io {
 /**
- * Implementation of the ProjectionReader for projections and projection matrices stored in the
- * den files.
+ * Thread safe implementation of the ProjectionReader for projections and projection matrices stored
+ * in the den files.
  */
 template <typename T>
-class DenFrame2DReader : virtual public Frame2DReaderI<T>
+class DenFrame2DCachedReader : virtual public Frame2DReaderI<T>
 // Frame2DReaderI<T> will be only once in the family tree
 {
 
 public:
-    /**Constructs DenFrame2DReader from file name.
+    /**Constructs DenFrame2DCachedReader from file name.
      *
      *
      * @param denFile
      * @param denFile File in a DEN format to read by frames.
      * @param additionalBufferNum Number of additional buffers to allocate. Defaults to 0 for 1
      * default buffer.
+     * @param cache_size Store cache_size frames in memory
      */
-    DenFrame2DReader(std::string denFile, uint32_t additionalBufferNum = 0);
+    DenFrame2DCachedReader(std::string denFile,
+                           uint32_t additionalBufferNum = 0,
+                           uint32_t cache_size = 0);
     /// Destructor
-    ~DenFrame2DReader();
+    ~DenFrame2DCachedReader();
     /// Copy constructor
-    DenFrame2DReader(const DenFrame2DReader<T>& b) = delete; 
+    DenFrame2DCachedReader(const DenFrame2DCachedReader<T>& b) = delete;
     // Copy assignment with copy and swap
-    DenFrame2DReader<T>& operator=(DenFrame2DReader<T> &b) = delete;
+    DenFrame2DCachedReader<T>& operator=(DenFrame2DCachedReader<T>& b) = delete;
     // Move constructor
-    DenFrame2DReader(DenFrame2DReader<T>&& b) = delete;
+    DenFrame2DCachedReader(DenFrame2DCachedReader<T>&& b) = delete;
     // Move assignment
-    DenFrame2DReader<T>& operator=(DenFrame2DReader<T>&& other) = delete;
-    std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) override;
-    std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(unsigned int i);
+    DenFrame2DCachedReader<T>& operator=(DenFrame2DCachedReader<T>&& other) = delete;
+    std::shared_ptr<io::Frame2DI<T>> readFrame(uint32_t k) override;
+    std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(uint32_t k);
+    void frameToCache(uint32_t k, std::shared_ptr<BufferedFrame2D<T>> f);
+    /**
+     * Populate cache by frameCount frames.
+     *
+     * @param fromID Index to start populating cache.
+     * @param frameCount Number of frames to put into the cache.
+     */
+    void fillCache(uint32_t fromID, uint32_t frameCount);
     void
     readFrameIntoBuffer(uint64_t flatFrameIndex, T* outside_buffer, bool XMajorAlignment = true);
     uint32_t dimx() const override;
@@ -63,15 +75,22 @@ protected:
 
 private:
     mutable std::mutex* consistencyMutexes;
+    mutable std::mutex cacheConsistencyMutex;
     uint8_t** buffers;
     T** buffer_copys;
-    uint32_t additionalBufferNum;
+    std::vector<std::shared_ptr<BufferedFrame2D<T>>> cache;
+    std::queue<uint32_t> cachedFramesQueue;
+    uint32_t bufferCount;
+    uint32_t cacheSize;
 };
 
 template <typename T>
-DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBufferNum)
+DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
+                                                  uint32_t additionalBufferNum,
+                                                  uint32_t cacheSize)
     : denFile(denFile)
-    , additionalBufferNum(additionalBufferNum)
+    , bufferCount(additionalBufferNum + 1)
+    , cacheSize(cacheSize)
 {
     DenFileInfo pi = DenFileInfo(this->denFile);
     this->offset = pi.getOffset();
@@ -81,10 +100,15 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
     this->XMajorAlignment = pi.hasXMajorAlignment();
     this->dataType = pi.getDataType();
     this->elementByteSize = pi.elementByteSize();
-    this->consistencyMutexes = new std::mutex[1 + additionalBufferNum];
-    this->buffers = new uint8_t*[1 + additionalBufferNum];
-    this->buffer_copys = new T*[1 + additionalBufferNum];
-    for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+    this->consistencyMutexes = new std::mutex[bufferCount];
+    this->buffers = new uint8_t*[bufferCount];
+    this->buffer_copys = new T*[bufferCount];
+    if(this->cacheSize > this->sizez)
+    {
+        this->cacheSize = this->sizez;
+    }
+    this->cache.resize(this->sizez, nullptr); // Initialized by nullptrs
+    for(uint32_t i = 0; i != bufferCount; i++)
     {
         this->buffers[i] = new uint8_t[elementByteSize * sizex * sizey];
         this->buffer_copys[i] = new T[sizex * sizey];
@@ -97,7 +121,7 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
 // performed to be able to delete such object with stealed internals where its buffers are
 // nullptr.
 template <typename T>
-DenFrame2DReader<T>::~DenFrame2DReader()
+DenFrame2DCachedReader<T>::~DenFrame2DCachedReader()
 {
     if(consistencyMutexes != nullptr)
     {
@@ -106,7 +130,7 @@ DenFrame2DReader<T>::~DenFrame2DReader()
     consistencyMutexes = nullptr;
     if(buffers != nullptr)
     {
-        for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+        for(uint32_t i = 0; i != bufferCount; i++)
         {
             if(buffers[i] != nullptr)
             {
@@ -119,7 +143,7 @@ DenFrame2DReader<T>::~DenFrame2DReader()
     buffers = nullptr;
     if(buffer_copys != nullptr)
     {
-        for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+        for(uint32_t i = 0; i != bufferCount; i++)
         {
             if(buffer_copys[i] != nullptr)
             {
@@ -133,44 +157,78 @@ DenFrame2DReader<T>::~DenFrame2DReader()
 }
 
 template <typename T>
-std::string DenFrame2DReader<T>::getFileName() const
+std::string DenFrame2DCachedReader<T>::getFileName() const
 {
     return this->denFile;
 }
 
 template <typename T>
-uint32_t DenFrame2DReader<T>::dimx() const
+uint32_t DenFrame2DCachedReader<T>::dimx() const
 {
     return sizex;
 }
 
 template <typename T>
-uint32_t DenFrame2DReader<T>::dimy() const
+uint32_t DenFrame2DCachedReader<T>::dimy() const
 {
     return sizey;
 }
 
 template <typename T>
-uint32_t DenFrame2DReader<T>::dimz() const
+uint32_t DenFrame2DCachedReader<T>::dimz() const
 {
     return sizez;
 }
 
 template <typename T>
-std::shared_ptr<io::Frame2DI<T>> DenFrame2DReader<T>::readFrame(unsigned int sliceNum)
+void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t frameCount)
 {
-    std::shared_ptr<Frame2DI<T>> ps = readBufferedFrame(sliceNum);
-    return ps;
+    if(fromID >= sizez)
+    {
+        LOGW << io::xprintf("fromID=%d is greater or equal than sizez=%d", fromID, sizez);
+        return;
+    }
+    if(cacheSize != 0)
+    {
+        if(frameCount < cacheSize)
+        {
+            LOGW << io::xprintf(
+                "Specified frameCount=%d exceeds cacheSize=%d, setting frameCount to cacheSize.");
+            frameCount = cacheSize;
+        }
+        for(uint64_t k = fromID; k != std::min(uint64_t(fromID) + frameCount, sizez); k++)
+        {
+            readBufferedFrame(k);
+        }
+    } else
+    {
+        LOGW << io::xprintf(
+            "There was no cache specified when creating this object, can not fill.");
+    }
 }
 
 template <typename T>
-std::shared_ptr<io::BufferedFrame2D<T>>
-DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
+std::shared_ptr<io::Frame2DI<T>> DenFrame2DCachedReader<T>::readFrame(uint32_t k)
 {
+    std::shared_ptr<Frame2DI<T>> f = readBufferedFrame(k);
+    return f;
+}
+
+template <typename T>
+std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedFrame(uint32_t k)
+{
+    std::shared_ptr<BufferedFrame2D<T>> f;
+    // If it is in cache, return it directly
+    f = cache[k];
+    if(f != nullptr)
+    {
+        return f;
+    }
+    // If not start fetching
     std::unique_lock<std::mutex> l;
     bool locked = false;
     uint32_t mutexnum = 0;
-    for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+    for(uint32_t i = 0; i != 1 + bufferCount; i++)
     {
         l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
         if(l.owns_lock())
@@ -190,7 +248,7 @@ DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
     uint8_t* buffer = buffers[mutexnum];
     T* buffer_copy = buffer_copys[mutexnum];
     uint32_t elmCount = sizex * sizey;
-    uint64_t position = this->offset + uint64_t(sliceNum) * elementByteSize * elmCount;
+    uint64_t position = this->offset + uint64_t(k) * elementByteSize * elmCount;
     io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
     if(this->XMajorAlignment)
     {
@@ -209,20 +267,41 @@ DenFrame2DReader<T>::readBufferedFrame(unsigned int sliceNum)
             }
         }
     }
-    std::shared_ptr<BufferedFrame2D<T>> ps
-        = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
-    return ps;
+    f = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
+    frameToCache(k, f);
+    return f;
 }
 
 template <typename T>
-void DenFrame2DReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
-                                              T* outside_buffer,
-                                              bool XMajorAlignment)
+void DenFrame2DCachedReader<T>::frameToCache(uint32_t k, std::shared_ptr<BufferedFrame2D<T>> f)
+{
+    if(cacheSize > 0)
+    {
+        cache[k] = f;
+        cachedFramesQueue.push(k);
+        if(cachedFramesQueue.size() > cacheSize && !cachedFramesQueue.empty())
+        {
+            std::unique_lock<std::mutex> _synchronized_block(cacheConsistencyMutex);
+            while(cachedFramesQueue.size() > cacheSize && !cachedFramesQueue.empty())
+            {
+
+                uint32_t k_delete = cachedFramesQueue.front();
+                cachedFramesQueue.pop();
+                cache[k_delete] = nullptr;
+            }
+        }
+    }
+}
+
+template <typename T>
+void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
+                                                    T* outside_buffer,
+                                                    bool XMajorAlignment)
 {
     std::unique_lock<std::mutex> l;
     bool locked = false;
     uint32_t mutexnum = 0;
-    for(uint32_t i = 0; i != 1 + additionalBufferNum; i++)
+    for(uint32_t i = 0; i != 1 + bufferCount; i++)
     {
         l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
         if(l.owns_lock())
@@ -278,7 +357,7 @@ void DenFrame2DReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
 }
 
 template <typename T>
-DenSupportedType DenFrame2DReader<T>::getDataType() const
+DenSupportedType DenFrame2DCachedReader<T>::getDataType() const
 {
     return dataType;
 }
