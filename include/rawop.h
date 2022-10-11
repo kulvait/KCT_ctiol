@@ -19,11 +19,11 @@
 
 namespace KCT {
 namespace io {
-    void readFirstBytes(std::string fileName, uint8_t* buffer, int numBytes);
+    void readFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void readBytesFrom(std::string fileName,
                        uint64_t fromPosition,
                        uint8_t* buffer,
-                       std::streamsize numBytes);
+                       uint64_t numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void
     writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);

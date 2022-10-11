@@ -4,126 +4,129 @@
 namespace KCT {
 namespace io {
 
-    void readFirstBytes(std::string fileName, uint8_t* buffer, int numBytes)
+    void readFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes)
     {
+        std::string ERR;
         if(CHAR_BIT != 8)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
-                   << CHAR_BIT << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not use this platform since CHAR_BIT=%d is not 8!", CHAR_BIT);
+            KCTERR(ERR);
         }
-        std::ifstream file(fileName, std::ifstream::binary | std::ios::in); // binary for input
+        std::ifstream file(fileName.c_str(),
+                           std::ifstream::binary | std::ios::in); // binary for input
         if(!file.is_open()) // cannot open file
         {
-            std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+#ifdef __linux__
+            ERR = io::xprintf("Can not open file %s, strerror message :%s.", fileName.c_str(),
+                              strerror(errno));
+#else
+            ERR = io::xprintf("Can not open file %s.", fileName.c_str());
+#endif
+            KCTERR(ERR);
         }
 
         file.read((char*)buffer, numBytes);
         auto num = file.gcount();
         file.close();
-        if(num != numBytes)
+        if(num != (int64_t)numBytes)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not read first " << numBytes << "bytes from the file " << fileName
-                   << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not read first %lu bytes from the file %s.", numBytes,
+                              fileName.c_str());
+            KCTERR(ERR);
         }
     }
 
     void readBytesFrom(std::string fileName,
                        uint64_t fromPosition,
                        uint8_t* buffer,
-                       std::streamsize numBytes)
+                       uint64_t numBytes)
     {
         // LOGD << io::xprintf("Reading %d bytes from pos %lu.", numBytes, fromPosition);
+        std::string ERR;
         if(CHAR_BIT != 8)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
-                   << CHAR_BIT << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not use this platform since CHAR_BIT=%d is not 8!", CHAR_BIT);
+            KCTERR(ERR);
         }
-        std::ifstream file(fileName, std::ifstream::binary | std::ios::in); // binary for input
+        std::ifstream file(fileName.c_str(),
+                           std::ifstream::binary | std::ios::in); // binary for input
         if(!file.is_open()) // cannot open file
         {
-            std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << "failed with message: " << strerror(errno)
-                   << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+#ifdef __linux__
+            ERR = io::xprintf("Can not open file %s, strerror message :%s.", fileName.c_str(),
+                              strerror(errno));
+#else
+            ERR = io::xprintf("Can not open file %s.", fileName.c_str());
+#endif
+            KCTERR(ERR);
         }
         file.seekg(fromPosition);
         file.read((char*)buffer, numBytes);
         auto num = file.gcount();
         file.close();
-        if(num != numBytes)
+        if(num != (int64_t)numBytes)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not read " << numBytes << " bytes from the position " << fromPosition
-                   << " in the file " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not read first %lu bytes from the position %ld in file %s.",
+                              numBytes, fromPosition, fileName.c_str());
+            KCTERR(ERR);
         }
     }
 
     void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes)
     {
+        std::string ERR;
         if(CHAR_BIT != 8)
         {
-            std::string errMsg;
-            errMsg = io::xprintf(
-                "Can not use this platform since CHAR_BIT size is not 8, it is %d.", CHAR_BIT);
-            KCTERR(errMsg);
+            ERR = io::xprintf("Can not use this platform since CHAR_BIT=%d is not 8!", CHAR_BIT);
+            KCTERR(ERR);
         }
-        std::ofstream file(fileName,
+        std::ofstream file(fileName.c_str(),
                            std::ios::binary | std::ios::out
                                | std::ios::in); // Open binary, for output, for input
         if(!file.is_open()) // cannot open file
         {
-            std::string errMsg;
-            errMsg = io::xprintf("Can not open file %s.", fileName.c_str());
-            KCTERR(errMsg);
+#ifdef __linux__
+            ERR = io::xprintf("Can not open file %s, strerror message :%s.", fileName.c_str(),
+                              strerror(errno));
+#else
+            ERR = io::xprintf("Can not open file %s.", fileName.c_str());
+#endif
+            KCTERR(ERR);
         }
-
         file.write((char*)buffer, numBytes);
         auto num = file.tellp();
         file.close();
         if(num != (int64_t)numBytes)
         {
-            std::string errMsg;
-            errMsg = io::xprintf("Can not read first %d bytes from file %s.", numBytes,
-                                 fileName.c_str());
-            KCTERR(errMsg);
+            ERR = io::xprintf("Can not write first %lu bytes to the file %s.", numBytes,
+                              fileName.c_str());
+            KCTERR(ERR);
         }
     }
 
-    void
-    writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
+    void writeBytesFrom(std::string fileName,
+                        uint64_t fromPosition,
+                        uint8_t* buffer,
+                        uint64_t numBytes)
     {
+        std::string ERR;
         if(CHAR_BIT != 8)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
-                   << CHAR_BIT << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not use this platform since CHAR_BIT=%d is not 8!", CHAR_BIT);
+            KCTERR(ERR);
         }
-        std::ofstream file(fileName,
+        std::ofstream file(fileName.c_str(),
                            std::ios::binary | std::ios::out
                                | std::ios::in); // Open binary, for output, for input
         if(!file.is_open()) // cannot open file
         {
-            std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+#ifdef __linux__
+            ERR = io::xprintf("Can not open file %s, strerror message :%s.", fileName.c_str(),
+                              strerror(errno));
+#else
+            ERR = io::xprintf("Can not open file %s.", fileName.c_str());
+#endif
+            KCTERR(ERR);
         }
         file.seekp(fromPosition); // put pointer
         std::streampos cur = file.tellp();
@@ -133,33 +136,33 @@ namespace io {
         file.close();
         if(num != (int64_t)numBytes)
         {
-            std::stringstream errMsg;
-            errMsg << num << " bytes written from number of bytess that should be written "
-                   << numBytes << " to " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Instead of %lu bytes to be written from position %lu to the file %s "
+                              "only %ld bytes was written.",
+                              numBytes, fromPosition, fileName.c_str(), num);
+            KCTERR(ERR);
         }
     }
 
     void appendBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes)
     {
+        std::string ERR;
         if(CHAR_BIT != 8)
         {
-            std::stringstream errMsg;
-            errMsg << "Can not use this platform since CHAR_BIT size is not 8, namely it is "
-                   << CHAR_BIT << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Can not use this platform since CHAR_BIT=%d is not 8!", CHAR_BIT);
+            KCTERR(ERR);
         }
-        std::ofstream file(fileName,
+        std::ofstream file(fileName.c_str(),
                            std::ios::binary | std::ios::out | std::ios::in
                                | std::ios::ate); // Open binary, for output, for input
         if(!file.is_open()) // cannot open file
         {
-            std::stringstream errMsg;
-            errMsg << "Can not open file " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+#ifdef __linux__
+            ERR = io::xprintf("Can not open file %s, strerror message :%s.", fileName.c_str(),
+                              strerror(errno));
+#else
+            ERR = io::xprintf("Can not open file %s.", fileName.c_str());
+#endif
+            KCTERR(ERR);
         }
         std::streampos cur = file.tellp();
         file.write((char*)buffer, numBytes);
@@ -168,11 +171,10 @@ namespace io {
         file.close();
         if(num != (int64_t)numBytes)
         {
-            std::stringstream errMsg;
-            errMsg << num << " bytes written from number of bytess that should be written "
-                   << numBytes << " to " << fileName << ".";
-            LOGE << errMsg.str();
-            throw std::runtime_error(errMsg.str());
+            ERR = io::xprintf("Instead of %lu bytes to be appended to the end of the file %s only "
+                              "%ld bytes was written.",
+                              numBytes, fileName.c_str(), num);
+            KCTERR(ERR);
         }
     }
 
@@ -225,6 +227,7 @@ namespace io {
 
     void createEmptyFile(std::string fileName, uint64_t numBytes, bool overwrite)
     {
+        std::string ERR;
         if(pathExists(fileName))
         {
             if(overwrite)
@@ -232,16 +235,14 @@ namespace io {
                 std::remove(fileName.c_str());
                 if(pathExists(fileName))
                 {
-                    std::string ERR = io::xprintf("Can not delete %f", fileName.c_str());
+                    ERR = io::xprintf("Can not delete %f", fileName.c_str());
                     KCTERR(ERR);
                 }
             } else
             {
-                std::stringstream errMsg;
-                errMsg << "Path " << fileName
-                       << " already exist, set overwrite flag to overwritte.";
-                KCTERR(errMsg.str());
-                return;
+                ERR = io::xprintf("Path %s already exists, to overwrite set overwrite flag.",
+                                  fileName.c_str());
+                KCTERR(ERR);
             }
         }
         if(!pathExists(fileName) || overwrite)
@@ -268,14 +269,15 @@ namespace io {
      */
     std::string fileToString(const std::string& f)
     {
+        std::string ERR;
         if(!pathExists(f))
         {
-            std::string ERR = io::xprintf("File %s does not exist.", f.c_str());
+            ERR = io::xprintf("File %s does not exist.", f.c_str());
             KCTERR(ERR);
         }
         if(!isRegularFile(f))
         {
-            std::string ERR = io::xprintf("File %s is not a regular file.", f.c_str());
+            ERR = io::xprintf("File %s is not a regular file.", f.c_str());
             KCTERR(ERR);
         }
         std::ifstream ifs(f.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -305,10 +307,11 @@ namespace io {
                               bool overwrite,
                               std::vector<std::string>& inputFiles)
     {
+        std::string ERR;
         if(pathExists(outputFile) && !overwrite)
         {
-            std::string ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
-                                          outputFile.c_str());
+            ERR = io::xprintf("Ouptut file %s exists and overwrite is not set.",
+                              outputFile.c_str());
             KCTERR(ERR);
         }
         std::ofstream ofs(outputFile, std::ios_base::binary | std::ios::trunc);
@@ -316,8 +319,8 @@ namespace io {
         {
             if(!isRegularFile(f))
             {
-                std::string ERR = io::xprintf(
-                    "File %s from the files to concatenate is not regular file!", f.c_str());
+                ERR = io::xprintf("File %s from the files to concatenate is not regular file!",
+                                  f.c_str());
                 // can throw std::ios_base::failure(ERR);
                 KCTERR(ERR);
             }
@@ -327,14 +330,16 @@ namespace io {
             // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
             if(ifs.fail())
             {
-                KCTERR(io::xprintf("Failure reading %s.", f.c_str()));
+                ERR = io::xprintf("Failure reading %s.", f.c_str());
+                KCTERR(ERR);
             }
         }
         ofs.close();
         // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
         if(ofs.fail())
         {
-            KCTERR(io::xprintf("Failure writing %s.", outputFile.c_str()));
+            ERR = io::xprintf("Failure writing %s.", outputFile.c_str());
+            KCTERR(ERR);
         }
     }
 } // namespace io
