@@ -31,6 +31,8 @@ private:
     std::shared_ptr<std::ofstream> ofstream;
     std::vector<char> _pubsetbuf_buffer;
     uint64_t _pubsetbuf_buffer_size = 1073741824; // 2^30
+    bool littleEndianArchitecture;
+    void initialize();
 
 public:
     /**
@@ -86,6 +88,20 @@ public:
 };
 
 template <typename T>
+void DenAsyncFrame2DBufferedWritter<T>::initialize()
+{
+    int num = 1;
+    littleEndianArchitecture = (*(char*)&num == 1);
+    buffer = new uint8_t[frameByteSize];
+    ofstream = std::make_shared<std::ofstream>();
+    _pubsetbuf_buffer.resize(_pubsetbuf_buffer_size);
+    ofstream->rdbuf()->pubsetbuf(&_pubsetbuf_buffer[0], _pubsetbuf_buffer_size);
+    ofstream->open(denFile,
+                   std::ios::binary | std::ios::out
+                       | std::ios::in); // Open binary, for output, for input
+}
+
+template <typename T>
 DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
     std::string denFile, uint32_t dimx, uint32_t dimy, uint32_t dimz, bool XMajor)
     : denFile(denFile)
@@ -116,13 +132,7 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
     }
     frameSize = (uint64_t)sizex * (uint64_t)sizey;
     frameByteSize = sizeof(T) * frameSize;
-    buffer = new uint8_t[frameByteSize];
-    ofstream = std::make_shared<std::ofstream>();
-    _pubsetbuf_buffer.resize(_pubsetbuf_buffer_size);
-    ofstream->rdbuf()->pubsetbuf(&_pubsetbuf_buffer[0], _pubsetbuf_buffer_size);
-    ofstream->open(denFile,
-                   std::ios::binary | std::ios::out
-                       | std::ios::in); // Open binary, for output, for input
+    initialize();
 }
 
 template <typename T>
@@ -156,13 +166,7 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string de
     this->sizez = info.dimz();
     frameSize = (uint64_t)sizex * (uint64_t)sizey;
     frameByteSize = sizeof(T) * frameSize;
-    buffer = new uint8_t[frameByteSize];
-    ofstream = std::make_shared<std::ofstream>();
-    _pubsetbuf_buffer.resize(_pubsetbuf_buffer_size);
-    ofstream->rdbuf()->pubsetbuf(&_pubsetbuf_buffer[0], _pubsetbuf_buffer_size);
-    ofstream->open(denFile,
-                   std::ios::binary | std::ios::out
-                       | std::ios::in); // Open binary, for output, for input
+    initialize();
 }
 
 /// Guard for move constructor stealed objects
@@ -238,25 +242,30 @@ void DenAsyncFrame2DBufferedWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f
     std::lock_guard<std::mutex> guard(
         writingMutex); // Mutex will be released as this goes out of scope.
     T* f_array = f.getDataPointer();
-    if(XMajor)
+    if(XMajor && littleEndianArchitecture)
     {
-        for(uint64_t i = 0; i != frameSize; i++)
-        {
-            util::setNextElement<T>(*(f_array + i), &buffer[sizeof(T) * i]);
-        }
+        io::writeBytesFrom(ofstream, position, (uint8_t*)f.getDataPointer(), frameByteSize);
     } else
     {
-        for(uint32_t i = 0; i != sizex; i++)
+        if(XMajor)
         {
-            for(uint32_t j = 0; j != sizey; j++)
+            for(uint64_t i = 0; i != frameSize; i++)
             {
-                util::setNextElement<T>(*(f_array + j * sizex + i),
-                                        &buffer[(i * sizey + j) * sizeof(T)]);
+                util::setNextElement<T>(*(f_array + i), &buffer[sizeof(T) * i]);
+            }
+        } else
+        {
+            for(uint32_t i = 0; i != sizex; i++)
+            {
+                for(uint32_t j = 0; j != sizey; j++)
+                {
+                    util::setNextElement<T>(*(f_array + j * sizex + i),
+                                            &buffer[(i * sizey + j) * sizeof(T)]);
+                }
             }
         }
+        io::writeBytesFrom(ofstream, position, buffer, frameByteSize);
     }
-    io::writeBytesFrom(ofstream, position, buffer, frameByteSize);
-    return;
 }
 
 } // namespace KCT::io

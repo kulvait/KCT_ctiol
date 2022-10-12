@@ -113,8 +113,12 @@ namespace io {
             ERR = "File descriptor is not open!";
             KCTERR(ERR);
         }
-        ofstream->seekp(fromPosition); // put pointer
         std::streampos cur = ofstream->tellp();
+        if(cur != (int64_t)fromPosition)
+        {
+            ofstream->seekp(fromPosition); // put pointer
+            cur = ofstream->tellp();
+        }
         ofstream->write((char*)buffer, numBytes);
         auto pos = ofstream->tellp();
         auto num = pos - cur;
