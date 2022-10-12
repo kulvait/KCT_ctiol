@@ -7,6 +7,7 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
+#include "BufferedFrame2D.hpp"
 #include "DEN/DenFileInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
