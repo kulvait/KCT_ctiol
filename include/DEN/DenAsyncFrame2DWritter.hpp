@@ -21,6 +21,8 @@ class DenAsyncFrame2DWritter : public AsyncFrame2DWritterI<T>
 private:
     std::string denFile;
     uint32_t sizex, sizey, sizez;
+    uint64_t frameSize;
+    uint64_t frameByteSize;
     uint64_t offset;
     bool extended;
     bool XMajor;
@@ -107,7 +109,9 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     {
         DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
     }
-    buffer = new uint8_t[sizeof(T) * this->dimx() * this->dimy()];
+    frameSize = (uint64_t)sizex * (uint64_t)sizey;
+    frameByteSize = sizeof(T) * frameSize;
+    buffer = new uint8_t[frameByteSize];
 }
 
 template <typename T>
@@ -139,7 +143,9 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
     this->sizex = info.dimx();
     this->sizey = info.dimy();
     this->sizez = info.dimz();
-    buffer = new uint8_t[sizeof(T) * this->sizex * this->sizey];
+    frameSize = (uint64_t)sizex * (uint64_t)sizey;
+    frameByteSize = sizeof(T) * frameSize;
+    buffer = new uint8_t[frameByteSize];
 }
 
 /// Guard for move constructor stealed objects
@@ -241,25 +247,31 @@ uint32_t DenAsyncFrame2DWritter<T>::dimz() const
 }
 
 template <typename T>
-void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& s, uint32_t i)
+void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& f, uint32_t k)
 {
+    uint64_t position = offset + k * frameByteSize;
     std::lock_guard<std::mutex> guard(
         writingMutex); // Mutex will be released as this goes out of scope.
-    for(std::size_t j = 0; j != this->dimy(); j++)
+    if(XMajor)
     {
-        for(std::size_t k = 0; k != this->dimx(); k++)
+        for(uint32_t j = 0; j != sizey; j++)
         {
-            if(XMajor)
+            for(uint32_t i = 0; i != sizex; i++)
             {
-                util::setNextElement<T>(s(k, j), &buffer[(j * this->dimx() + k) * sizeof(T)]);
-            } else
+                util::setNextElement<T>(f(i, j), &buffer[(j * sizex + i) * sizeof(T)]);
+            }
+        }
+    } else
+    {
+        for(uint32_t i = 0; i != sizex; i++)
+        {
+            for(uint32_t j = 0; j != sizey; j++)
             {
-                util::setNextElement<T>(s(k, j), &buffer[(k * this->dimy() + j) * sizeof(T)]);
+                util::setNextElement<T>(f(i, j), &buffer[(i * sizey + j) * sizeof(T)]);
             }
         }
     }
-    uint64_t position = offset + ((uint64_t)sizeof(T)) * i * this->dimx() * this->dimy();
-    io::writeBytesFrom(denFile, position, buffer, sizeof(T) * this->dimx() * this->dimy());
+    io::writeBytesFrom(denFile, position, buffer, frameByteSize);
     return;
 }
 
