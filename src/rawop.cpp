@@ -36,10 +36,8 @@ namespace io {
         }
     }
 
-    void readBytesFrom(std::string fileName,
-                       uint64_t fromPosition,
-                       uint8_t* buffer,
-                       uint64_t numBytes)
+    void
+    readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
     {
         // LOGD << io::xprintf("Reading %d bytes from pos %lu.", numBytes, fromPosition);
         std::string ERR;
@@ -104,10 +102,33 @@ namespace io {
         }
     }
 
-    void writeBytesFrom(std::string fileName,
+    void writeBytesFrom(std::shared_ptr<std::ofstream> ofstream,
                         uint64_t fromPosition,
                         uint8_t* buffer,
                         uint64_t numBytes)
+    {
+        std::string ERR;
+        if(!ofstream->is_open()) // cannot open file
+        {
+            ERR = "File descriptor is not open!";
+            KCTERR(ERR);
+        }
+        ofstream->seekp(fromPosition); // put pointer
+        std::streampos cur = ofstream->tellp();
+        ofstream->write((char*)buffer, numBytes);
+        auto pos = ofstream->tellp();
+        auto num = pos - cur;
+        if(num != (int64_t)numBytes)
+        {
+            ERR = io::xprintf("Instead of %lu bytes to be written from position %lu to the ofstream"
+                              "only %ld bytes was written.",
+                              numBytes, fromPosition, num);
+            KCTERR(ERR);
+        }
+    }
+
+    void
+    writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
     {
         std::string ERR;
         if(CHAR_BIT != 8)

@@ -3,6 +3,7 @@
 
 #include <plog/Log.h>
 
+#include <cstdio>
 #include <experimental/filesystem>
 #include <fstream>
 #include <iostream>
@@ -12,7 +13,6 @@
 #include <stdarg.h> // For va_start, etc.
 #include <string>
 #include <sys/stat.h>
-#include <cstdio>
 
 #include "littleEndianAlignment.h"
 #include "stringFormatter.h"
@@ -20,11 +20,13 @@
 namespace KCT {
 namespace io {
     void readFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
-    void readBytesFrom(std::string fileName,
-                       uint64_t fromPosition,
-                       uint8_t* buffer,
-                       uint64_t numBytes);
+    void
+    readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
+    void writeBytesFrom(std::shared_ptr<std::ofstream> ofstream,
+                        uint64_t fromPosition,
+                        uint8_t* buffer,
+                        uint64_t numBytes);
     void
     writeBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
     void appendBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
