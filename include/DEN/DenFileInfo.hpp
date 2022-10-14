@@ -18,30 +18,34 @@ class DenFileInfo
 {
 public:
     DenFileInfo(std::string fileName, bool exceptInvalid = true);
-    std::string getFileName() const;
     uint32_t dimx() const;
     uint32_t dimy() const;
+    /**
+     * @return Flat z dimension, frameCount if it can be represented by uint32_t.
+     */
     uint32_t dimz() const;
-    uint64_t dimflatz() const;
-    uint64_t frameSize() const;
+    uint64_t getFrameCount() const;
+    uint64_t getFrameSize() const;
+    uint64_t getFrameByteSize() const;
     /**
      * Get n-th dimension
      * @param n Dimension index x=0, y=1, z=2, ....
      *
      * @return
      */
-    uint16_t dimCount() const;
+    uint16_t getDimCount() const;
     uint32_t dim(uint32_t n) const;
     uint32_t getNumRows() const;
     uint32_t getNumCols() const;
     uint32_t getNumSlices() const;
+    std::string getFileName() const;
     /**
      * Get file size.
      *
      * @return Size of the underlying file in bytes.
      */
-    uint64_t getSize() const;
-    uint64_t elementCount() const;
+    uint64_t getFileSize() const;
+    uint64_t getElementCount() const;
     bool isExtended() const;
     // If true the array is sorted such that (x,y,z) = (0,0,0), (1,0,0), (0,1,0), (1,1,0),
     // (0,0,1), (1,0,1), (0,1,1), (1,1,1)  If false the array is sorted such that (x,y,z) =
@@ -49,8 +53,8 @@ public:
     bool hasXMajorAlignment() const;
     bool isValid();
     uint64_t getOffset() const;
-    DenSupportedType getDataType() const;
-    uint16_t elementByteSize() const;
+    DenSupportedType getElementType() const;
+    uint16_t getElementByteSize() const;
     template <typename T>
     T getMaxVal() const;
     template <typename T>
@@ -146,166 +150,86 @@ public:
                                        bool XMajorAlignment = true);
 
 private:
+    bool valid = true;
     std::string fileName;
+    uint64_t fileSize;
     // Extended format specification is at https://kulvait.github.io/KCT_doc/den-format.html
-    uint16_t _dimCount;
-    uint16_t _elementByteSize;
-    DenSupportedType _elementType;
-    std::array<double, 16> _dim;
-    uint64_t _fileSize;
+    uint16_t dimCount;
+    std::array<uint32_t, 16> _dim;
     bool extended = false;
     bool XMajorAlignment = true;
-    bool valid = true;
     uint64_t offset = 6;
+    DenSupportedType elementType;
+
+    // Information that can be derived from previous data
+    uint16_t elementByteSize;
+    uint64_t frameSize;
+    uint64_t frameByteSize;
+    uint64_t elementCount;
+    uint64_t frameCount;
 };
 
 template <typename T>
 T DenFileInfo::getMaxVal() const
 {
-    DenSupportedType dataType = getDataType();
-    uint64_t rows = getNumRows();
-    uint64_t cols = getNumCols();
-    uint64_t zdim = getNumSlices();
+    std::shared_ptr<std::ifstream> ifstream;
+    ifstream->open(fileName,
+                   std::ios::binary | std::ios::in); // Open binary, for output, for input
     uint64_t currentPosition;
-    switch(dataType)
+    T max = std::numeric_limits<T>::min();
+    uint8_t* buffer = new uint8_t[frameByteSize];
+    for(uint64_t k = 0; k != frameCount; k++)
     {
-    case io::DenSupportedType::UINT16: {
-        uint16_t max = 0;
-        uint8_t* buffer = new uint8_t[rows * cols * 2];
-        for(uint64_t z = 0; z != zdim; z++)
+        currentPosition = offset + k * frameByteSize;
+        io::readBytesFrom(ifstream, currentPosition, buffer, frameByteSize);
+        T val;
+        for(uint64_t pos = 0; pos != frameSize; pos++)
         {
-            currentPosition = offset + z * rows * cols * 2;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 2);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
+            val = util::getNextElement<T>(&buffer[pos * elementByteSize], elementType);
+            if(val > max)
             {
-                val = util::getNextElement<T>(&buffer[pos * 2], dataType);
-                max = (max > val ? max : val);
+                max = val;
             }
         }
-        delete[] buffer;
-        return max;
     }
-    case io::DenSupportedType::FLOAT32: {
-        float max = -std::numeric_limits<float>::infinity();
-        uint8_t* buffer = new uint8_t[rows * cols * 4];
-        for(uint64_t z = 0; z != zdim; z++)
-        {
-            currentPosition = offset + z * rows * cols * 4;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 4);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
-            {
-                val = util::getNextElement<T>(&buffer[pos * 4], dataType);
-                if(!std::isnan(val))
-                {
-                    max = (max > val ? max : val);
-                }
-            }
-        }
-        delete[] buffer;
-        return max;
+    delete[] buffer;
+    if(ifstream != nullptr)
+    {
+        ifstream->close();
     }
-    case io::DenSupportedType::FLOAT64: {
-        double max = -std::numeric_limits<double>::infinity();
-        uint8_t* buffer = new uint8_t[rows * cols * 8];
-        for(uint64_t z = 0; z != zdim; z++)
-        {
-            currentPosition = offset + z * rows * cols * 8;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 8);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
-            {
-                val = util::getNextElement<T>(&buffer[pos * 8], dataType);
-                if(!std::isnan(val))
-                {
-                    max = (max > val ? max : val);
-                }
-            }
-        }
-        delete[] buffer;
-        return max;
-    }
-    default:
-        std::string errMsg = io::xprintf("Unsupported data type %s.",
-                                         io::DenSupportedTypeToString(dataType).c_str());
-        KCTERR(errMsg);
-    }
+    return max;
 }
 
 template <typename T>
 T DenFileInfo::getMinVal() const
 {
-    DenSupportedType dataType = getDataType();
-    uint64_t rows = getNumRows();
-    uint64_t cols = getNumCols();
-    uint64_t zdim = getNumSlices();
+    std::shared_ptr<std::ifstream> ifstream;
+    ifstream->open(fileName,
+                   std::ios::binary | std::ios::out
+                       | std::ios::in); // Open binary, for output, for input
     uint64_t currentPosition;
-    switch(dataType)
+    T min = std::numeric_limits<T>::max();
+    uint8_t* buffer = new uint8_t[frameByteSize];
+    for(uint64_t k = 0; k != frameCount; k++)
     {
-    case io::DenSupportedType::UINT16: {
-        uint16_t min = 65535;
-        uint8_t* buffer = new uint8_t[rows * cols * 2];
-        for(uint64_t z = 0; z != zdim; z++)
+        currentPosition = offset + k * frameByteSize;
+        io::readBytesFrom(ifstream, currentPosition, buffer, frameByteSize);
+        T val;
+        for(uint64_t pos = 0; pos != frameSize; pos++)
         {
-            currentPosition = offset + z * rows * cols * 2;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 2);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
+            val = util::getNextElement<T>(&buffer[pos * elementByteSize], elementType);
+            if(val < min)
             {
-                val = util::getNextElement<T>(&buffer[pos * 2], dataType);
-                min = (min < val ? min : val);
+                min = val;
             }
         }
-        delete[] buffer;
-        return min;
     }
-    case io::DenSupportedType::FLOAT32: {
-        float min = std::numeric_limits<float>::infinity();
-        uint8_t* buffer = new uint8_t[rows * cols * 4];
-        for(uint64_t z = 0; z != zdim; z++)
-        {
-            currentPosition = offset + z * rows * cols * 4;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 4);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
-            {
-                val = util::getNextElement<T>(&buffer[pos * 4], dataType);
-                if(!std::isnan(val))
-                {
-                    min = (min < val ? min : val);
-                }
-            }
-        }
-        delete[] buffer;
-        return min;
+    delete[] buffer;
+    if(ifstream != nullptr)
+    {
+        ifstream->close();
     }
-    case io::DenSupportedType::FLOAT64: {
-        double min = std::numeric_limits<double>::infinity();
-        uint8_t* buffer = new uint8_t[rows * cols * 8]; // This is problematic should be new
-        for(uint64_t z = 0; z != zdim; z++)
-        {
-
-            currentPosition = offset + z * rows * cols * 8;
-            io::readBytesFrom(fileName, currentPosition, buffer, rows * cols * 8);
-            T val;
-            for(uint64_t pos = 0; pos != rows * cols; pos++)
-            {
-                val = util::getNextElement<T>(&buffer[pos * 8], dataType);
-                if(!std::isnan(val))
-                {
-                    min = (min < val ? min : val);
-                }
-            }
-        }
-        delete[] buffer;
-        return min;
-    }
-    default:
-        std::string errMsg = io::xprintf("Unsupported data type %s.",
-                                         io::DenSupportedTypeToString(dataType).c_str());
-        KCTERR(errMsg);
-    }
+    return min;
 }
 
 /**
@@ -316,121 +240,73 @@ T DenFileInfo::getMinVal() const
 template <typename T>
 double DenFileInfo::getl2Square() const
 {
-    DenSupportedType dataType = getDataType();
-    uint64_t dim_x = dimx();
-    uint64_t dim_y = dimy();
-    uint64_t dim_z = dimz();
+    std::shared_ptr<std::ifstream> ifstream;
+    ifstream->open(fileName,
+                   std::ios::binary | std::ios::out
+                       | std::ios::in); // Open binary, for output, for input
     uint64_t currentPosition;
-    double sum = 0.0;
-    double val;
-    switch(dataType)
+    uint8_t* buffer = new uint8_t[frameByteSize];
+    double sumSquares = 0.0;
+    for(uint64_t k = 0; k != frameCount; k++)
     {
-    case io::DenSupportedType::UINT16: {
-        uint8_t* buffer = new uint8_t[dim_x * dim_y * 2];
-        for(uint64_t z = 0; z != dim_z; z++)
+        currentPosition = offset + k * frameByteSize;
+        io::readBytesFrom(ifstream, currentPosition, buffer, frameByteSize);
+        double val;
+        for(uint64_t pos = 0; pos != frameSize; pos++)
         {
-            currentPosition = offset + z * dim_x * dim_y * 2;
-            io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * 2);
-            for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
-            {
-                val = (double)util::getNextElement<T>(&buffer[pos * 2], dataType);
-                sum += val * val;
-            }
+            val = (double)util::getNextElement<T>(&buffer[pos * elementByteSize], elementType);
+            sumSquares += (val * val);
         }
-        delete[] buffer;
-        return sum;
     }
-    case io::DenSupportedType::FLOAT32: {
-        uint8_t* buffer = new uint8_t[dim_y * dim_x * 4];
-        for(uint64_t z = 0; z != dim_z; z++)
-        {
-            currentPosition = offset + z * dim_y * dim_x * 4;
-            io::readBytesFrom(fileName, currentPosition, buffer, dim_y * dim_x * 4);
-            for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
-            {
-                val = (double)util::getNextElement<T>(&buffer[pos * 4], dataType);
-                sum += val * val;
-            }
-        }
-        delete[] buffer;
-        return sum;
+    delete[] buffer;
+    if(ifstream != nullptr)
+    {
+        ifstream->close();
     }
-    case io::DenSupportedType::FLOAT64: {
-        uint8_t* buffer = new uint8_t[dim_y * dim_x * 8]; // This is problematic should be new
-        for(uint64_t z = 0; z != dim_z; z++)
-        {
-
-            currentPosition = offset + z * dim_y * dim_x * 8;
-            io::readBytesFrom(fileName, currentPosition, buffer, dim_y * dim_x * 8);
-            for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
-            {
-                val = (double)util::getNextElement<T>(&buffer[pos * 8], dataType);
-                sum += val * val;
-            }
-        }
-        delete[] buffer;
-        return sum;
-    }
-    default:
-        std::string errMsg = io::xprintf("Unsupported data type %s.",
-                                         io::DenSupportedTypeToString(dataType).c_str());
-        KCTERR(errMsg);
-    }
+    return sumSquares;
 }
 
 template <typename T>
 double DenFileInfo::getMean() const
 {
-    DenSupportedType dataType = getDataType();
-    uint64_t dim_x = dimx();
-    uint64_t dim_y = dimy();
-    uint64_t dim_z = dimz();
-    uint64_t totalSize = dim_x * dim_y * dim_z;
     uint64_t currentPosition;
-    uint32_t elementSize = elementByteSize();
     double sum = 0.0;
     double val;
-    uint8_t* buffer = new uint8_t[dim_x * dim_y * elementByteSize()];
-    for(uint64_t z = 0; z != dim_z; z++)
+    uint8_t* buffer = new uint8_t[frameByteSize];
+    for(uint64_t z = 0; z != frameCount; z++)
     {
-        currentPosition = offset + z * dim_x * dim_y * elementSize;
-        io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * elementSize);
-        for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+        currentPosition = offset + z * frameByteSize;
+        io::readBytesFrom(fileName, currentPosition, buffer, frameByteSize);
+        for(uint64_t pos = 0; pos != frameSize; pos++)
         {
-            val = (double)util::getNextElement<T>(&buffer[pos * elementSize], dataType);
+            val = (double)util::getNextElement<T>(&buffer[pos * elementByteSize], elementType);
             sum += val;
         }
     }
     delete[] buffer;
-    return T(sum / totalSize);
+    return T(sum / elementCount);
 }
 
 template <typename T>
 double DenFileInfo::getVariance() const
 {
-    DenSupportedType dataType = getDataType();
-    uint32_t elementSize = elementByteSize();
-    uint64_t dim_x = dimx();
-    uint64_t dim_y = dimy();
-    uint64_t dim_z = dimz();
-    uint64_t totalSize = dim_x * dim_y * dim_z;
     uint64_t currentPosition;
     double sum = 0.0;
     double val;
     double mean = (double)getMean<T>();
-    uint8_t* buffer = new uint8_t[dim_x * dim_y * elementByteSize()];
-    for(uint64_t z = 0; z != dim_z; z++)
+    uint8_t* buffer = new uint8_t[frameByteSize];
+    for(uint64_t z = 0; z != frameCount; z++)
     {
-        currentPosition = offset + z * dim_x * dim_y * elementSize;
-        io::readBytesFrom(fileName, currentPosition, buffer, dim_x * dim_y * 2);
-        for(uint64_t pos = 0; pos != dim_y * dim_x; pos++)
+        currentPosition = offset + z * frameByteSize;
+        io::readBytesFrom(fileName, currentPosition, buffer, frameByteSize);
+        for(uint64_t pos = 0; pos != frameSize; pos++)
         {
-            val = (double)util::getNextElement<T>(&buffer[pos * elementSize], dataType);
+            val = (double)util::getNextElement<T>(&buffer[pos * elementByteSize], elementType);
             sum += (val - mean) * (val - mean);
         }
     }
     delete[] buffer;
-    return T(sum / totalSize);
+    return T(sum / elementCount);
 }
 
 template <typename T>
@@ -439,14 +315,12 @@ void DenFileInfo::writeBufferIntoFlatFrame(uint64_t flatZIndex,
                                            bool bufferXMajor,
                                            uint8_t* tmpbuffer) const
 {
-    uint64_t _frameSize = this->frameSize();
-    uint64_t frameByteSize = _frameSize * _elementByteSize;
     uint64_t position = this->offset + flatZIndex * frameByteSize;
     if(bufferXMajor == this->XMajorAlignment)
     {
-        for(uint64_t a = 0; a != _frameSize; a++)
+        for(uint64_t a = 0; a != frameSize; a++)
         {
-            util::setNextElement<T>(bufferToWrite[a], &tmpbuffer[a * _elementByteSize]);
+            util::setNextElement<T>(bufferToWrite[a], &tmpbuffer[a * elementByteSize]);
         }
     } else
     {
@@ -472,7 +346,7 @@ void DenFileInfo::writeBufferIntoFlatFrame(uint64_t flatZIndex,
                     outerIndex = y + _dimy * x;
                 }
                 util::setNextElement<T>(bufferToWrite[outerIndex],
-                                        &tmpbuffer[innerIndex * _elementByteSize]);
+                                        &tmpbuffer[innerIndex * elementByteSize]);
             }
         }
     }
@@ -485,16 +359,13 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
                                           bool fillXMajor,
                                           uint8_t* tmpbuffer) const
 {
-    uint64_t _frameSize = this->frameSize();
-    uint64_t frameByteSize = _frameSize * _elementByteSize;
     uint64_t position = this->offset + flatZIndex * frameByteSize;
     io::readBytesFrom(this->fileName, position, tmpbuffer, frameByteSize);
     if(fillXMajor == this->XMajorAlignment)
     {
-        for(uint64_t a = 0; a != _frameSize; a++)
+        for(uint64_t a = 0; a != frameSize; a++)
         {
-            bufferToFill[a]
-                = util::getNextElement<T>(&tmpbuffer[a * _elementByteSize], _elementType);
+            bufferToFill[a] = util::getNextElement<T>(&tmpbuffer[a * elementByteSize], elementType);
         }
     } else
     {
@@ -520,7 +391,7 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
                     outerIndex = y + _dimy * x;
                 }
                 bufferToFill[outerIndex] = util::getNextElement<T>(
-                    &tmpbuffer[innerIndex * _elementByteSize], _elementType);
+                    &tmpbuffer[innerIndex * elementByteSize], elementType);
             }
         }
     }
@@ -529,18 +400,16 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
 template <typename T>
 void DenFileInfo::readIntoArray(T* c_array, bool c_array_xmajor)
 {
-    if(getDenSupportedTypeByTypeID(typeid(T)) != _elementType)
+    if(getDenSupportedTypeByTypeID(typeid(T)) != elementType)
     {
         KCTERR(io::xprintf("Buffer of incompatible type, need to fill buffer of %s.",
-                           DenSupportedTypeToString(_elementType).c_str()))
+                           DenSupportedTypeToString(elementType).c_str()))
     }
 
-    uint64_t _dimflatz = dimflatz();
-    uint64_t _framesize = this->frameSize();
-    uint8_t* tmpbuffer = new uint8_t[_framesize * _elementByteSize];
-    for(uint64_t k = 0; k != _dimflatz; k++)
+    uint8_t* tmpbuffer = new uint8_t[frameByteSize];
+    for(uint64_t k = 0; k != frameCount; k++)
     {
-        this->readFlatFrameIntoBuffer(k, c_array + k * _framesize, c_array_xmajor, tmpbuffer);
+        this->readFlatFrameIntoBuffer(k, c_array + k * frameSize, c_array_xmajor, tmpbuffer);
     }
     delete[] tmpbuffer;
 }
@@ -579,12 +448,13 @@ void DenFileInfo::createDenFileFromArray(T* c_array,
     }
     createEmptyDenFile(fileName, dst, dimCount, dim, XMajorAlignment);
     DenFileInfo fileInfo(fileName);
-    uint64_t _dimflatz = fileInfo.dimflatz();
-    uint64_t _framesize = fileInfo.frameSize();
-    uint8_t* tmpbuffer = new uint8_t[_framesize * fileInfo._elementByteSize];
-    for(uint64_t k = 0; k != _dimflatz; k++)
+    uint64_t frameByteSize = fileInfo.getFrameByteSize();
+    uint64_t frameCount = fileInfo.getFrameCount();
+    uint64_t frameSize = fileInfo.getFrameSize();
+    uint8_t* tmpbuffer = new uint8_t[frameByteSize];
+    for(uint64_t k = 0; k != frameCount; k++)
     {
-        fileInfo.writeBufferIntoFlatFrame(k, c_array + k * _framesize, c_array_xmajor, tmpbuffer);
+        fileInfo.writeBufferIntoFlatFrame(k, c_array + k * frameSize, c_array_xmajor, tmpbuffer);
     }
     delete[] tmpbuffer;
 }

@@ -116,7 +116,7 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
     if(io::pathExists(denFile))
     {
         DenFileInfo inf(denFile, false);
-        if(inf.isValid() && inf.dimCount() == 3 && inf.getDataType() == type
+        if(inf.isValid() && inf.getDimCount() == 3 && inf.getElementType() == type
            && inf.hasXMajorAlignment() == XMajor && inf.dimx() == dimx && inf.dimy() == dimy
            && inf.dimz() == dimz)
         {
@@ -152,11 +152,11 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string de
         KCTERR(err);
     }
     uint64_t elementByteSize = sizeof(T);
-    if(info.elementByteSize() != elementByteSize)
+    if(info.getElementByteSize() != elementByteSize)
     {
         err = io::xprintf("Element byte size %d of %s is incompatible with the size %d of "
                           "current template type.",
-                          info.elementByteSize(), denFile.c_str(), elementByteSize);
+                          info.getElementByteSize(), denFile.c_str(), elementByteSize);
         KCTERR(err);
     }
     extended = info.isExtended();

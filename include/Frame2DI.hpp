@@ -28,6 +28,9 @@ public:
     /**Returns y dimension.*/
     virtual uint32_t dimy() const = 0;
 
+    /**Returns frameSize, which is dimx*dimy.*/
+    virtual uint64_t getFrameSize() const = 0;
+
     // see https://stackoverflow.com/a/10024812
     virtual ~Frame2DI() = default;
 };

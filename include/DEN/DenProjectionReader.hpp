@@ -62,33 +62,30 @@ DenProjectionReader<T>::DenProjectionReader(std::string projectionsFile,
     this->sizex = pi.dimx();
     this->sizey = pi.dimy();
     this->sizez = pi.dimz();
+    this->offsetProjections = pi.getOffset();
     this->offsetMatrix = mi.getOffset();
-    this->offsetProjections = mi.getOffset();
     uint32_t cols, rows, matCount;
-    cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
-    rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
+    cols = mi.dimx(); // Its matrix, dealing with strange data format considerations
+    rows = mi.dimy(); // Its matrix, dealing with strange data format considerations
     matCount = mi.getNumSlices();
-    this->dataType = pi.getDataType();
-    this->elementByteSize = pi.elementByteSize();
+    this->dataType = pi.getElementType();
+    this->elementByteSize = pi.getElementByteSize();
+    std::string ERR;
     if(rows != 3 || cols != 4)
     {
-        std::string errMsg
-            = io::xprintf("The file %s does not seem to contain projection matrices, since it has "
+        ERR = io::xprintf("The file %s does not seem to contain projection matrices, since it has "
                           "dimensions (rows, cols) = (%d, %d) and should have (3, 4).",
                           this->projectionsFile.c_str(), rows, cols);
-        LOGE << errMsg;
-        throw std::runtime_error(errMsg);
+        KCTERR(ERR);
     }
     if(matCount != this->sizez)
     {
-        std::string errMsg
-            = io::xprintf("There is a mismatch of the number of projections in file %s that is %d "
+        ERR = io::xprintf("There is a mismatch of the number of projections in file %s that is %d "
                           "and the number of projections in the matrix file %s whidh is %d. Please "
                           "check if the files are compatible.",
                           this->projectionsFile.c_str(), this->sizez,
                           this->projectionMatrixFile.c_str(), matCount);
-        LOGE << errMsg;
-        throw std::runtime_error(errMsg);
+        LOGE << ERR;
     }
 }
 

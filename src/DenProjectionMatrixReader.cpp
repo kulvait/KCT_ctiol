@@ -10,7 +10,7 @@ DenProjectionMatrixReader::DenProjectionMatrixReader(std::string projectionMatri
     cols = mi.getNumCols(); // Its matrix, dealing with strange data format considerations
     rows = mi.getNumRows(); // Its matrix, dealing with strange data format considerations
     countMatrices = mi.getNumSlices();
-    DenSupportedType dt = mi.getDataType();
+    DenSupportedType dt = mi.getElementType();
     std::string ERR;
     if(rows != 3 || cols != 4)
     {

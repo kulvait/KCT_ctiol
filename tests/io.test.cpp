@@ -23,10 +23,10 @@ TEST_CASE("TEST: KCT::io::DenFileInfo", "[denfileinfo][NOPRINT][NOVIZ]")
     REQUIRE(di.dimx() == 4);
     REQUIRE(di.dimy() == 3);
     REQUIRE(di.dimz() == 248);
-    REQUIRE(di.getSize() == 23808 + 6);
-    REQUIRE(di.elementCount() == 2976);
-    REQUIRE(di.getDataType() == io::DenSupportedType::FLOAT64);
-    REQUIRE(di.elementByteSize() == 8);
+    REQUIRE(di.getFileSize() == 23808 + 6);
+    REQUIRE(di.getElementCount() == 2976);
+    REQUIRE(di.getElementType() == io::DenSupportedType::FLOAT64);
+    REQUIRE(di.getElementByteSize() == 8);
 }
 
 TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")

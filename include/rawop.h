@@ -22,6 +22,8 @@ namespace io {
     void readFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void
     readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
+    void
+    readBytesFrom(std::shared_ptr<std::ifstream> fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void writeBytesFrom(std::shared_ptr<std::ofstream> ofstream,
                         uint64_t fromPosition,

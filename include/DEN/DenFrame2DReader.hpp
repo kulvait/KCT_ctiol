@@ -77,10 +77,10 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
     this->sizey = pi.dimy();
-    this->sizez = pi.dimflatz();
+    this->sizez = pi.getFrameCount();
     this->XMajorAlignment = pi.hasXMajorAlignment();
-    this->dataType = pi.getDataType();
-    this->elementByteSize = pi.elementByteSize();
+    this->dataType = pi.getElementType();
+    this->elementByteSize = pi.getElementByteSize();
     this->consistencyMutexes = new std::mutex[1 + additionalBufferNum];
     this->buffers = new uint8_t*[1 + additionalBufferNum];
     this->buffer_copys = new T*[1 + additionalBufferNum];

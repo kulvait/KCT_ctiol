@@ -22,14 +22,15 @@ namespace io {
          *copied. Frame then have to be filled by calling set to individual elements.
          */
         BufferedFrame2D(T* buffer, uint32_t sizex, uint32_t sizey)
+            : sizex(sizex)
+            , sizey(sizey)
+            , frameSize((uint64_t)sizex * (uint64_t)sizey)
         {
-            this->slice = new T[sizex * sizey];
+            this->frameDataArray = new T[frameSize];
             if(buffer != nullptr)
             {
-                memcpy(this->slice, buffer, sizex * sizey * sizeof(T));
+                memcpy(this->frameDataArray, buffer, frameSize * sizeof(T));
             }
-            this->sizex = sizex;
-            this->sizey = sizey;
         }
 
         /**Create BufferedFrame2D using single value to be filled into the buffer.
@@ -38,18 +39,20 @@ namespace io {
          *the whole buffer.
          */
         BufferedFrame2D(T elm, uint32_t sizex, uint32_t sizey)
+            : sizex(sizex)
+            , sizey(sizey)
+            , frameSize((uint64_t)sizex * (uint64_t)sizey)
+
         {
-            this->slice = new T[sizex * sizey];
-            std::fill(this->slice, this->slice + (sizex * sizey), elm);
-            this->sizex = sizex;
-            this->sizey = sizey;
+            this->frameDataArray = new T[frameSize];
+            std::fill(this->frameDataArray, this->frameDataArray + frameSize, elm);
         }
 
         /**Copy constructor of BufferedFrame2D from another element.
          *
          */
         BufferedFrame2D(const BufferedFrame2D& b)
-            : BufferedFrame2D(b.slice, b.sizex, b.sizey)
+            : BufferedFrame2D(b.frameDataArray, b.sizex, b.sizey)
         {
         }
 
@@ -58,11 +61,11 @@ namespace io {
          */
         ~BufferedFrame2D()
         {
-            if(slice != nullptr)
+            if(frameDataArray != nullptr)
             {
-                delete[] slice;
+                delete[] frameDataArray;
             }
-            slice = nullptr;
+            frameDataArray = nullptr;
         } // destructor
 
         /**Copy assignment
@@ -74,13 +77,14 @@ namespace io {
             {
                 this->sizex = b.sizex;
                 this->sizey = b.sizey;
-                if(this->slice != nullptr)
+                this->frameSize = b.frameSize;
+                if(this->frameDataArray != nullptr)
                 {
-                    delete[] this->slice;
+                    delete[] this->frameDataArray;
                 }
-                this->slice = nullptr;
-                this->slice = new T[sizex * sizey];
-                memcpy(this->slice, b.slice, sizex * sizey * sizeof(T));
+                this->frameDataArray = nullptr;
+                this->frameDataArray = new T[frameSize];
+                memcpy(this->frameDataArray, b.frameDataArray, frameSize * sizeof(T));
             }
             return *this;
 
@@ -88,36 +92,40 @@ namespace io {
 
         BufferedFrame2D(BufferedFrame2D&& other)
         {
-            this->slice = other.slice;
+            this->frameDataArray = other.frameDataArray;
             this->sizex = other.sizex;
             this->sizey = other.sizey;
-            other.slice = nullptr;
+            this->frameSize = other.frameSize;
+            other.frameDataArray = nullptr;
         } // Move constructor
 
         BufferedFrame2D& operator=(BufferedFrame2D&& other)
         {
             if(&other != this)
             {
-                if(this->slice != nullptr)
+                if(this->frameDataArray != nullptr)
                 {
-                    delete[] this->slice;
+                    delete[] this->frameDataArray;
                 }
-                this->slice = nullptr;
-                this->slice = other.slice;
+                this->frameDataArray = nullptr;
+                this->frameDataArray = other.frameDataArray;
                 this->sizex = other.sizex;
                 this->sizey = other.sizey;
-                other.slice = nullptr;
+                this->frameSize = other.frameSize;
+                other.frameDataArray = nullptr;
             }
             return *this;
         } // Move assignment
 
-        T get(unsigned int x, unsigned int y) const override { return slice[y * sizex + x]; }
+        T get(uint32_t x, uint32_t y) const override { return frameDataArray[y * sizex + x]; }
 
-        void set(T val, unsigned int x, unsigned int y) override { slice[y * sizex + x] = val; }
+        void set(T val, uint32_t x, uint32_t y) override { frameDataArray[y * sizex + x] = val; }
 
-        unsigned int dimx() const override { return sizex; }
+        uint32_t dimx() const override { return sizex; }
 
-        unsigned int dimy() const override { return sizey; }
+        uint32_t dimy() const override { return sizey; }
+
+        uint64_t getFrameSize() const override { return frameSize; }
 
         /**Return transposed frame as a new object
          *
@@ -127,10 +135,10 @@ namespace io {
         {
             std::shared_ptr<io::BufferedFrame2D<T>> ft
                 = std::make_shared<BufferedFrame2D<T>>(nullptr, sizey, sizex);
-            for(int x = 0; x != sizex; x++)
-                for(int y = 0; y != sizey; y++)
+            for(uint32_t x = 0; x != sizex; x++)
+                for(uint32_t y = 0; y != sizey; y++)
                 {
-                    ft->set(slice[y * sizex + x], y, x);
+                    ft->set(frameDataArray[y * sizex + x], y, x);
                 }
             return ft;
         }
@@ -138,14 +146,15 @@ namespace io {
         /**
          *Function to get access to the data array.
          *
-         *Dangerous operation since it is structure managed by the object.
+         *Potentially unsafe operation since it is structure managed by the object.
          *This array is destroyed after the object is destroyed.
          */
-        T* getDataPointer() { return slice; }
+        T* getDataPointer() { return frameDataArray; }
 
     private:
-        T* slice;
-        int sizex, sizey;
+        T* frameDataArray;
+        const uint32_t sizex, sizey;
+        const uint64_t frameSize;
     };
 } // namespace io
 } // namespace KCT

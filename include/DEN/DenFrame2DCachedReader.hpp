@@ -3,6 +3,7 @@
 // External
 #include <algorithm>
 #include <mutex>
+#include <queue>
 #include <string>
 
 // Internal
@@ -70,8 +71,9 @@ protected:
     uint64_t offset;
     bool XMajorAlignment;
     uint64_t sizex, sizey, sizez;
+    uint64_t frameSize, frameByteSize;
     DenSupportedType dataType;
-    int elementByteSize;
+    uint16_t elementByteSize;
 
 private:
     mutable std::mutex* consistencyMutexes;
@@ -82,7 +84,17 @@ private:
     std::queue<uint32_t> cachedFramesQueue;
     uint32_t bufferCount;
     uint32_t cacheSize;
+    bool littleEndianArchitecture;
+
+    void initialize();
 };
+
+template <typename T>
+void DenFrame2DCachedReader<T>::initialize()
+{
+    int num = 1;
+    littleEndianArchitecture = (*(char*)&num == 1);
+}
 
 template <typename T>
 DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
@@ -96,10 +108,12 @@ DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
     this->sizey = pi.dimy();
-    this->sizez = pi.dimflatz();
+    this->sizez = pi.getFrameCount();
+    this->frameSize = pi.getFrameSize();
+    this->elementByteSize = pi.getElementByteSize();
+    this->frameByteSize = pi.getFrameByteSize();
     this->XMajorAlignment = pi.hasXMajorAlignment();
-    this->dataType = pi.getDataType();
-    this->elementByteSize = pi.elementByteSize();
+    this->dataType = pi.getElementType();
     this->consistencyMutexes = new std::mutex[bufferCount];
     this->buffers = new uint8_t*[bufferCount];
     this->buffer_copys = new T*[bufferCount];
@@ -115,6 +129,7 @@ DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
     }
     // Buffers are used for the alocation of new frames. Since this class uses the
     // instance that copies memory, this memory might me reused.
+    initialize();
 }
 
 // This mumbo jumbo is for correctly deleting object after move assignment operation was
@@ -247,27 +262,34 @@ std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedF
     // To protect calling this method from another thread using the same block of memory
     uint8_t* buffer = buffers[mutexnum];
     T* buffer_copy = buffer_copys[mutexnum];
-    uint32_t elmCount = sizex * sizey;
-    uint64_t position = this->offset + uint64_t(k) * elementByteSize * elmCount;
-    io::readBytesFrom(this->denFile, position, buffer, elementByteSize * elmCount);
-    if(this->XMajorAlignment)
+    uint64_t position = this->offset + k * frameByteSize;
+    if(this->XMajorAlignment && this->littleEndianArchitecture)
     {
-        for(uint32_t a = 0; a != elmCount; a++)
-        {
-            buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
-        }
+        io::readBytesFrom(this->denFile, position, (uint8_t*)buffer_copy, frameByteSize);
+        f = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
     } else
-    { // Frame2D is implemented as row major container
-        for(uint32_t x = 0; x != sizex; x++)
+    {
+
+        io::readBytesFrom(this->denFile, position, buffer, frameByteSize);
+        if(this->XMajorAlignment)
         {
-            for(uint32_t y = 0; y != sizey; y++)
+            for(uint64_t a = 0; a != frameSize; a++)
             {
-                buffer_copy[x + sizex * y]
-                    = util::getNextElement<T>(&buffer[(y + sizey * x) * elementByteSize], dataType);
+                buffer_copy[a] = util::getNextElement<T>(&buffer[a * elementByteSize], dataType);
+            }
+        } else
+        { // Frame2D is implemented as row major container
+            for(uint32_t x = 0; x != sizex; x++)
+            {
+                for(uint32_t y = 0; y != sizey; y++)
+                {
+                    buffer_copy[x + sizex * y] = util::getNextElement<T>(
+                        &buffer[(y + sizey * x) * elementByteSize], dataType);
+                }
             }
         }
+        f = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
     }
-    f = std::make_shared<BufferedFrame2D<T>>(buffer_copy, sizex, sizey);
     frameToCache(k, f);
     return f;
 }
@@ -294,7 +316,7 @@ void DenFrame2DCachedReader<T>::frameToCache(uint32_t k, std::shared_ptr<Buffere
 }
 
 template <typename T>
-void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
+void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t k,
                                                     T* outside_buffer,
                                                     bool XMajorAlignment)
 {
@@ -319,9 +341,8 @@ void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t flatZIndex,
     // Mutex will be released as this goes out of scope.
     // To protect calling this method from another thread using the same block of memory
     uint8_t* buffer = buffers[mutexnum];
-    uint32_t frameSize = sizex * sizey;
-    uint64_t position = this->offset + uint64_t(flatZIndex) * elementByteSize * frameSize;
-    io::readBytesFrom(this->denFile, position, buffer, elementByteSize * frameSize);
+    uint64_t position = this->offset + k * frameByteSize;
+    io::readBytesFrom(this->denFile, position, buffer, frameByteSize);
     if(XMajorAlignment == this->XMajorAlignment)
     {
         for(uint32_t a = 0; a != frameSize; a++)

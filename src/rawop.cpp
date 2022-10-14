@@ -47,7 +47,7 @@ namespace io {
             KCTERR(ERR);
         }
         std::ifstream file(fileName.c_str(),
-                           std::ifstream::binary | std::ios::in); // binary for input
+                           std::ios::binary | std::ios::in); // binary for input
         if(!file.is_open()) // cannot open file
         {
 #ifdef __linux__
@@ -66,6 +66,31 @@ namespace io {
         {
             ERR = io::xprintf("Can not read first %lu bytes from the position %ld in file %s.",
                               numBytes, fromPosition, fileName.c_str());
+            KCTERR(ERR);
+        }
+    }
+
+    void
+    readBytesFrom(std::shared_ptr<std::ifstream> ifstream, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
+    {
+        std::string ERR;
+        if(!ifstream || !ifstream->is_open()) // cannot open file
+        {
+            ERR = "File descriptor is not open!";
+            KCTERR(ERR);
+        }
+        std::streampos cur = ifstream->tellg();
+        if(cur != (int64_t)fromPosition)
+        {
+            ifstream->seekg(fromPosition); // put pointer
+            cur = ifstream->tellg();
+        }
+        ifstream->read((char*)buffer, numBytes);
+        auto num = ifstream->gcount();
+        if(num != (int64_t)numBytes)
+        {
+            ERR = io::xprintf("Can not read first %lu bytes from the position %ld in file descriptor.",
+                              numBytes, fromPosition);
             KCTERR(ERR);
         }
     }
@@ -108,7 +133,7 @@ namespace io {
                         uint64_t numBytes)
     {
         std::string ERR;
-        if(!ofstream->is_open()) // cannot open file
+        if(!ofstream || !ofstream->is_open()) // cannot open file
         {
             ERR = "File descriptor is not open!";
             KCTERR(ERR);
