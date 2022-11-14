@@ -114,6 +114,28 @@ namespace io {
         return x_array[quantileIndex];
     }
 
+    // Computing shifted data https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+    template <typename T>
+    double bufferedFrameSum(std::shared_ptr<BufferedFrame2D<T>> f)
+    {
+        uint64_t frameSize = f->getFrameSize();
+        if(frameSize == 0)
+        {
+            KCTERR("Can not compute anything on empty frame!");
+        }
+        T elm;
+        double sum = 0.0;
+        double elm_double;
+        T* x_array = f->getDataPointer();
+        for(uint64_t i = 0; i != frameSize; i++)
+        {
+            elm = x_array[i];
+            elm_double = (double)elm;
+            sum += elm_double;
+        }
+        return sum;
+    }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wreturn-type"
     /**Minimal value.
