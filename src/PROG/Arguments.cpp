@@ -34,7 +34,12 @@ int Arguments::parse(bool helpOnError)
     } catch(const CLI::ParseError& e)
     {
         int exitcode = cliApp->exit(e);
-        LOGE << io::xprintf("There was perse error with exit code %d catched.", exitcode);
+        std::string cmd = io::xprintf("%s", argv[0]);
+        for(int i = 1; i < argc; i++)
+        {
+            cmd = io::xprintf("%s %s", cmd.c_str(), argv[i]);
+        }
+        LOGE << io::xprintf("Parse error with exit code %d when parsing %s", exitcode, cmd.c_str());
         if(helpOnError)
         {
             std::cout << cliApp->help();
