@@ -53,7 +53,7 @@ namespace io {
     private:
         std::string dicomSeriesDir;
         std::string dicomSeriesPrefix;
-        int sizex, sizey, sizez;
+        uint32_t sizex, sizey, sizez;
         T windowMin, windowMax;
         int outputMin, outputMax;
         bool useSignedIntegers;
@@ -67,9 +67,9 @@ namespace io {
     public:
         DICOMAsyncWritterItk(std::string dicomSeriesDir,
                              std::string dicomSeriesPrefix,
-                             int dimx,
-                             int dimy,
-                             int dimz,
+                             uint32_t dimx,
+                             uint32_t dimy,
+                             uint32_t dimz,
                              T windowMin,
                              T windowMax,
                              int outputMin,
@@ -79,24 +79,24 @@ namespace io {
                              float addToValues);
 
         /*Need to specify dimension first*/
-        void writeFrame(typename itk::Image<T, 2>::Pointer s, int i) override;
+        void writeFrame(typename itk::Image<T, 2>::Pointer s, uint32_t i) override;
         /**Writes i-th slice to the source.*/
 
         void writeSignedSlice(
-            typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, int i);
+            typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, uint32_t i);
         /**Writes slice in the int16_t format*/
 
         void writeUnsignedSlice(
-            typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, int i);
+            typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, uint32_t i);
         /**Writes slice in the uint16_t format*/
 
-        virtual unsigned int dimx() const override;
+        virtual uint32_t dimx() const override;
         /**Returns x dimension.*/
 
-        virtual unsigned int dimy() const override;
+        virtual uint32_t dimy() const override;
         /**Returns y dimension.*/
 
-        virtual unsigned int dimz() const override;
+        virtual uint32_t dimz() const override;
         /**Returns z dimension.*/
 
         std::string getSeriesDir() const;
@@ -109,9 +109,9 @@ namespace io {
     template <typename T>
     DICOMAsyncWritterItk<T>::DICOMAsyncWritterItk(std::string dicomSeriesDir,
                                                   std::string dicomSeriesPrefix,
-                                                  int dimx,
-                                                  int dimy,
-                                                  int dimz,
+                                                  uint32_t dimx,
+                                                  uint32_t dimy,
+                                                  uint32_t dimz,
                                                   T windowMin,
                                                   T windowMax,
                                                   int outputMin,
@@ -174,25 +174,25 @@ namespace io {
     }
 
     template <typename T>
-    unsigned int DICOMAsyncWritterItk<T>::dimx() const
+    uint32_t DICOMAsyncWritterItk<T>::dimx() const
     {
         return sizex;
     }
 
     template <typename T>
-    unsigned int DICOMAsyncWritterItk<T>::dimy() const
+    uint32_t DICOMAsyncWritterItk<T>::dimy() const
     {
         return sizey;
     }
 
     template <typename T>
-    unsigned int DICOMAsyncWritterItk<T>::dimz() const
+    uint32_t DICOMAsyncWritterItk<T>::dimz() const
     {
         return sizez;
     }
 
     template <typename T>
-    void DICOMAsyncWritterItk<T>::writeFrame(typename itk::Image<T, 2>::Pointer s, int i)
+    void DICOMAsyncWritterItk<T>::writeFrame(typename itk::Image<T, 2>::Pointer s, uint32_t i)
     {
         typename itk::Image<T, 2>::Pointer x;
         MultiplyAddAccessor<T> a;
@@ -213,7 +213,7 @@ namespace io {
 
     template <typename T>
     void DICOMAsyncWritterItk<T>::writeUnsignedSlice(
-        typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, int i)
+        typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, uint32_t i)
     {
         std::string fileName = xprintf("%s/%s_%03d.dcm", this->dicomSeriesDir.c_str(),
                                        this->dicomSeriesPrefix.c_str(), i);
@@ -297,7 +297,7 @@ namespace io {
 
     template <typename T>
     void DICOMAsyncWritterItk<T>::writeSignedSlice(
-        typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, int i)
+        typename itk::ImageAdaptor<itk::Image<T, 2>, MultiplyAddAccessor<T>>::Pointer s, uint32_t i)
     {
         std::string fileName = xprintf("%s/%s_%03d.dcm", this->dicomSeriesDir.c_str(),
                                        this->dicomSeriesPrefix.c_str(), i);

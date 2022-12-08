@@ -23,8 +23,10 @@ namespace io {
     // implemented in some base class which is itself inherited
     {
     public:
-        virtual typename itk::Image<T, 2>::Pointer readChunk2DAsItkImage(int i) = 0;
+        virtual typename itk::Image<T, 2>::Pointer readChunk2DAsItkImage(uint32_t i) = 0;
         /*Returns i-th frame in the source as itk::Image<T,2>.*/
+
+        virtual ~Frame2DReaderItkI() = default;
     };
 } // namespace io
 } // namespace KCT

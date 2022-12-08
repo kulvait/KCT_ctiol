@@ -28,7 +28,7 @@ namespace io {
          * (projectionMatrixFile).
          *
          */
-        typename itk::Image<T, 2>::Pointer readProjectionSliceAsItkImage(int i) override;
+        typename itk::Image<T, 2>::Pointer readProjectionSliceAsItkImage(uint32_t i) override;
         /**Function to return projection slice as itk::Image<T, 2>*/
     };
 
@@ -41,7 +41,7 @@ namespace io {
 
     template <typename T>
     typename itk::Image<T, 2>::Pointer
-    DenProjectionReaderItk<T>::readProjectionSliceAsItkImage(int i)
+    DenProjectionReaderItk<T>::readProjectionSliceAsItkImage(uint32_t i)
     {
         //  LOGD << "Called readProjectionSliceToItkImage method, transpose???";
         typename itk::RawImageIO<T, 2>::Pointer rawImageIO = itk::RawImageIO<T, 2>::New();

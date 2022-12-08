@@ -27,14 +27,14 @@ namespace io {
         }
         /**DEN file to read chunks from.
          */
-        typename itk::Image<T, 2>::Pointer readChunk2DAsItkImage(int i) override;
+        typename itk::Image<T, 2>::Pointer readChunk2DAsItkImage(uint32_t i) override;
         /**Function to return projection slice as itk::Image<T, 2>*/
     private:
         float spacingX, spacingY;
     };
 
     template <typename T>
-    typename itk::Image<T, 2>::Pointer DenFrame2DReaderItk<T>::readChunk2DAsItkImage(int i)
+    typename itk::Image<T, 2>::Pointer DenFrame2DReaderItk<T>::readChunk2DAsItkImage(uint32_t i)
     {
         //  LOGD << "Called readProjectionSliceToItkImage method, transpose???";
         typename itk::RawImageIO<T, 2>::Pointer rawImageIO = itk::RawImageIO<T, 2>::New();

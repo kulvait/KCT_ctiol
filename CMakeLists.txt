@@ -13,7 +13,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(BUILD_SHARED_LIBS True)
 
 #ITK
-find_package(ITK)
+find_package(ITK HINTS $ENV{HOME}/BIG/local/lib/cmake/ITK-5.4)
 IF(ITK_FOUND)
 	add_compile_definitions(WITHITK)
 	include( ${ITK_USE_FILE} )

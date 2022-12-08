@@ -14,16 +14,19 @@ namespace io {
     {
     public:
         /**Writes i-th slice to the source.*/
-        virtual void writeFrame(typename itk::Image<T, 2>::Pointer s, int i) = 0;
+        virtual void writeFrame(typename itk::Image<T, 2>::Pointer s, uint32_t i) = 0;
 
         /** @return x dimension*/
-        virtual unsigned int dimx() const = 0;
+        virtual uint32_t dimx() const = 0;
 
         /** @return y dimension*/
-        virtual unsigned int dimy() const = 0;
+        virtual uint32_t dimy() const = 0;
 
         /** @return z dimension*/
-        virtual unsigned int dimz() const = 0;
+        virtual uint32_t dimz() const = 0;
+
+        /** virtual destructor*/
+        virtual ~AsyncFrame2DWritterItkI() = default;
     };
 } // namespace io
 } // namespace KCT

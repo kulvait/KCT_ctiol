@@ -26,8 +26,9 @@ namespace io {
     // implemented in some base class which is itself inherited
     {
     public:
-        virtual typename itk::Image<T, 2>::Pointer readProjectionSliceAsItkImage(int i) = 0;
+        virtual typename itk::Image<T, 2>::Pointer readProjectionSliceAsItkImage(uint32_t i) = 0;
         /*Returns i-th projection slice in the source as itk::Image<T,2>.*/
+        virtual ~ProjectionReaderItkI() = default;
     };
 } // namespace io
 } // namespace KCT

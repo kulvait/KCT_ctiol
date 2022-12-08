@@ -21,7 +21,7 @@ namespace io {
         {
         }
 
-        T get(unsigned int x, unsigned int y) const override
+        T get(uint32_t x, uint32_t y) const override
         {
             typename itk::Image<T, 2>::IndexType i = { { x, y } };
             typename itk::Image<T, 2>::PixelType p = img->GetPixel(i);
@@ -29,17 +29,17 @@ namespace io {
         }
         /**Get the value at coordinates x, y.*/
 
-        T operator()(unsigned int x, unsigned int y) const { return get(x, y); }
+        T operator()(uint32_t x, uint32_t y) const { return get(x, y); }
         /**Get the value at coordinates x, y. Calls get(x,y).*/
 
-        unsigned int dimx() const override
+        uint32_t dimx() const override
         {
             typename itk::Image<T, 2>::RegionType region = img->GetLargestPossibleRegion();
             typename itk::Image<T, 2>::SizeType size = region.GetSize();
             return size[0];
         }
 
-        unsigned int dimy() const override
+        uint32_t dimy() const override
         {
             typename itk::Image<T, 2>::RegionType region = img->GetLargestPossibleRegion();
             typename itk::Image<T, 2>::SizeType size = region.GetSize();
