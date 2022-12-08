@@ -172,7 +172,7 @@ private:
 template <typename T>
 T DenFileInfo::getMaxVal() const
 {
-    std::shared_ptr<std::ifstream> ifstream;
+    std::shared_ptr<std::ifstream> ifstream = std::make_shared<std::ifstream>();
     ifstream->open(fileName,
                    std::ios::binary | std::ios::in); // Open binary, for output, for input
     uint64_t currentPosition;
@@ -203,7 +203,7 @@ T DenFileInfo::getMaxVal() const
 template <typename T>
 T DenFileInfo::getMinVal() const
 {
-    std::shared_ptr<std::ifstream> ifstream;
+    std::shared_ptr<std::ifstream> ifstream = std::make_shared<std::ifstream>();
     ifstream->open(fileName,
                    std::ios::binary | std::ios::out
                        | std::ios::in); // Open binary, for output, for input
@@ -240,7 +240,7 @@ T DenFileInfo::getMinVal() const
 template <typename T>
 double DenFileInfo::getl2Square() const
 {
-    std::shared_ptr<std::ifstream> ifstream;
+    std::shared_ptr<std::ifstream> ifstream = std::make_shared<std::ifstream>();
     ifstream->open(fileName,
                    std::ios::binary | std::ios::out
                        | std::ios::in); // Open binary, for output, for input
