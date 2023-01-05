@@ -45,10 +45,6 @@ int Arguments::parse(bool helpOnError)
             std::cout << cliApp->help();
         }
         return -1;
-    } catch(...)
-    {
-        LOGE << "Unknown exception catched";
-        return -1;
     }
     return 0;
 }
@@ -60,8 +56,7 @@ void Arguments::registerOption(std::string optName, CLI::Option* opt)
     {
         std::string err
             = io::xprintf("Option with a name %s is already registered!", optName.c_str());
-        LOGE << err;
-        throw std::runtime_error(err);
+        KCTERR(err);
     }
     cliOptions[optName] = opt;
 }
@@ -72,8 +67,7 @@ void Arguments::registerOptionGroup(std::string optGroupName, CLI::Option_group*
     {
         std::string err
             = io::xprintf("Option with a name %s is already registered!", optGroupName.c_str());
-        LOGE << err;
-        throw std::runtime_error(err);
+        KCTERR(err);
     }
     cliOptionGroups[optGroupName] = og;
 }

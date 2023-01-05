@@ -2,6 +2,7 @@
 
 #include "CLI/CLI.hpp" //Command line parser
 #include "PROG/parseArgs.h"
+#include "PROG/KCTException.hpp"
 
 namespace KCT::util {
 
