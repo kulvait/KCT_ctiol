@@ -4,7 +4,7 @@
 #include "PLOG/PlogSetup.h"
 
 // External libraries
-//#include <CL/cl.hpp>
+#include <CL/cl.hpp>
 
 // Internal libraries
 #include "stringFormatter.h"
