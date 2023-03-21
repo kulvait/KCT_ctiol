@@ -42,13 +42,13 @@ void ArgumentsCTDetector::addPixelSizeArgs(double pixelSizeX, double pixelSizeY)
     Option* psx
         = og_geometry
               ->add_option(
-                  "--pixel-sizex", pixelSizeX,
+                  "--pixel-sizex", this->pixelSizeX,
                   io::xprintf("X spacing of detector cells in mm, defaults to %0.3f.", pixelSizeX))
               ->check(CLI::Range(0.0, 10000.00));
     Option* psy
         = og_geometry
               ->add_option(
-                  "--pixel-sizey", pixelSizeY,
+                  "--pixel-sizey", this->pixelSizeY,
                   io::xprintf("Y spacing of detector cells in mm, defaults to %0.3f.", pixelSizeY))
               ->check(CLI::Range(0.0, 10000.00));
     psx->needs(psy);
