@@ -5,6 +5,7 @@
 // Standard libraries
 #include <cmath>
 #include <string>
+#include <array>
 
 // Internal libraries
 #include "DEN/DenNextElement.h"

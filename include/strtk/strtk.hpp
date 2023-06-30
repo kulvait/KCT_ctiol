@@ -63,10 +63,10 @@
 #endif
 
 #if __GNUC__ >= 7
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #define strtk_disable_fallthrough_begin                                                            \
-    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wimplicit-fallthrough\"")
-
+    _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wimplicit-fallthrough\"") 
 #define strtk_disable_fallthrough_end _Pragma("GCC diagnostic pop")
 
 #else
@@ -25056,4 +25056,7 @@ namespace information {
 
 } // namespace strtk
 
+#endif
+#if __GNUC__ >= 7
+#pragma GCC diagnostic pop
 #endif
