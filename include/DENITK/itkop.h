@@ -3,10 +3,13 @@
 // External
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
 #include "itkIntensityWindowingImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
+#pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 #include <cstdlib> //EXIT_SUCCESS
 
