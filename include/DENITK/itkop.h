@@ -1,10 +1,13 @@
 #pragma once
 
 // External
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
 #include "itkIntensityWindowingImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
+#pragma GCC diagnostic pop
 #include <cstdlib> //EXIT_SUCCESS
 
 // Internal

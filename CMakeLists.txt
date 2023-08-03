@@ -15,8 +15,8 @@ set(BUILD_SHARED_LIBS True)
 #ITK
 find_package(ITK HINTS $ENV{HOME}/BIG/local/lib/cmake/ITK-5.4)
 IF(ITK_FOUND)
-	add_compile_definitions(WITHITK)
-	include( ${ITK_USE_FILE} )
+    add_compile_definitions(WITHITK)
+    include( ${ITK_USE_FILE} )
 ENDIF()
 
 #OPENCV
@@ -27,16 +27,13 @@ ENDIF()
 #OpenCL
 find_package(OpenCL)
 IF(OpenCL_FOUND)
-	message("OpenCL include ${OpenCL_INCLUDE_DIRS}")
-	add_definitions("-DCL_HPP_TARGET_OPENCL_VERSION=300")
-#CL_HPP_TARGET_OPENCL_VERSION != 100 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 110 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 120 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 200 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 210 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 220 && \
-#CL_HPP_TARGET_OPENCL_VERSION != 300
-	include_directories(${OpenCL_INCLUDE_DIRS})
+    add_definitions("-DCL_HPP_TARGET_OPENCL_VERSION=220")
+    add_definitions("-DCL_TARGET_OPENCL_VERSION=220")
+#possible values 100,110,120,200,210,220,300 for 120 and older uncomment the next line    
+#add_definitions("-DCL_USE_DEPRECATED_OPENCL_1_2_APIS")
+    message("Found OpenCL_INCLUDE_DIRS ${OpenCL_INCLUDE_DIRS}")
+    message("Found path OpenCL_LIBRARY ${OpenCL_LIBRARY} and OpenCL_LIBRARIES ${OpenCL_LIBRARIES}")
+    include_directories(${OpenCL_INCLUDE_DIRS})
 ENDIF()
 
 #CLI11 comand line parser library
