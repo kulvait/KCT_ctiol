@@ -243,7 +243,7 @@ std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedF
     std::unique_lock<std::mutex> l;
     bool locked = false;
     uint32_t mutexnum = 0;
-    for(uint32_t i = 0; i != 1 + bufferCount; i++)
+    for(uint32_t i = 0; i != bufferCount; i++)
     {
         l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
         if(l.owns_lock())
@@ -323,7 +323,7 @@ void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t k,
     std::unique_lock<std::mutex> l;
     bool locked = false;
     uint32_t mutexnum = 0;
-    for(uint32_t i = 0; i != 1 + bufferCount; i++)
+    for(uint32_t i = 0; i != bufferCount; i++)
     {
         l = std::unique_lock<std::mutex>(consistencyMutexes[i], std::try_to_lock);
         if(l.owns_lock())
