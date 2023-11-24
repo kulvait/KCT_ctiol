@@ -155,7 +155,7 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
 }
 
 template <typename T>
-DenAsyncFrame2DBuferredWritter<T>::DenAsyncFrame2DBuferredWritter(std::string denFile,
+DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile,
                                                                   uint16_t dimCount,
                                                                   uint32_t* dim,
                                                                   bool XMajor)
