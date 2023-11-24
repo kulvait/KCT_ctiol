@@ -41,6 +41,7 @@ public:
      * @param sizex
      * @param sizey
      * @param sizez
+     * @param XMajor Alignment of output.
      */
     DenAsyncFrame2DWritter(
         std::string denFile, uint32_t sizex, uint32_t sizey, uint32_t sizez, bool XMajor = true);
@@ -53,9 +54,9 @@ public:
      * @param denFile
      * @param dimCount
      * @param dim
-     * @param XMajor
+     * @param XMajor Alignment of output.
      */
-    DenAsyncFrame2DWritter(std::string denFile, uint16_t dimCount, uint32_t* dim, bool XMajor);
+    DenAsyncFrame2DWritter(std::string denFile, uint16_t dimCount, uint32_t* dim, bool XMajor = true);
     /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
      * zero the file.

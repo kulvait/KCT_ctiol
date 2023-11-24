@@ -47,6 +47,7 @@ public:
      * @param sizex
      * @param sizey
      * @param sizez
+     * @param XMajor
      */
     DenAsyncFrame2DBufferedWritter(
         std::string denFile, uint32_t sizex, uint32_t sizey, uint32_t sizez, bool XMajor = true);
@@ -64,7 +65,7 @@ public:
     DenAsyncFrame2DBufferedWritter(std::string denFile,
                                    uint16_t dimCount,
                                    uint32_t* dim,
-                                   bool XMajor);
+                                   bool XMajor = true);
 
     /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
