@@ -20,19 +20,21 @@ class DenAsyncFrame2DWritter : public AsyncFrame2DWritterI<T>
 {
 private:
     std::string denFile;
-    uint32_t sizex, sizey, sizez;
+    uint32_t sizex, sizey;
+    uint64_t frameCount;
     uint64_t frameSize;
     uint64_t frameByteSize;
     uint64_t offset;
     bool extended;
     bool XMajor;
+    bool existingFile = false;
     uint8_t* buffer;
     mutable std::mutex writingMutex;
 
 public:
     /**
-     *	Constructor using file name and sizeensions.
-     *	If file exists and have a same sizeensions, not overwrite but if it has different
+     *	Constructor using file name and 3D dimensions.
+     *	If file exists and have a same size and dimensions, not overwrite but if it has different
      *  dimensions, overwrites.
      *
      * @param denFile
@@ -44,6 +46,17 @@ public:
         std::string denFile, uint32_t sizex, uint32_t sizey, uint32_t sizez, bool XMajor = true);
 
     /**
+     *	Constructor using file name and dimensions.
+     *	If file exists and have a same size and dimensions, not overwrite but if it has different
+     *  dimensions, overwrites.
+     *
+     * @param denFile
+     * @param dimCount
+     * @param dim
+     * @param XMajor
+     */
+    DenAsyncFrame2DWritter(std::string denFile, uint16_t dimCount, uint32_t* dim, bool XMajor);
+    /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
      * zero the file.
      *
@@ -52,7 +65,7 @@ public:
     DenAsyncFrame2DWritter(std::string denFile);
 
     /**Writes i-th frame to the file.*/
-    void writeFrame(const Frame2DI<T>& s, uint32_t i) override;
+    void writeFrame(const Frame2DI<T>& s, uint64_t k) override;
 
     /**Returns x dimension.*/
     virtual uint32_t dimx() const override;
@@ -61,7 +74,7 @@ public:
     virtual uint32_t dimy() const override;
 
     /**Returns z dimension.*/
-    virtual uint32_t dimz() const override;
+    virtual uint64_t getFrameCount() const override;
 
     /**Returns file name.**/
     std::string getFileName() const;
@@ -86,7 +99,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     : denFile(denFile)
     , sizex(dimx)
     , sizey(dimy)
-    , sizez(dimz)
+    , frameCount(dimz)
     , XMajor(XMajor)
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
@@ -98,6 +111,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
            && inf.hasXMajorAlignment() == XMajor && inf.dimx() == dimx && inf.dimy() == dimy
            && inf.dimz() == dimz)
         {
+            existingFile = true;
             LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
             offset = inf.getOffset();
         } else
@@ -108,6 +122,67 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     } else
     {
         DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
+    }
+    frameSize = (uint64_t)sizex * (uint64_t)sizey;
+    frameByteSize = sizeof(T) * frameSize;
+    buffer = new uint8_t[frameByteSize];
+}
+
+template <typename T>
+DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile,
+                                                  uint16_t dimCount,
+                                                  uint32_t* dim,
+                                                  bool XMajor)
+    : denFile(denFile)
+    , sizex(dimx)
+    , sizey(dimy)
+    , XMajor(XMajor)
+{
+    DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
+    offset = 4096;
+    std::string ERR;
+    if(dimCount < 2 || dimCount > 16)
+    {
+        ERR = io::xprintf("Can not use file with dimCount=%d.", dimCount);
+        KCTERR(ERR);
+    } else
+    {
+        frameCount = 1;
+        for(uint32_t k = 2; k < dimCount; k++)
+        {
+            frameCount *= dim[k];
+        }
+    }
+    if(io::pathExists(denFile))
+    {
+        existingFile = true;
+        DenFileInfo inf(denFile, false);
+        if(inf.isValid() && inf.getDimCount() == dimCount && inf.getElementType() == type
+           && inf.hasXMajorAlignment() == XMajor)
+        {
+            for(uint32_t k = 0; k < dimCount; k++)
+            {
+                if(inf.dim(k) != dim[k])
+                {
+                    existingFile = false;
+                }
+            }
+        } else
+        {
+            existingFile = false;
+        }
+        if(existingFile)
+        {
+            LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
+            offset = inf.getOffset();
+        } else
+        {
+            DenFileInfo::createEmptyDenFile(denFile, type, dimCount, dim, XMajor);
+            LOGD << io::xprintf("Just overwritten the file %s with empty file.", denFile.c_str());
+        }
+    } else
+    {
+        DenFileInfo::createEmptyDenFile(denFile, type, dimCount, dim, XMajor);
     }
     frameSize = (uint64_t)sizex * (uint64_t)sizey;
     frameByteSize = sizeof(T) * frameSize;
@@ -137,14 +212,15 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
                           info.getElementByteSize(), denFile.c_str(), elementByteSize);
         KCTERR(err);
     }
+    existingFile = true;
     extended = info.isExtended();
     offset = info.getOffset();
     this->denFile = denFile;
     this->sizex = info.dimx();
     this->sizey = info.dimy();
-    this->sizez = info.dimz();
-    frameSize = (uint64_t)sizex * (uint64_t)sizey;
-    frameByteSize = sizeof(T) * frameSize;
+    this->frameCount = info.getFrameCount();
+    this->frameSize = info.getFrameSize();
+    this->frameByteSize = info.getFrameByteSize();
     buffer = new uint8_t[frameByteSize];
 }
 
@@ -241,13 +317,13 @@ uint32_t DenAsyncFrame2DWritter<T>::dimy() const
 }
 
 template <typename T>
-uint32_t DenAsyncFrame2DWritter<T>::dimz() const
+uint64_t DenAsyncFrame2DWritter<T>::getFrameCount() const
 {
-    return sizez;
+    return frameCount;
 }
 
 template <typename T>
-void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& f, uint32_t k)
+void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& f, uint64_t k)
 {
     uint64_t position = offset + k * frameByteSize;
     std::lock_guard<std::mutex> guard(

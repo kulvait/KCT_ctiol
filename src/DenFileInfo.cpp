@@ -323,10 +323,15 @@ namespace io {
                                       uint32_t* dim,
                                       bool XMajorAlignment)
     {
+        if(dimCount > 16)
+        {
+            std::string ERR = io::xprintf("%d>16 is invalid number of dimensions.", dimCount);
+            KCTERR(ERR);
+        }
         std::array<uint8_t, 4096> buf;
         util::putUint16(0, std::begin(buf));
-        util::putUint16(3, std::begin(buf) + 2); // 3D
-        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // elementByteSize
         if(XMajorAlignment) // Default
         {
             util::putUint16(0, std::begin(buf) + 6);
@@ -412,8 +417,8 @@ namespace io {
         uint64_t totalFileSize = 4096 + totalElementCount * elementSize;
         std::array<uint8_t, 4096> buf;
         util::putUint16(0, std::begin(buf));
-        util::putUint16(3, std::begin(buf) + 2); // 3D
-        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
+        util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
+        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // elementByteSize
         if(XMajorAlignment) // Default
         {
             util::putUint16(0, std::begin(buf) + 6);

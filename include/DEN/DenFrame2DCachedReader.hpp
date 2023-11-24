@@ -234,7 +234,10 @@ std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedF
 {
     std::shared_ptr<BufferedFrame2D<T>> f;
     // If it is in cache, return it directly
-    f = cache[k];
+    {
+        std::unique_lock<std::mutex> _synchronized_block(cacheConsistencyMutex);
+        f = cache[k];
+    }
     if(f != nullptr)
     {
         return f;
@@ -299,11 +302,11 @@ void DenFrame2DCachedReader<T>::frameToCache(uint32_t k, std::shared_ptr<Buffere
 {
     if(cacheSize > 0)
     {
+        std::unique_lock<std::mutex> _synchronized_block(cacheConsistencyMutex);
         cache[k] = f;
         cachedFramesQueue.push(k);
         if(cachedFramesQueue.size() > cacheSize && !cachedFramesQueue.empty())
         {
-            std::unique_lock<std::mutex> _synchronized_block(cacheConsistencyMutex);
             while(cachedFramesQueue.size() > cacheSize && !cachedFramesQueue.empty())
             {
 

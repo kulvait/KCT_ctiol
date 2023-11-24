@@ -13,7 +13,7 @@ namespace io {
     {
     public:
         /**Writes i-th slice to the source.*/
-        virtual void writeFrame(const Frame2DI<T>& s, uint32_t i) = 0;
+        virtual void writeFrame(const Frame2DI<T>& s, uint64_t k) = 0;
 
         /**Returns x dimension.*/
         virtual uint32_t dimx() const = 0;
@@ -22,7 +22,7 @@ namespace io {
         virtual uint32_t dimy() const = 0;
 
         /**Returns z dimension.*/
-        virtual uint32_t dimz() const = 0;
+        virtual uint64_t getFrameCount() const = 0;
 
         virtual ~AsyncFrame2DWritterI() = default;
     };
