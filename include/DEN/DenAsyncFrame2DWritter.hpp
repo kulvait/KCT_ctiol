@@ -56,7 +56,10 @@ public:
      * @param dim
      * @param XMajor Alignment of output.
      */
-    DenAsyncFrame2DWritter(std::string denFile, uint16_t dimCount, uint32_t* dim, bool XMajor = true);
+    DenAsyncFrame2DWritter(std::string denFile,
+                           uint16_t dimCount,
+                           uint32_t* dim,
+                           bool XMajor = true);
     /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
      * zero the file.
@@ -105,6 +108,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
+    extended = true;
     if(io::pathExists(denFile))
     {
         DenFileInfo inf(denFile, false);
@@ -113,8 +117,9 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
            && inf.dimz() == dimz)
         {
             existingFile = true;
-            LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
             offset = inf.getOffset();
+            extended = inf.isExtended();
+            LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
         } else
         {
             DenFileInfo::createEmpty3DDenFile(denFile, type, dimx, dimy, dimz, XMajor);
@@ -135,12 +140,11 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile,
                                                   uint32_t* dim,
                                                   bool XMajor)
     : denFile(denFile)
-    , sizex(dimx)
-    , sizey(dimy)
     , XMajor(XMajor)
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
+    extended = true;
     std::string ERR;
     if(dimCount < 2 || dimCount > 16)
     {
@@ -154,6 +158,8 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile,
             frameCount *= dim[k];
         }
     }
+    sizex = dim[0];
+    sizey = dim[1];
     if(io::pathExists(denFile))
     {
         existingFile = true;
@@ -176,6 +182,7 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile,
         {
             LOGD << io::xprintf("Will be writting to existing file %s.", denFile.c_str());
             offset = inf.getOffset();
+            extended = inf.isExtended();
         } else
         {
             DenFileInfo::createEmptyDenFile(denFile, type, dimCount, dim, XMajor);
