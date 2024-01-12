@@ -25,12 +25,13 @@ namespace io {
          */
         virtual std::shared_ptr<io::Frame2DI<T>> readProjectionSlice(int i) = 0;
         /*Returns i-th projection slice in the source.*/
-        virtual unsigned int dimx() const = 0;
+        virtual uint32_t dimx() const = 0;
         /**Returns x dimension.*/
-        virtual unsigned int dimy() const = 0;
+        virtual uint32_t dimy() const = 0;
         /**Returns y dimension.*/
-        virtual unsigned int dimz() const = 0;
+        virtual uint32_t dimz() const = 0;
         /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
+        virtual ~ProjectionReaderI() = default;
     };
 } // namespace io
 } // namespace KCT
