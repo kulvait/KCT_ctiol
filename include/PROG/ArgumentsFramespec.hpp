@@ -15,15 +15,14 @@ public:
     uint32_t eachKth = 1;
     bool reverseOrder = false;
     bool framesSpecified = false;
-    std::vector<int> frames;
-
-    void fillFramesVector(uint32_t numberOfFrames);
+    std::vector<uint64_t> frames;
+    void fillFramesVector(uint64_t numberOfFrames);
 
 protected:
     void addFramespecArgs();
 
 private:
-    static std::vector<int> processFramesSpecification(std::string frameSpecification, int dimz);
+    static std::vector<uint64_t> processFramesSpecification(std::string frameSpecification, uint64_t frameCount);
 };
 
 } // namespace KCT::util
