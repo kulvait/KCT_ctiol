@@ -1,7 +1,5 @@
 #pragma once
 
-#include "DEN/DenSupportedType.hpp"
-
 namespace KCT::io {
 /** Interface to access one two dimensional slice of the multidimensional source data
  *
