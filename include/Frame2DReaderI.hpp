@@ -17,14 +17,15 @@ namespace io {
     class Frame2DReaderI
     {
     public:
-        virtual std::shared_ptr<io::Frame2DI<T>> readFrame(unsigned int i) = 0;
-        /*Returns i-th projection slice in the source.*/
-        virtual uint32_t dimx() const = 0;
+        /*Returns k-th frame in the source.*/
+        virtual std::shared_ptr<io::Frame2DI<T>> readFrame(uint64_t k) = 0;
         /**Returns x dimension.*/
-        virtual uint32_t dimy() const = 0;
+        virtual uint32_t dimx() const = 0;
         /**Returns y dimension.*/
-        virtual uint32_t dimz() const = 0;
-        /**Returns number of slices in the source, slices are indexed 0 <= i < count().*/
+        virtual uint32_t dimy() const = 0;
+        /**Returns number of frames in the source.*/
+        virtual uint64_t getFrameCount() const = 0;
+        /**Default destructor.*/
         virtual ~Frame2DReaderI() = default;
     };
 } // namespace io

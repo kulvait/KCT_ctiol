@@ -45,8 +45,8 @@ public:
     DenFrame2DCachedReader(DenFrame2DCachedReader<T>&& b) = delete;
     // Move assignment
     DenFrame2DCachedReader<T>& operator=(DenFrame2DCachedReader<T>&& other) = delete;
-    std::shared_ptr<io::Frame2DI<T>> readFrame(uint32_t k) override;
-    std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(uint32_t k);
+    std::shared_ptr<io::Frame2DI<T>> readFrame(uint64_t k) override;
+    std::shared_ptr<io::BufferedFrame2D<T>> readBufferedFrame(uint64_t k);
     void frameToCache(uint32_t k, std::shared_ptr<BufferedFrame2D<T>> f);
     /**
      * Populate cache by frameCount frames.
@@ -59,8 +59,7 @@ public:
     readFrameIntoBuffer(uint64_t flatFrameIndex, T* outside_buffer, bool XMajorAlignment = true);
     uint32_t dimx() const override;
     uint32_t dimy() const override;
-    uint32_t dimz() const override;
-    uint64_t dimflatz() const;
+    uint64_t getFrameCount() const override;
     std::string getFileName() const;
     /**Returns file name of the underlying DEN file.**/
     DenSupportedType getDataType() const;
@@ -70,10 +69,12 @@ protected:
     std::string denFile;
     uint64_t offset;
     bool XMajorAlignment;
-    uint64_t sizex, sizey, sizez;
-    uint64_t frameSize, frameByteSize;
+    uint32_t sizex, sizey;
+    uint64_t frameSize;
+    uint64_t frameByteSize;
+    uint64_t frameCount;
     DenSupportedType dataType;
-    uint16_t elementByteSize;
+    uint64_t elementByteSize;
 
 private:
     mutable std::mutex* consistencyMutexes;
@@ -85,7 +86,6 @@ private:
     uint32_t bufferCount;
     uint32_t cacheSize;
     bool littleEndianArchitecture;
-
     void initialize();
 };
 
@@ -104,28 +104,37 @@ DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
     , bufferCount(additionalBufferNum + 1)
     , cacheSize(cacheSize)
 {
+    std::string ERR;
     DenFileInfo pi = DenFileInfo(this->denFile);
+    this->dataType = pi.getElementType();
+    DenSupportedType readerDataType = getDenSupportedTypeByTypeID(typeid(T));
+    if(dataType != readerDataType)
+    {
+        ERR = io::xprintf("The file %s of the type %s can not be parsed by reader of type %s",
+                          denFile.c_str(), DenSupportedTypeToString(dataType).c_str(),
+                          DenSupportedTypeToString(readerDataType).c_str());
+        KCTERR(ERR);
+    }
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
     this->sizey = pi.dimy();
-    this->sizez = pi.getFrameCount();
-    this->frameSize = pi.getFrameSize();
     this->elementByteSize = pi.getElementByteSize();
+    this->frameCount = pi.getFrameCount();
+    this->frameSize = pi.getFrameSize();
     this->frameByteSize = pi.getFrameByteSize();
     this->XMajorAlignment = pi.hasXMajorAlignment();
-    this->dataType = pi.getElementType();
     this->consistencyMutexes = new std::mutex[bufferCount];
     this->buffers = new uint8_t*[bufferCount];
     this->buffer_copys = new T*[bufferCount];
-    if(this->cacheSize > this->sizez)
+    if(this->cacheSize > this->frameCount)
     {
-        this->cacheSize = this->sizez;
+        this->cacheSize = this->frameCount;
     }
-    this->cache.resize(this->sizez, nullptr); // Initialized by nullptrs
+    this->cache.resize(this->frameCount, nullptr); // Initialized by nullptrs
     for(uint32_t i = 0; i != bufferCount; i++)
     {
-        this->buffers[i] = new uint8_t[elementByteSize * sizex * sizey];
-        this->buffer_copys[i] = new T[sizex * sizey];
+        this->buffers[i] = new uint8_t[frameByteSize];
+        this->buffer_copys[i] = new T[frameSize];
     }
     // Buffers are used for the alocation of new frames. Since this class uses the
     // instance that copies memory, this memory might me reused.
@@ -190,28 +199,28 @@ uint32_t DenFrame2DCachedReader<T>::dimy() const
 }
 
 template <typename T>
-uint32_t DenFrame2DCachedReader<T>::dimz() const
+uint64_t DenFrame2DCachedReader<T>::getFrameCount() const
 {
-    return sizez;
+    return frameCount;
 }
 
 template <typename T>
-void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t frameCount)
+void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t n)
 {
-    if(fromID >= sizez)
+    if(fromID >= frameCount)
     {
-        LOGW << io::xprintf("fromID=%d is greater or equal than sizez=%d", fromID, sizez);
+        LOGW << io::xprintf("fromID=%d is greater or equal than frameCount=%d", fromID, frameCount);
         return;
     }
     if(cacheSize != 0)
     {
-        if(frameCount < cacheSize)
+        if(n < cacheSize)
         {
             LOGW << io::xprintf(
-                "Specified frameCount=%d exceeds cacheSize=%d, setting frameCount to cacheSize.");
-            frameCount = cacheSize;
+                "Specified n=%d exceeds cacheSize=%d, setting n to cacheSize.");
+            n = cacheSize;
         }
-        for(uint64_t k = fromID; k != std::min(uint64_t(fromID) + frameCount, sizez); k++)
+        for(uint64_t k = fromID; k != std::min(uint64_t(fromID) + n, frameCount); k++)
         {
             readBufferedFrame(k);
         }
@@ -223,14 +232,14 @@ void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t frameCount)
 }
 
 template <typename T>
-std::shared_ptr<io::Frame2DI<T>> DenFrame2DCachedReader<T>::readFrame(uint32_t k)
+std::shared_ptr<io::Frame2DI<T>> DenFrame2DCachedReader<T>::readFrame(uint64_t k)
 {
     std::shared_ptr<Frame2DI<T>> f = readBufferedFrame(k);
     return f;
 }
 
 template <typename T>
-std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedFrame(uint32_t k)
+std::shared_ptr<io::BufferedFrame2D<T>> DenFrame2DCachedReader<T>::readBufferedFrame(uint64_t k)
 {
     std::shared_ptr<BufferedFrame2D<T>> f;
     // If it is in cache, return it directly

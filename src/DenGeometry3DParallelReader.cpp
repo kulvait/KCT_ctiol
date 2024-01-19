@@ -5,7 +5,7 @@ namespace KCT::io {
 void DenGeometry3DParallelReader::initObject()
 {
     std::string ERR;
-    geometriesCount = matrixReader->dimz();
+    geometriesCount = matrixReader->getFrameCount();
     DenSupportedType dt = matrixReader->getDataType();
     if(matrixReader->dimx() != 4 || matrixReader->dimy() != 2)
     {
