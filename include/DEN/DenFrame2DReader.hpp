@@ -81,10 +81,10 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
     DenSupportedType readerDataType = getDenSupportedTypeByTypeID(typeid(T));
     if(dataType != readerDataType)
     {
-        ERR = io::xprintf("The file %s of the type %s can not be parsed by reader of type %s",
+        ERR = io::xprintf("The file %s of the type %s is to be read by reader of type %s!",
                           denFile.c_str(), DenSupportedTypeToString(dataType).c_str(),
                           DenSupportedTypeToString(readerDataType).c_str());
-        KCTERR(ERR);
+        LOGW << ERR;
     }
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();

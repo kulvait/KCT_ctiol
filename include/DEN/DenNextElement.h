@@ -20,16 +20,15 @@ T getNextElement(uint8_t* buffer, io::DenSupportedType dataType)
     switch(dataType)
     {
     case io::DenSupportedType::UINT16:
-        return nextUint16(buffer);
+        return static_cast<T>(nextUint16(buffer));
     case io::DenSupportedType::FLOAT32:
-        return nextFloat(buffer);
+        return static_cast<T>(nextFloat(buffer));
     case io::DenSupportedType::FLOAT64:
-        return nextDouble(buffer);
+        return static_cast<T>(nextDouble(buffer));
     default:
         std::string errMsg = io::xprintf("Unsupported data type %s.",
                                          io::DenSupportedTypeToString(dataType).c_str());
-        LOGE << errMsg;
-        throw std::runtime_error(errMsg);
+        KCTERR(errMsg);
     }
 }
 } // namespace KCT::util
