@@ -39,7 +39,7 @@ namespace io {
         }
         onepassData<T> x;
         x.min = std::numeric_limits<T>::max();
-        x.max = std::numeric_limits<T>::min();
+        x.max = std::numeric_limits<T>::lowest();
         x.sum = 0.0;
         x.sumSquares = 0.0;
         x.shiftedSum = 0.0;
