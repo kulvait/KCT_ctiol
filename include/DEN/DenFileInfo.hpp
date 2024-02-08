@@ -177,7 +177,7 @@ T DenFileInfo::getMaxVal() const
     ifstream->open(fileName,
                    std::ios::binary | std::ios::in); // Open binary, for output, for input
     uint64_t currentPosition;
-    T max = std::numeric_limits<T>::min();
+    T max = std::numeric_limits<T>::lowest();
     uint8_t* buffer = new uint8_t[frameByteSize];
     for(uint64_t k = 0; k != frameCount; k++)
     {
