@@ -3,9 +3,9 @@
 #include <plog/Log.h>
 
 // Standard libraries
+#include <array>
 #include <cmath>
 #include <string>
-#include <array>
 
 // Internal libraries
 #include "DEN/DenNextElement.h"
@@ -92,15 +92,28 @@ public:
     void readFlatFrameIntoBuffer(uint64_t flatZIndex,
                                  T* bufferToFill,
                                  bool fillXMajor,
-                                 uint8_t* tmpbuffer) const;
+                                 uint8_t* tmpbuffer,
+                                 uint32_t x_from = 0,
+                                 uint32_t x_count = 0,
+                                 uint32_t y_from = 0,
+                                 uint32_t y_count = 0) const;
     /**
      * Read underlying DEN file into the c_array.
      *
      * @param c_array Array to read file into.
      * @param c_array_xmajor Xmajor alignment of the frames in resulting array, defaults to true.
+     * @param x_from specify x range
+     * @param x_count specify x range, 0 means to read up to dimx
+     * @param y_from specify y range
+     * @param y_count specify y range, 0 means to read up to dimy
      */
     template <typename T>
-    void readIntoArray(T* c_array, bool c_array_xmajor = true);
+    void readIntoArray(T* c_array,
+                       bool c_array_xmajor = true,
+                       uint32_t x_from = 0,
+                       uint32_t x_count = 0,
+                       uint32_t y_from = 0,
+                       uint32_t y_count = 0) const;
 
     static void
     createLegacyDenHeader(std::string fileName, uint16_t dimx, uint16_t dimy, uint16_t dimz);
@@ -168,6 +181,9 @@ private:
     uint64_t frameByteSize;
     uint64_t elementCount;
     uint64_t frameCount;
+
+    // If x can represent given dimension
+    bool isAdmissibleDimension(uint32_t x, uint32_t dimID, bool canBeOfDimSize = false) const;
 };
 
 template <typename T>
@@ -358,11 +374,29 @@ template <typename T>
 void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
                                           T* bufferToFill,
                                           bool fillXMajor,
-                                          uint8_t* tmpbuffer) const
+                                          uint8_t* tmpbuffer,
+                                          uint32_t x_from,
+                                          uint32_t x_count,
+                                          uint32_t y_from,
+                                          uint32_t y_count) const
 {
+    std::string ERR;
+    if(getDenSupportedTypeByTypeID(typeid(T)) != elementType)
+    {
+        ERR = io::xprintf("File %s has incompatible type, need to fill buffer of %s.",
+                          fileName.c_str(), DenSupportedTypeToString(elementType).c_str());
+        KCTERR(ERR);
+    }
+    if(dimCount < 2)
+    {
+        ERR = io::xprintf("File %s shall have at least 2 dimensions but has %d.", fileName.c_str(),
+                          dimCount);
+        KCTERR(ERR);
+    }
     uint64_t position = this->offset + flatZIndex * frameByteSize;
     io::readBytesFrom(this->fileName, position, tmpbuffer, frameByteSize);
-    if(fillXMajor == this->XMajorAlignment)
+    if(fillXMajor == this->XMajorAlignment && x_from == 0 && x_count == 0 && y_from == 0
+       && y_count == 0)
     {
         for(uint64_t a = 0; a != frameSize; a++)
         {
@@ -370,13 +404,36 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
         }
     } else
     {
-        uint64_t innerIndex, outerIndex;
-        uint64_t _dimx = dimx();
-        uint64_t _dimy = dimy();
-        for(uint64_t x = 0; x != _dimx; x++)
+        bool admissibleDimensions = true;
+        admissibleDimensions &= isAdmissibleDimension(x_from, 0);
+        admissibleDimensions &= isAdmissibleDimension(y_from, 1);
+        if(x_count == 0)
         {
-            for(uint64_t y = 0; y != _dimy; y++)
+            x_count = _dim[0] - x_from;
+        }
+        if(y_count == 0)
+        {
+            y_count = _dim[1] - y_from;
+        }
+        admissibleDimensions &= isAdmissibleDimension(x_from + x_count, 0, true);
+        admissibleDimensions &= isAdmissibleDimension(y_from + y_count, 1, true);
+        if(!admissibleDimensions)
+        {
+            ERR = io::xprintf("File %s wrong dimensions specified.", fileName.c_str());
+            KCTERR(ERR);
+        }
+        uint64_t innerIndex, outerIndex;
+        uint64_t _dimx = _dim[0];
+        uint64_t _dimy = _dim[1];
+        uint64_t x_to = x_from + x_count;
+        uint64_t y_to = y_from + y_count;
+        int i, j;
+        for(uint64_t x = x_from; x != x_to; x++)
+        {
+            i = x - x_from;
+            for(uint64_t y = y_from; y != y_to; y++)
             {
+                j = y - y_from;
                 if(this->XMajorAlignment)
                 {
                     innerIndex = x + _dimx * y;
@@ -386,10 +443,10 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
                 }
                 if(fillXMajor)
                 {
-                    outerIndex = x + _dimx * y;
+                    outerIndex = i + x_count * j;
                 } else
                 {
-                    outerIndex = y + _dimy * x;
+                    outerIndex = j + y_count * i;
                 }
                 bufferToFill[outerIndex] = util::getNextElement<T>(
                     &tmpbuffer[innerIndex * elementByteSize], elementType);
@@ -399,18 +456,18 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
 }
 
 template <typename T>
-void DenFileInfo::readIntoArray(T* c_array, bool c_array_xmajor)
+void DenFileInfo::readIntoArray(T* c_array,
+                                bool c_array_xmajor,
+                                uint32_t x_from,
+                                uint32_t x_count,
+                                uint32_t y_from,
+                                uint32_t y_count) const
 {
-    if(getDenSupportedTypeByTypeID(typeid(T)) != elementType)
-    {
-        KCTERR(io::xprintf("Buffer of incompatible type, need to fill buffer of %s.",
-                           DenSupportedTypeToString(elementType).c_str()))
-    }
-
     uint8_t* tmpbuffer = new uint8_t[frameByteSize];
     for(uint64_t k = 0; k != frameCount; k++)
     {
-        this->readFlatFrameIntoBuffer(k, c_array + k * frameSize, c_array_xmajor, tmpbuffer);
+        this->readFlatFrameIntoBuffer(k, c_array + k * frameSize, c_array_xmajor, tmpbuffer, x_from,
+                                      x_count, y_from, y_count);
     }
     delete[] tmpbuffer;
 }

@@ -259,6 +259,19 @@ namespace io {
         }
     }
 
+    bool DenFileInfo::isAdmissibleDimension(uint32_t x, uint32_t dimID, bool canBeOfDimSize) const
+    {
+        if(x < _dim[dimID])
+        {
+            return true;
+        }
+        if(canBeOfDimSize && x == _dim[dimID])
+        {
+            return true;
+        }
+        return false;
+    }
+
     uint16_t DenFileInfo::getDimCount() const { return dimCount; }
 
     uint64_t DenFileInfo::getFileSize() const
@@ -331,7 +344,8 @@ namespace io {
         std::array<uint8_t, 4096> buf;
         util::putUint16(0, std::begin(buf));
         util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
-        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // elementByteSize
+        util::putUint16(DenSupportedTypeElementByteSize(dst),
+                        std::begin(buf) + 4); // elementByteSize
         if(XMajorAlignment) // Default
         {
             util::putUint16(0, std::begin(buf) + 6);
@@ -418,7 +432,8 @@ namespace io {
         std::array<uint8_t, 4096> buf;
         util::putUint16(0, std::begin(buf));
         util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
-        util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // elementByteSize
+        util::putUint16(DenSupportedTypeElementByteSize(dst),
+                        std::begin(buf) + 4); // elementByteSize
         if(XMajorAlignment) // Default
         {
             util::putUint16(0, std::begin(buf) + 6);
