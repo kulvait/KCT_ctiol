@@ -397,8 +397,8 @@ void DenFileInfo::readFlatFrameIntoBuffer(uint64_t flatZIndex,
     }
     uint64_t position = this->offset + flatZIndex * frameByteSize;
     io::readBytesFrom(this->fileName, position, tmpbuffer, frameByteSize);
-    if(fillXMajor == this->XMajorAlignment && x_from == 0 && x_count == 0 && y_from == 0
-       && y_count == 0)
+    if(fillXMajor == this->XMajorAlignment && x_from == 0 && (x_count == 0 || x_count == _dim[0])
+       && y_from == 0 && (y_count == 0 || y_count == _dim[1]))
     {
         for(uint64_t a = 0; a != frameSize; a++)
         {
@@ -474,18 +474,36 @@ void DenFileInfo::readIntoArray(T* c_array,
         KCTERR(ERR);
     }
     bool admissibleDimensions = true;
+    admissibleDimensions &= isAdmissibleDimension(x_from, 0);
+    admissibleDimensions &= isAdmissibleDimension(y_from, 1);
     admissibleDimensions &= isAdmissibleDimension(z_from, 2);
+    if(x_count == 0)
+    {
+        x_count = _dim[0] - x_from;
+    }
+    if(y_count == 0)
+    {
+        y_count = _dim[1] - y_from;
+    }
     if(z_count == 0)
     {
         z_count = _dim[2] - z_from;
     }
+    admissibleDimensions &= isAdmissibleDimension(x_from + x_count, 0, true);
+    admissibleDimensions &= isAdmissibleDimension(y_from + y_count, 1, true);
     admissibleDimensions &= isAdmissibleDimension(z_from + z_count, 2, true);
+    if(!admissibleDimensions)
+    {
+        std::string ERR = io::xprintf("File %s wrong dimensions specified.", fileName.c_str());
+        KCTERR(ERR);
+    }
     uint8_t* tmpbuffer = new uint8_t[frameByteSize];
     uint64_t IND;
+    uint64_t arrayFrameSize = static_cast<uint64_t>(x_count) * static_cast<uint64_t>(y_count);
     for(uint64_t k = z_from; k != z_count; k++)
     {
         IND = k - z_from;
-        this->readFlatFrameIntoBuffer(k, c_array + IND * frameSize, c_array_xmajor, tmpbuffer,
+        this->readFlatFrameIntoBuffer(k, c_array + IND * arrayFrameSize, c_array_xmajor, tmpbuffer,
                                       x_from, x_count, y_from, y_count);
     }
     delete[] tmpbuffer;
