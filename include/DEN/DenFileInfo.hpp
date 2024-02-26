@@ -113,7 +113,9 @@ public:
                        uint32_t x_from = 0,
                        uint32_t x_count = 0,
                        uint32_t y_from = 0,
-                       uint32_t y_count = 0) const;
+                       uint32_t y_count = 0,
+                       uint32_t z_from = 0,
+                       uint32_t z_count = 0) const;
 
     static void
     createLegacyDenHeader(std::string fileName, uint16_t dimx, uint16_t dimy, uint16_t dimz);
@@ -461,13 +463,30 @@ void DenFileInfo::readIntoArray(T* c_array,
                                 uint32_t x_from,
                                 uint32_t x_count,
                                 uint32_t y_from,
-                                uint32_t y_count) const
+                                uint32_t y_count,
+                                uint32_t z_from,
+                                uint32_t z_count) const
 {
-    uint8_t* tmpbuffer = new uint8_t[frameByteSize];
-    for(uint64_t k = 0; k != frameCount; k++)
+    if(dimCount < 3)
     {
-        this->readFlatFrameIntoBuffer(k, c_array + k * frameSize, c_array_xmajor, tmpbuffer, x_from,
-                                      x_count, y_from, y_count);
+        std::string ERR = io::xprintf("File %s shall have at least 3 dimensions but has %d.",
+                                      fileName.c_str(), dimCount);
+        KCTERR(ERR);
+    }
+    bool admissibleDimensions = true;
+    admissibleDimensions &= isAdmissibleDimension(z_from, 2);
+    if(z_count == 0)
+    {
+        z_count = _dim[2] - z_from;
+    }
+    admissibleDimensions &= isAdmissibleDimension(z_from + z_count, 2, true);
+    uint8_t* tmpbuffer = new uint8_t[frameByteSize];
+    uint64_t IND;
+    for(uint64_t k = z_from; k != z_count; k++)
+    {
+        IND = k - z_from;
+        this->readFlatFrameIntoBuffer(k, c_array + IND * frameSize, c_array_xmajor, tmpbuffer,
+                                      x_from, x_count, y_from, y_count);
     }
     delete[] tmpbuffer;
 }
