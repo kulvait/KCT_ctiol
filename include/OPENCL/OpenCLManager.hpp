@@ -21,6 +21,7 @@ namespace util {
         static uint32_t deviceCount(uint32_t platformID);
         static std::shared_ptr<cl::Device>
         getDevice(const cl::Platform& platform, uint32_t deviceID = 0, bool verbose = false);
+        static cl_ulong localMemSize(uint32_t platformID, uint32_t deviceID);
     };
 } // namespace util
 } // namespace KCT

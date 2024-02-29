@@ -63,6 +63,27 @@ namespace util {
         }
     }
 
+    cl_ulong OpenCLManager::localMemSize(uint32_t platformID, uint32_t deviceID)
+    {
+        std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
+        if(platform == nullptr)
+        {
+            return 0;
+        } else
+        {
+            std::shared_ptr<cl::Device> dev = getDevice(*platform, deviceID);
+            if(dev == nullptr)
+            {
+                return 0;
+            } else
+            {
+                cl_ulong locsize;
+                dev->getInfo(CL_DEVICE_LOCAL_MEM_SIZE, &locsize);
+                return locsize;
+            }
+        }
+    }
+
     std::shared_ptr<cl::Device>
     OpenCLManager::getDevice(const cl::Platform& platform, uint32_t deviceID, bool verbose)
     {
