@@ -53,8 +53,14 @@ namespace util {
     {
         std::vector<cl::Device> all_devices;
         std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
-        platform->getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-        return all_devices.size();
+        if(platform == nullptr)
+        {
+            return 0;
+        } else
+        {
+            platform->getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+            return all_devices.size();
+        }
     }
 
     std::shared_ptr<cl::Device>
