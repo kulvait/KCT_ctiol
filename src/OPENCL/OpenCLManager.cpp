@@ -63,7 +63,14 @@ namespace util {
         }
     }
 
-    cl_ulong OpenCLManager::localMemSize(uint32_t platformID, uint32_t deviceID)
+    uint64_t OpenCLManager::localMemSize(cl::Device& device)
+    {
+        cl_ulong locsize;
+        device.getInfo(CL_DEVICE_LOCAL_MEM_SIZE, &locsize);
+        return static_cast<uint64_t>(locsize);
+    }
+
+    uint64_t OpenCLManager::localMemSize(uint32_t platformID, uint32_t deviceID)
     {
         std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
         if(platform == nullptr)
@@ -77,9 +84,33 @@ namespace util {
                 return 0;
             } else
             {
-                cl_ulong locsize;
-                dev->getInfo(CL_DEVICE_LOCAL_MEM_SIZE, &locsize);
-                return locsize;
+                return localMemSize(*dev);
+            }
+        }
+    }
+
+    uint32_t OpenCLManager::maxWGS(cl::Device& device)
+    {
+        size_t val;
+        device.getInfo(CL_DEVICE_MAX_WORK_GROUP_SIZE, &val);
+        return static_cast<uint64_t>(val);
+    }
+
+    uint32_t OpenCLManager::maxWGS(uint32_t platformID, uint32_t deviceID)
+    {
+        std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
+        if(platform == nullptr)
+        {
+            return 0;
+        } else
+        {
+            std::shared_ptr<cl::Device> dev = getDevice(*platform, deviceID);
+            if(dev == nullptr)
+            {
+                return 0;
+            } else
+            {
+                return maxWGS(*dev);
             }
         }
     }
