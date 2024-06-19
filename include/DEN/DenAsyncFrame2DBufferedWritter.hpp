@@ -371,7 +371,6 @@ void DenAsyncFrame2DBufferedWritter<T>::writeBuffer(T* buf, uint64_t k)
 template <typename T>
 void DenAsyncFrame2DBufferedWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k)
 {
-    uint64_t position = offset + k * frameByteSize;
     T* f_array = f.getDataPointer();
     writeBuffer(f_array, k);
 }
