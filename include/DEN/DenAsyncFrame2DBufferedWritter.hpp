@@ -49,8 +49,12 @@ public:
      * @param sizez
      * @param XMajor
      */
-    DenAsyncFrame2DBufferedWritter(
-        std::string denFile, uint32_t sizex, uint32_t sizey, uint32_t sizez, bool XMajor = true);
+    DenAsyncFrame2DBufferedWritter(std::string denFile,
+                                   uint32_t sizex,
+                                   uint32_t sizey,
+                                   uint32_t sizez,
+                                   bool XMajor = true,
+                                   uint64_t pastebufBytesize = 1073741824);
 
     /**
      *	Constructor using file name and dimensions.
@@ -65,7 +69,8 @@ public:
     DenAsyncFrame2DBufferedWritter(std::string denFile,
                                    uint16_t dimCount,
                                    uint32_t* dim,
-                                   bool XMajor = true);
+                                   bool XMajor = true,
+                                   uint64_t pastebufBytesize = 1073741824);
 
     /**
      * Constructor using file name of existing DEN file. It does not imediatelly overwrite or
@@ -73,7 +78,7 @@ public:
      *
      * @param denFile
      */
-    DenAsyncFrame2DBufferedWritter(std::string denFile);
+    DenAsyncFrame2DBufferedWritter(std::string denFile, uint64_t pastebufBytesize = 1073741824);
 
     /**
      * @brief Writes buffered frame to the file.
@@ -101,8 +106,14 @@ public:
     /**Returns y dimension.*/
     virtual uint32_t dimy() const override;
 
-    /**Returns z dimension.*/
+    /**Number of frames.*/
     virtual uint64_t getFrameCount() const override;
+
+    /**Frame size.*/
+    virtual uint64_t getFrameSize() const override;
+
+    /**Frame byte size.*/
+    virtual uint64_t getFrameByteSize() const override;
 
     /**Returns file name.**/
     std::string getFileName() const;
@@ -128,6 +139,16 @@ void DenAsyncFrame2DBufferedWritter<T>::initialize()
     littleEndianArchitecture = (*(char*)&num == 1);
     buffer = new uint8_t[frameByteSize];
     ofstream = std::make_shared<std::ofstream>();
+    if(_pubsetbuf_buffer_size > frameByteSize)
+    {
+        uint64_t fitFrames = _pubsetbuf_buffer_size / frameByteSize;
+        if(fitFrames * frameByteSize != _pubsetbuf_buffer_size)
+        {
+            _pubsetbuf_buffer_size = fitFrames * frameByteSize;
+            LOGD << io::xprintf("Adjusted _pubsetbuf_buffer_size to %lu bytes, it fits %lu frames",
+                                _pubsetbuf_buffer_size, fitFrames);
+        }
+    }
     _pubsetbuf_buffer.resize(_pubsetbuf_buffer_size);
     ofstream->rdbuf()->pubsetbuf(&_pubsetbuf_buffer[0], _pubsetbuf_buffer_size);
     ofstream->open(denFile,
@@ -136,13 +157,18 @@ void DenAsyncFrame2DBufferedWritter<T>::initialize()
 }
 
 template <typename T>
-DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
-    std::string denFile, uint32_t dimx, uint32_t dimy, uint32_t dimz, bool XMajor)
+DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile,
+                                                                  uint32_t dimx,
+                                                                  uint32_t dimy,
+                                                                  uint32_t dimz,
+                                                                  bool XMajor,
+                                                                  uint64_t pastebufBytesize)
     : denFile(denFile)
     , sizex(dimx)
     , sizey(dimy)
     , frameCount(dimz)
     , XMajor(XMajor)
+    , _pubsetbuf_buffer_size(pastebufBytesize)
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
@@ -173,12 +199,11 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
 }
 
 template <typename T>
-DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile,
-                                                                  uint16_t dimCount,
-                                                                  uint32_t* dim,
-                                                                  bool XMajor)
+DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(
+    std::string denFile, uint16_t dimCount, uint32_t* dim, bool XMajor, uint64_t pastebufBytesize)
     : denFile(denFile)
     , XMajor(XMajor)
+    , _pubsetbuf_buffer_size(pastebufBytesize)
 {
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
@@ -236,8 +261,10 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string de
 }
 
 template <typename T>
-DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile)
+DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile,
+                                                                  uint64_t pastebufBytesize)
     : denFile(denFile)
+    , _pubsetbuf_buffer_size(pastebufBytesize)
 {
     std::string err;
     if(!io::pathExists(denFile))
@@ -281,31 +308,8 @@ DenAsyncFrame2DBufferedWritter<T>::~DenAsyncFrame2DBufferedWritter()
     if(ofstream != nullptr)
     {
         ofstream->close();
+        ofstream = nullptr;
     }
-}
-
-template <typename T>
-std::string DenAsyncFrame2DBufferedWritter<T>::getFileName() const
-{
-    return this->denFile;
-}
-
-template <typename T>
-uint32_t DenAsyncFrame2DBufferedWritter<T>::dimx() const
-{
-    return sizex;
-}
-
-template <typename T>
-uint32_t DenAsyncFrame2DBufferedWritter<T>::dimy() const
-{
-    return sizey;
-}
-
-template <typename T>
-uint64_t DenAsyncFrame2DBufferedWritter<T>::getFrameCount() const
-{
-    return frameCount;
 }
 
 template <typename T>
@@ -374,6 +378,42 @@ void DenAsyncFrame2DBufferedWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f
 {
     T* f_array = f.getDataPointer();
     writeBuffer(f_array, k);
+}
+
+template <typename T>
+std::string DenAsyncFrame2DBufferedWritter<T>::getFileName() const
+{
+    return this->denFile;
+}
+
+template <typename T>
+uint32_t DenAsyncFrame2DBufferedWritter<T>::dimx() const
+{
+    return sizex;
+}
+
+template <typename T>
+uint32_t DenAsyncFrame2DBufferedWritter<T>::dimy() const
+{
+    return sizey;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DBufferedWritter<T>::getFrameCount() const
+{
+    return frameCount;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DBufferedWritter<T>::getFrameSize() const
+{
+    return frameSize;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DBufferedWritter<T>::getFrameByteSize() const
+{
+    return frameByteSize;
 }
 
 } // namespace KCT::io

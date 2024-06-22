@@ -21,8 +21,14 @@ namespace io {
         /**Returns y dimension.*/
         virtual uint32_t dimy() const = 0;
 
-        /**Returns z dimension.*/
+        /**Number of frames.*/
         virtual uint64_t getFrameCount() const = 0;
+
+        /**Frame size.*/
+        virtual uint64_t getFrameSize() const = 0;
+
+        /**Frame byte size.*/
+        virtual uint64_t getFrameByteSize() const = 0;
 
         virtual ~AsyncFrame2DWritterI() = default;
     };

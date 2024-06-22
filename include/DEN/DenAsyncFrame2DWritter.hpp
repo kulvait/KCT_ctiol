@@ -7,6 +7,7 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
+#include "BufferedFrame2D.hpp"
 #include "DEN/DenFileInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
@@ -28,6 +29,7 @@ private:
     bool extended;
     bool XMajor;
     bool existingFile = false;
+    bool littleEndianArchitecture;
     uint8_t* buffer;
     mutable std::mutex writingMutex;
 
@@ -68,6 +70,23 @@ public:
      */
     DenAsyncFrame2DWritter(std::string denFile);
 
+    /**
+     * @brief Writes buffered frame to the file.
+     *
+     * @param f Object of the type BufferedFrame2D<T> to be written.
+     * @param k Index of the frame in output file.
+     */
+    void writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k);
+
+    /**
+     * @brief Writes buffer of the frameSize to the file.
+     *
+     * @param buf Block of memory of type T and size frameSize to be written. Expected in row major
+     * order regardless of XMajor.
+     * @param k Index of the frame in output file.
+     */
+    void writeBuffer(T* buf, uint64_t k);
+
     /**Writes i-th frame to the file.*/
     void writeFrame(const Frame2DI<T>& s, uint64_t k) override;
 
@@ -79,6 +98,12 @@ public:
 
     /**Returns z dimension.*/
     virtual uint64_t getFrameCount() const override;
+
+    /**Returns z dimension.*/
+    virtual uint64_t getFrameSize() const override;
+
+    /**Returns z dimension.*/
+    virtual uint64_t getFrameByteSize() const override;
 
     /**Returns file name.**/
     std::string getFileName() const;
@@ -106,6 +131,8 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(
     , frameCount(dimz)
     , XMajor(XMajor)
 {
+    int num = 1;
+    this->littleEndianArchitecture = (*(char*)&num == 1);
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
     extended = true;
@@ -142,6 +169,8 @@ DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile,
     : denFile(denFile)
     , XMajor(XMajor)
 {
+    int num = 1;
+    this->littleEndianArchitecture = (*(char*)&num == 1);
     DenSupportedType type = getDenSupportedTypeByTypeID(typeid(T));
     offset = 4096;
     extended = true;
@@ -201,6 +230,8 @@ template <typename T>
 DenAsyncFrame2DWritter<T>::DenAsyncFrame2DWritter(std::string denFile)
     : denFile(denFile)
 {
+    int num = 1;
+    this->littleEndianArchitecture = (*(char*)&num == 1);
     std::string err;
     if(!io::pathExists(denFile))
     {
@@ -308,30 +339,6 @@ DenAsyncFrame2DWritter<T>& DenAsyncFrame2DWritter<T>::operator=(DenAsyncFrame2DW
 }
 
 template <typename T>
-std::string DenAsyncFrame2DWritter<T>::getFileName() const
-{
-    return this->denFile;
-}
-
-template <typename T>
-uint32_t DenAsyncFrame2DWritter<T>::dimx() const
-{
-    return sizex;
-}
-
-template <typename T>
-uint32_t DenAsyncFrame2DWritter<T>::dimy() const
-{
-    return sizey;
-}
-
-template <typename T>
-uint64_t DenAsyncFrame2DWritter<T>::getFrameCount() const
-{
-    return frameCount;
-}
-
-template <typename T>
 void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& f, uint64_t k)
 {
     uint64_t position = offset + k * frameByteSize;
@@ -358,6 +365,81 @@ void DenAsyncFrame2DWritter<T>::writeFrame(const Frame2DI<T>& f, uint64_t k)
     }
     io::writeBytesFrom(denFile, position, buffer, frameByteSize);
     return;
+}
+
+template <typename T>
+void DenAsyncFrame2DWritter<T>::writeBuffer(T* buf, uint64_t k)
+{
+    uint64_t position = offset + k * frameByteSize;
+    std::lock_guard<std::mutex> guard(
+        writingMutex); // Mutex will be released as this goes out of scope.
+    if(XMajor && littleEndianArchitecture)
+    {
+        io::writeBytesFrom(denFile, position, (uint8_t*)buf, frameByteSize);
+    } else
+    {
+        if(XMajor)
+        {
+            for(uint64_t i = 0; i != frameSize; i++)
+            {
+                util::setNextElement<T>(*(buf + i), &buffer[sizeof(T) * i]);
+            }
+        } else
+        {
+            for(uint32_t i = 0; i != sizex; i++)
+            {
+                for(uint32_t j = 0; j != sizey; j++)
+                {
+                    util::setNextElement<T>(*(buf + j * sizex + i),
+                                            &buffer[(i * sizey + j) * sizeof(T)]);
+                }
+            }
+        }
+        io::writeBytesFrom(denFile, position, (uint8_t*)buf, frameByteSize);
+    }
+}
+
+template <typename T>
+void DenAsyncFrame2DWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k)
+{
+    T* f_array = f.getDataPointer();
+    writeBuffer(f_array, k);
+}
+
+template <typename T>
+std::string DenAsyncFrame2DWritter<T>::getFileName() const
+{
+    return this->denFile;
+}
+
+template <typename T>
+uint32_t DenAsyncFrame2DWritter<T>::dimx() const
+{
+    return sizex;
+}
+
+template <typename T>
+uint32_t DenAsyncFrame2DWritter<T>::dimy() const
+{
+    return sizey;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DWritter<T>::getFrameCount() const
+{
+    return frameCount;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DWritter<T>::getFrameSize() const
+{
+    return frameSize;
+}
+
+template <typename T>
+uint64_t DenAsyncFrame2DWritter<T>::getFrameByteSize() const
+{
+    return frameByteSize;
 }
 
 } // namespace KCT::io

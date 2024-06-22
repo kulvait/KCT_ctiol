@@ -19,13 +19,22 @@ namespace io {
     public:
         /*Returns k-th frame in the source.*/
         virtual std::shared_ptr<io::Frame2DI<T>> readFrame(uint64_t k) = 0;
+
         /**Returns x dimension.*/
         virtual uint32_t dimx() const = 0;
+
         /**Returns y dimension.*/
         virtual uint32_t dimy() const = 0;
-        /**Returns number of frames in the source.*/
+
+        /**Number of frames.*/
         virtual uint64_t getFrameCount() const = 0;
-        /**Default destructor.*/
+
+        /**Frame size.*/
+        virtual uint64_t getFrameSize() const = 0;
+
+        /**Frame byte size.*/
+        virtual uint64_t getFrameByteSize() const = 0;
+
         virtual ~Frame2DReaderI() = default;
     };
 } // namespace io

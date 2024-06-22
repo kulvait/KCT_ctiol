@@ -60,6 +60,8 @@ public:
     uint32_t dimx() const override;
     uint32_t dimy() const override;
     uint64_t getFrameCount() const override;
+    uint64_t getFrameSize() const override;
+    uint64_t getFrameByteSize() const override;
     std::string getFileName() const;
     /**Returns file name of the underlying DEN file.**/
     DenSupportedType getDataType() const;
@@ -187,24 +189,6 @@ std::string DenFrame2DCachedReader<T>::getFileName() const
 }
 
 template <typename T>
-uint32_t DenFrame2DCachedReader<T>::dimx() const
-{
-    return sizex;
-}
-
-template <typename T>
-uint32_t DenFrame2DCachedReader<T>::dimy() const
-{
-    return sizey;
-}
-
-template <typename T>
-uint64_t DenFrame2DCachedReader<T>::getFrameCount() const
-{
-    return frameCount;
-}
-
-template <typename T>
 void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t n)
 {
     if(fromID >= frameCount)
@@ -216,8 +200,7 @@ void DenFrame2DCachedReader<T>::fillCache(uint32_t fromID, uint32_t n)
     {
         if(n < cacheSize)
         {
-            LOGW << io::xprintf(
-                "Specified n=%d exceeds cacheSize=%d, setting n to cacheSize.");
+            LOGW << io::xprintf("Specified n=%d exceeds cacheSize=%d, setting n to cacheSize.");
             n = cacheSize;
         }
         for(uint64_t k = fromID; k != std::min(uint64_t(fromID) + n, frameCount); k++)
@@ -387,6 +370,36 @@ void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t k,
             }
         }
     }
+}
+
+template <typename T>
+uint32_t DenFrame2DCachedReader<T>::dimx() const
+{
+    return sizex;
+}
+
+template <typename T>
+uint32_t DenFrame2DCachedReader<T>::dimy() const
+{
+    return sizey;
+}
+
+template <typename T>
+uint64_t DenFrame2DCachedReader<T>::getFrameCount() const
+{
+    return frameCount;
+}
+
+template <typename T>
+uint64_t DenFrame2DCachedReader<T>::getFrameSize() const
+{
+    return frameSize;
+}
+
+template <typename T>
+uint64_t DenFrame2DCachedReader<T>::getFrameByteSize() const
+{
+    return frameByteSize;
 }
 
 template <typename T>

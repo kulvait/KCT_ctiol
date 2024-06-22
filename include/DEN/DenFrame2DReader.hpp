@@ -47,6 +47,8 @@ public:
     uint32_t dimx() const override;
     uint32_t dimy() const override;
     uint64_t getFrameCount() const override;
+    uint64_t getFrameSize() const override;
+    uint64_t getFrameByteSize() const override;
     std::string getFileName() const;
     /**Returns file name of the underlying DEN file.**/
     DenSupportedType getDataType() const;
@@ -167,6 +169,18 @@ template <typename T>
 uint64_t DenFrame2DReader<T>::getFrameCount() const
 {
     return frameCount;
+}
+
+template <typename T>
+uint64_t DenFrame2DReader<T>::getFrameSize() const
+{
+    return frameSize;
+}
+
+template <typename T>
+uint64_t DenFrame2DReader<T>::getFrameByteSize() const
+{
+    return frameByteSize;
 }
 
 template <typename T>
