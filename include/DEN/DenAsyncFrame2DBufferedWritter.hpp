@@ -237,6 +237,7 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string de
 
 template <typename T>
 DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string denFile)
+    : denFile(denFile)
 {
     std::string err;
     if(!io::pathExists(denFile))
@@ -258,15 +259,15 @@ DenAsyncFrame2DBufferedWritter<T>::DenAsyncFrame2DBufferedWritter(std::string de
                           info.getElementByteSize(), denFile.c_str(), elementByteSize);
         KCTERR(err);
     }
-    existingFile = true;
-    extended = info.isExtended();
-    offset = info.getOffset();
-    this->denFile = denFile;
+    this->existingFile = true;
+    this->extended = info.isExtended();
+    this->offset = info.getOffset();
     this->sizex = info.dimx();
     this->sizey = info.dimy();
     this->frameCount = info.getFrameCount();
     this->frameSize = info.getFrameSize();
     this->frameByteSize = info.getFrameByteSize();
+    this->XMajor = info.hasXMajorAlignment();
     initialize();
 }
 
