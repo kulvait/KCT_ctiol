@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 // Internal
 #include "Frame2DI.hpp"
