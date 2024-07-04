@@ -395,7 +395,7 @@ void DenAsyncFrame2DWritter<T>::writeBuffer(T* buf, uint64_t k)
                 }
             }
         }
-        io::writeBytesFrom(denFile, position, (uint8_t*)buf, frameByteSize);
+        io::writeBytesFrom(denFile, position, (uint8_t*)buffer, frameByteSize);
     }
 }
 

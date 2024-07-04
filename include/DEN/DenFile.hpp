@@ -172,23 +172,33 @@ void DenFile<T>::readFileChunk(uint64_t startFrame, uint64_t endFrame)
 template <typename T>
 void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
 {
-    uint8_t* buffer = new uint8_t[frameByteSize];
-    for(uint64_t k = startFrame; k < endFrame; ++k)
+    uint64_t fileOffset = 0;
+    T* pointer = fileData.data() + startFrame * frameSize;
+    T* framePointer = nullptr;
+    if(littleEndianArchitecture)
     {
-        uint64_t position = frameOffsets[k];
-        if(littleEndianArchitecture)
+        for(uint64_t k = startFrame; k < endFrame; ++k)
         {
-            std::memcpy(buffer, &fileData[k * frameSize], frameByteSize);
-        } else
+            fileOffset = frameOffsets[k];
+            framePointer = pointer + k * frameSize;
+            io::writeBytesFrom(denFile, fileOffset, (uint8_t*)framePointer, frameByteSize);
+        }
+    } else
+    {
+
+        uint8_t* buffer = new uint8_t[frameByteSize];
+        for(uint64_t k = startFrame; k < endFrame; ++k)
         {
+            fileOffset = frameOffsets[k];
+            framePointer = pointer + k * frameSize;
             for(uint64_t a = 0; a != frameSize; a++)
             {
-                util::setNextElement<T>(fileData[k * frameSize + a], &buffer[a * elementByteSize]);
+                util::setNextElement<T>(*framePointer, &buffer[a * elementByteSize]);
             }
+            io::writeBytesFrom(denFile, position, buffer, frameByteSize);
         }
-        io::writeBytesFrom(denFile, position, buffer, frameByteSize);
+        delete[] buffer;
     }
-    delete[] buffer;
 }
 
 template <typename T>
@@ -250,22 +260,18 @@ void DenFile<T>::writeFile(std::string fileName, bool force)
         return;
     }
 
-    std::vector<std::thread> threads;
-    uint64_t framesPerThread = frameCount / numThreads;
-    uint64_t remainingFrames = frameCount % numThreads;
+    std::vector<std::thread> async_threads;
+    uint64_t threads = std::min(static_cast<uint64_t>(numThreads), frameCount);
+    uint64_t framesPerThread = frameCount / threads;
 
-    for(uint32_t i = 0; i < numThreads; ++i)
+    for(uint32_t i = 0; i < threads; ++i)
     {
         uint64_t startFrame = i * framesPerThread;
-        uint64_t endFrame = (i + 1) * framesPerThread;
-        if(i == numThreads - 1)
-        {
-            endFrame += remainingFrames;
-        }
-        threads.emplace_back(&DenFile::writeFileChunk, this, startFrame, endFrame);
+        uint64_t endFrame = std::min(startFrame + framesPerThread, frameCount);
+        async_threads.emplace_back(&DenFile::writeFileChunk, this, startFrame, endFrame);
     }
 
-    for(auto& thread : threads)
+    for(auto& thread : async_threads)
     {
         thread.join();
     }
