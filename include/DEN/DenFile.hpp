@@ -128,7 +128,7 @@ void DenFile<T>::readFileIntoMemory()
 
     std::vector<std::thread> async_threads;
     uint64_t threads = std::min(static_cast<uint64_t>(numThreads), frameCount);
-    uint64_t framesPerThread = frameCount / threads;
+    uint64_t framesPerThread = (frameCount + threads - 1) / threads;
 
     for(uint32_t i = 0; i < threads; ++i)
     {
@@ -262,7 +262,7 @@ void DenFile<T>::writeFile(std::string fileName, bool force)
 
     std::vector<std::thread> async_threads;
     uint64_t threads = std::min(static_cast<uint64_t>(numThreads), frameCount);
-    uint64_t framesPerThread = frameCount / threads;
+    uint64_t framesPerThread = (frameCount + threads - 1) / threads;
 
     for(uint32_t i = 0; i < threads; ++i)
     {
