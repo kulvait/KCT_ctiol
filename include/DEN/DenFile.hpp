@@ -126,18 +126,18 @@ void DenFile<T>::readFileIntoMemory()
         return;
     }
 
-    std::vector<std::thread> threads;
-    uint32_t threads = std::min(numThreads, frameCount);
-    uint64_t framesPerThread = frameCount / numThreads;
+    std::vector<std::thread> async_threads;
+    uint64_t threads = std::min(static_cast<uint64_t>(numThreads), frameCount);
+    uint64_t framesPerThread = frameCount / threads;
 
-    for(uint32_t i = 0; i < numThreads; ++i)
+    for(uint32_t i = 0; i < threads; ++i)
     {
         uint64_t startFrame = i * framesPerThread;
         uint64_t endFrame = std::min(startFrame + framesPerThread, frameCount);
-        threads.emplace_back(&DenFile::readFileChunk, this, startFrame, endFrame);
+        async_threads.emplace_back(&DenFile::readFileChunk, this, startFrame, endFrame);
     }
 
-    for(auto& thread : threads)
+    for(auto& thread : async_threads)
     {
         thread.join();
     }
