@@ -256,7 +256,7 @@ void DenFile<T>::writeFile(std::string fileName, bool force)
     }
     if(numThreads <= 1)
     {
-        writeFileChunk(0, frameCount);
+        writeFileChunk(fileName, 0, frameCount);
         return;
     }
 
