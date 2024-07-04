@@ -173,7 +173,7 @@ template <typename T>
 void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
 {
     uint64_t fileOffset = 0;
-    T* pointer = fileData.data() + startFrame * frameSize;
+    T* pointer = fileData.data();
     T* framePointer = nullptr;
     if(littleEndianArchitecture)
     {
