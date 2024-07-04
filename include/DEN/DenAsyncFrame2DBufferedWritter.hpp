@@ -142,6 +142,10 @@ void DenAsyncFrame2DBufferedWritter<T>::initialize()
     if(_pubsetbuf_buffer_size > frameByteSize)
     {
         uint64_t fitFrames = _pubsetbuf_buffer_size / frameByteSize;
+        if(fitFrames > frameCount)
+        {
+            fitFrames = frameCount;
+        }
         if(fitFrames * frameByteSize != _pubsetbuf_buffer_size)
         {
             _pubsetbuf_buffer_size = fitFrames * frameByteSize;
