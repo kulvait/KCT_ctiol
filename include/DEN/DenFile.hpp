@@ -195,7 +195,7 @@ void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
             {
                 util::setNextElement<T>(*framePointer, &buffer[a * elementByteSize]);
             }
-            io::writeBytesFrom(denFile, position, buffer, frameByteSize);
+            io::writeBytesFrom(denFile, fileOffset, buffer, frameByteSize);
         }
         delete[] buffer;
     }
