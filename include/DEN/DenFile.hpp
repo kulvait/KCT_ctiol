@@ -152,10 +152,10 @@ void DenFile<T>::readFileIntoMemory()
 template <typename T>
 void DenFile<T>::readFileChunk(uint64_t startFrame, uint64_t endFrame)
 {
+    uint8_t* buffer = new uint8_t[frameByteSize];
     for(uint64_t k = startFrame; k < endFrame; ++k)
     {
         uint64_t position = frameOffsets[k];
-        uint8_t buffer[frameByteSize];
         io::readBytesFrom(this->denFile, position, buffer, frameByteSize);
 
         if(littleEndianArchitecture)
@@ -170,15 +170,16 @@ void DenFile<T>::readFileChunk(uint64_t startFrame, uint64_t endFrame)
             }
         }
     }
+    delete[] buffer;
 }
 
 template <typename T>
 void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
 {
+    uint8_t* buffer = new uint8_t[frameByteSize];
     for(uint64_t k = startFrame; k < endFrame; ++k)
     {
         uint64_t position = frameOffsets[k];
-        uint8_t buffer[frameByteSize];
         if(littleEndianArchitecture)
         {
             std::memcpy(buffer, &fileData[k * frameSize], frameByteSize);
@@ -191,6 +192,7 @@ void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
         }
         io::writeBytesFrom(denFile, position, buffer, frameByteSize);
     }
+    delete[] buffer;
 }
 
 template <typename T>
