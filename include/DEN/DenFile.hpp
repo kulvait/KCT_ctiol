@@ -48,7 +48,7 @@ public:
 private:
     void readFileIntoMemory();
     void readFileChunk(uint64_t startFrame, uint64_t endFrame);
-    void writeFileChunk(uint64_t startFrame, uint64_t endFrame);
+    void writeFileChunk(std::string fileName, uint64_t startFrame, uint64_t endFrame);
 
     std::string denFile;
     DenFileInfo denFileInfo;
@@ -170,7 +170,7 @@ void DenFile<T>::readFileChunk(uint64_t startFrame, uint64_t endFrame)
 }
 
 template <typename T>
-void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
+void DenFile<T>::writeFileChunk(std::string fileName, uint64_t startFrame, uint64_t endFrame)
 {
     uint64_t fileOffset = 0;
     T* pointer = fileData.data();
@@ -181,7 +181,7 @@ void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
         {
             fileOffset = frameOffsets[k];
             framePointer = pointer + k * frameSize;
-            io::writeBytesFrom(denFile, fileOffset, (uint8_t*)framePointer, frameByteSize);
+            io::writeBytesFrom(fileName, fileOffset, (uint8_t*)framePointer, frameByteSize);
         }
     } else
     {
@@ -195,7 +195,7 @@ void DenFile<T>::writeFileChunk(uint64_t startFrame, uint64_t endFrame)
             {
                 util::setNextElement<T>(*framePointer, &buffer[a * elementByteSize]);
             }
-            io::writeBytesFrom(denFile, fileOffset, buffer, frameByteSize);
+            io::writeBytesFrom(fileName, fileOffset, buffer, frameByteSize);
         }
         delete[] buffer;
     }
@@ -268,7 +268,7 @@ void DenFile<T>::writeFile(std::string fileName, bool force)
     {
         uint64_t startFrame = i * framesPerThread;
         uint64_t endFrame = std::min(startFrame + framesPerThread, frameCount);
-        async_threads.emplace_back(&DenFile::writeFileChunk, this, startFrame, endFrame);
+        async_threads.emplace_back(&DenFile::writeFileChunk, this, fileName, startFrame, endFrame);
     }
 
     for(auto& thread : async_threads)
