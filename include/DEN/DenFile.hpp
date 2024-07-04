@@ -127,17 +127,13 @@ void DenFile<T>::readFileIntoMemory()
     }
 
     std::vector<std::thread> threads;
+    uint32_t threads = std::min(numThreads, frameCount);
     uint64_t framesPerThread = frameCount / numThreads;
-    uint64_t remainingFrames = frameCount % numThreads;
 
     for(uint32_t i = 0; i < numThreads; ++i)
     {
         uint64_t startFrame = i * framesPerThread;
-        uint64_t endFrame = (i + 1) * framesPerThread;
-        if(i == numThreads - 1)
-        {
-            endFrame += remainingFrames;
-        }
+        uint64_t endFrame = std::min(startFrame + framesPerThread, frameCount);
         threads.emplace_back(&DenFile::readFileChunk, this, startFrame, endFrame);
     }
 
