@@ -60,7 +60,7 @@ TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
         REQUIRE(f1->get(1, 2) == static_cast<float>(0.00016604466369883966));
         REQUIRE(f1->get(2, 2) == static_cast<float>(9.1904376232148155e-07));
         REQUIRE(f1->get(3, 2) == static_cast<float>(1.0));
-    } catch(KCT::util::KCTException e)
+    } catch(const KCT::util::KCTException& e)
     {
         kctexception = true;
     }
