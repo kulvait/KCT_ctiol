@@ -500,7 +500,8 @@ void DenFileInfo::readIntoArray(T* c_array,
     uint8_t* tmpbuffer = new uint8_t[frameByteSize];
     uint64_t IND;
     uint64_t arrayFrameSize = static_cast<uint64_t>(x_count) * static_cast<uint64_t>(y_count);
-    for(uint64_t k = z_from; k != z_count; k++)
+    uint64_t z_to = z_from + z_count;
+    for(uint64_t k = z_from; k != z_to; k++)
     {
         IND = k - z_from;
         this->readFlatFrameIntoBuffer(k, c_array + IND * arrayFrameSize, c_array_xmajor, tmpbuffer,
