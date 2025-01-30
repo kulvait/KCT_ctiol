@@ -9,6 +9,68 @@ namespace util {
         return all_platforms.size();
     }
 
+    std::optional<std::pair<uint32_t, uint32_t>> OpenCLManager::chooseSuitablePlatformAndDevice(bool verbose)
+    {
+        uint32_t platformsOpenCL = platformCount();
+        if (platformsOpenCL == 0)
+        {
+            LOGE << "No OpenCL platforms found. Check OpenCL installation!";
+            return std::nullopt;
+        }
+
+        uint32_t CLplatformID = 0;
+        uint32_t CLdeviceID = 0;
+        uint32_t devicesOnPlatform = 0;
+        bool nvidiaPlatformFound = false;
+
+        // First pass: Search for NVIDIA platforms
+        for (uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
+        {
+            std::string platformName = getPlatformName(platformID);
+            if (platformName.find("NVIDIA") != std::string::npos)
+            {
+                uint32_t currentDevices = deviceCount(platformID);
+                if (currentDevices > devicesOnPlatform)
+                {
+                    devicesOnPlatform = currentDevices;
+                    CLplatformID = platformID;
+                    CLdeviceID = devicesOnPlatform - 1; // Select the last device
+                    nvidiaPlatformFound = true;
+                }
+            }
+        }
+
+        // Second pass: If no NVIDIA platform found, search all platforms
+        if (!nvidiaPlatformFound)
+        {
+            for (uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
+            {
+                uint32_t currentDevices = deviceCount(platformID);
+                if (currentDevices > devicesOnPlatform)
+                {
+                    devicesOnPlatform = currentDevices;
+                    CLplatformID = platformID;
+                    CLdeviceID = devicesOnPlatform - 1; // Select the last device
+                }
+            }
+        }
+
+        if (devicesOnPlatform == 0)
+        {
+            LOGE << "No devices found on any platform.";
+            return std::nullopt;
+        }
+
+        if (verbose)
+        {
+            LOGI << io::xprintf("Selected platform %d: %s", CLplatformID,
+                                getPlatformName(CLplatformID).c_str());
+            LOGI << io::xprintf("Selected device %d on platform %d.", CLdeviceID, CLplatformID);
+        }
+
+        return std::make_pair(CLplatformID, CLdeviceID);
+    }
+
     std::shared_ptr<cl::Platform> OpenCLManager::getPlatform(uint32_t platformID, bool verbose)
     {
         std::vector<cl::Platform> all_platforms;

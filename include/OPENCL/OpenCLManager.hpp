@@ -4,6 +4,7 @@
 #include "PLOG/PlogSetup.h"
 
 // External libraries
+#include <optional>
 #include <CL/cl.hpp>
 
 // Internal libraries
@@ -25,6 +26,9 @@ namespace util {
         static uint64_t localMemSize(uint32_t platformID, uint32_t deviceID);
         static uint32_t maxWGS(cl::Device& device);
         static uint32_t maxWGS(uint32_t platformID, uint32_t deviceID);
+        // New function to choose a platform and device
+        static std::optional<std::pair<uint32_t, uint32_t>> chooseSuitablePlatformAndDevice(bool verbose
+                                                                                    = false);
     };
 } // namespace util
 } // namespace KCT
