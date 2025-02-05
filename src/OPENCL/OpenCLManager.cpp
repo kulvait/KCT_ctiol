@@ -9,10 +9,43 @@ namespace util {
         return all_platforms.size();
     }
 
-    std::optional<std::pair<uint32_t, uint32_t>> OpenCLManager::chooseSuitablePlatformAndDevice(bool verbose)
+    uint32_t OpenCLManager::deviceCount(uint32_t platformID)
+    {
+        std::vector<cl::Device> all_devices;
+        std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
+        if(platform == nullptr)
+        {
+            return 0;
+        } else
+        {
+            platform->getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
+            return all_devices.size();
+        }
+    }
+
+    bool OpenCLManager::isValid(uint32_t platformID, uint32_t deviceID)
+    {
+        // Check if the platform ID is within the valid range
+        if(platformID >= platformCount())
+        {
+            return false; // Invalid platform ID
+        }
+
+        // Check if the device ID is within the valid range for the given platform
+        if(deviceID >= deviceCount(platformID))
+        {
+            return false; // Invalid device ID
+        }
+
+        return true; // Both platformID and deviceID are valid
+    }
+
+    std::optional<std::pair<uint32_t, uint32_t>>
+    OpenCLManager::chooseSuitablePlatformAndDevice(const std::string& platformNameFilter,
+                                                   bool verbose)
     {
         uint32_t platformsOpenCL = platformCount();
-        if (platformsOpenCL == 0)
+        if(platformsOpenCL == 0)
         {
             LOGE << "No OpenCL platforms found. Check OpenCL installation!";
             return std::nullopt;
@@ -21,54 +54,99 @@ namespace util {
         uint32_t CLplatformID = 0;
         uint32_t CLdeviceID = 0;
         uint32_t devicesOnPlatform = 0;
-        bool nvidiaPlatformFound = false;
 
-        // First pass: Search for NVIDIA platforms
-        for (uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
+        // First pass: Filter by platformNameFilter and prioritize
+        for(const std::string& priorityPlatform : platformPriorityList)
+        {
+            for(uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
+            {
+                std::string platformName = getPlatformName(platformID);
+
+                if(priorityPlatform == platformName)
+                {
+                    // If platformNameFilter is non-empty, ensure the platform matches the filter
+                    if(!platformNameFilter.empty()
+                       && platformName.find(platformNameFilter) == std::string::npos)
+                    {
+                        continue; // Skip platforms that don't match the filter
+                    }
+                    devicesOnPlatform = deviceCount(platformID);
+                    if(devicesOnPlatform > 0)
+                    {
+                        CLplatformID = platformID;
+                        CLdeviceID = devicesOnPlatform - 1; // Select the last device
+                        if(verbose)
+                        {
+                            LOGI << io::xprintf("Selected device %d:%d on platform %s.",
+                                                CLplatformID, CLdeviceID, platformName.c_str());
+                        }
+                        return std::make_pair(CLplatformID, CLdeviceID);
+                    }
+                }
+            }
+        }
+
+        // Second pass: search all platform and prioritize first one with most devices
+        for(uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
         {
             std::string platformName = getPlatformName(platformID);
-            if (platformName.find("NVIDIA") != std::string::npos)
+
+            // If platformNameFilter is non-empty, ensure the platform matches the filter
+            if(!platformNameFilter.empty()
+               && platformName.find(platformNameFilter) == std::string::npos)
             {
-                uint32_t currentDevices = deviceCount(platformID);
-                if (currentDevices > devicesOnPlatform)
-                {
-                    devicesOnPlatform = currentDevices;
-                    CLplatformID = platformID;
-                    CLdeviceID = devicesOnPlatform - 1; // Select the last device
-                    nvidiaPlatformFound = true;
-                }
+                continue; // Skip platforms that don't match the filter
+            }
+            uint32_t devicesCount = deviceCount(platformID);
+            if(devicesCount > devicesOnPlatform)
+            {
+                devicesOnPlatform = devicesCount;
+                CLplatformID = platformID;
+                CLdeviceID = devicesOnPlatform - 1; // Select the last device
             }
         }
 
-        // Second pass: If no NVIDIA platform found, search all platforms
-        if (!nvidiaPlatformFound)
-        {
-            for (uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
-            {
-                uint32_t currentDevices = deviceCount(platformID);
-                if (currentDevices > devicesOnPlatform)
-                {
-                    devicesOnPlatform = currentDevices;
-                    CLplatformID = platformID;
-                    CLdeviceID = devicesOnPlatform - 1; // Select the last device
-                }
-            }
-        }
-
-        if (devicesOnPlatform == 0)
+        if(devicesOnPlatform == 0)
         {
             LOGE << "No devices found on any platform.";
             return std::nullopt;
         }
 
-        if (verbose)
+        if(verbose)
         {
-            LOGI << io::xprintf("Selected platform %d: %s", CLplatformID,
-                                getPlatformName(CLplatformID).c_str());
-            LOGI << io::xprintf("Selected device %d on platform %d.", CLdeviceID, CLplatformID);
+            std::string platformName = getPlatformName(CLplatformID);
+            LOGI << io::xprintf("Selected device %d:%d on platform %s.", CLplatformID, CLdeviceID,
+                                platformName.c_str());
         }
 
         return std::make_pair(CLplatformID, CLdeviceID);
+    }
+
+    std::optional<uint32_t> OpenCLManager::getPlatformID(const std::string& platformNameFilter,
+                                                         bool verbose)
+    {
+        uint32_t platformsOpenCL = platformCount();
+        uint32_t ID = 0;
+        uint32_t matchCount = 0;
+        for(uint32_t platformID = 0; platformID < platformsOpenCL; platformID++)
+        {
+            std::string platformName = getPlatformName(platformID);
+
+            // If platformNameFilter is non-empty, ensure the platform matches the filter
+            if(platformName.find(platformNameFilter) != std::string::npos)
+            {
+                matchCount++;
+                ID = platformID;
+            }
+        }
+        if(matchCount == 1)
+        {
+            return ID;
+        }
+        std::string ERR = io::xprintf("Searching for platformNameFilter=%s got me %d results!",
+                                      platformNameFilter.c_str(), matchCount);
+        LOGE << ERR;
+        return std::nullopt;
     }
 
     std::shared_ptr<cl::Platform> OpenCLManager::getPlatform(uint32_t platformID, bool verbose)
@@ -109,20 +187,6 @@ namespace util {
             return nullptr;
         }
         return all_platforms[platformID].getInfo<CL_PLATFORM_NAME>().c_str();
-    }
-
-    uint32_t OpenCLManager::deviceCount(uint32_t platformID)
-    {
-        std::vector<cl::Device> all_devices;
-        std::shared_ptr<cl::Platform> platform = getPlatform(platformID);
-        if(platform == nullptr)
-        {
-            return 0;
-        } else
-        {
-            platform->getDevices(CL_DEVICE_TYPE_ALL, &all_devices);
-            return all_devices.size();
-        }
     }
 
     uint64_t OpenCLManager::localMemSize(cl::Device& device)
@@ -206,6 +270,10 @@ namespace util {
         }
         return std::make_shared<cl::Device>(all_devices[deviceID]);
     }
+
+    // Hardcoded platform priority list
+    const std::vector<std::string> OpenCLManager::platformPriorityList
+        = { "NVIDIA CUDA", "Intel(R) OpenCL", "Intel(R) FPGA Emulation Platform for OpenCL(TM)" };
 
 } // namespace util
 } // namespace KCT
