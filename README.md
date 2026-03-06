@@ -8,11 +8,11 @@ This repository actually contains one basic library and separate library that de
 
 Clone over ssh, for those with ssh keys ready in gitlab
 ```
-git clone ssh://git@gitlab.stimulate.ovgu.de:2200/vojtech.kulvait/CTIOL.git
+git clone ssh://git@github.com:kulvait/KCT_ctiol.git
 ```
 Basic clone can be performed over https
 ```
-git clone https://gitlab.stimulate.ovgu.de/vojtech.kulvait/CTIOL.git
+git clone https://github.com/kulvait/KCT_ctiol.git
 ```
 However to populate submodules directories it is then needed to issue
 ```
@@ -101,7 +101,7 @@ See more at https://gitlab.kitware.com/cmake/community/wikis/doc/editors/Eclipse
 
 When there is no other licensing and/or copyright information in the source files of this project, the following apply for the source files in the directories include and src and for CMakeLists.txt file:
 
-Copyright (C) 2018-2024 Vojtěch Kulvait
+Copyright (C) 2018-2026 Vojtěch Kulvait
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
