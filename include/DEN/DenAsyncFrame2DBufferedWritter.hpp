@@ -7,7 +7,7 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
-#include "BufferedFrame2D.hpp"
+#include "BufferedFrame2DI.hpp"
 #include "DEN/DenFileInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
@@ -86,7 +86,7 @@ public:
      * @param f Object of the type BufferedFrame2D<T> to be written.
      * @param k Index of the frame in output file.
      */
-    void writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k);
+    void writeBufferedFrame(const BufferedFrame2DI<T>& f, uint64_t k);
 
     /**
      * @brief Writes buffer of the frameSize to the file.
@@ -95,7 +95,7 @@ public:
      * order regardless of XMajor.
      * @param k Index of the frame in output file.
      */
-    void writeBuffer(T* buf, uint64_t k);
+    void writeBuffer(const T* buf, uint64_t k);
 
     /**Writes i-th frame to the file.*/
     void writeFrame(const Frame2DI<T>& s, uint64_t k) override;
@@ -346,7 +346,7 @@ void DenAsyncFrame2DBufferedWritter<T>::writeFrame(const Frame2DI<T>& f, uint64_
 }
 
 template <typename T>
-void DenAsyncFrame2DBufferedWritter<T>::writeBuffer(T* buf, uint64_t k)
+void DenAsyncFrame2DBufferedWritter<T>::writeBuffer(const T* buf, uint64_t k)
 {
     uint64_t position = offset + k * frameByteSize;
     std::lock_guard<std::mutex> guard(
@@ -378,9 +378,9 @@ void DenAsyncFrame2DBufferedWritter<T>::writeBuffer(T* buf, uint64_t k)
 }
 
 template <typename T>
-void DenAsyncFrame2DBufferedWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k)
+void DenAsyncFrame2DBufferedWritter<T>::writeBufferedFrame(const BufferedFrame2DI<T>& f, uint64_t k)
 {
-    T* f_array = f.getDataPointer();
+    const T* f_array = f.data();
     writeBuffer(f_array, k);
 }
 

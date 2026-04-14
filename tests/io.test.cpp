@@ -45,9 +45,9 @@ TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
     {
         // It is not float but double
         io::DenFrame2DReader<float> dfr(fileName, 5);
-        std::shared_ptr<io::BufferedFrame2D<float>> f0 = dfr.readBufferedFrame(0);
-        std::shared_ptr<io::BufferedFrame2D<float>> f1 = dfr.readBufferedFrame(1);
-        std::shared_ptr<io::BufferedFrame2D<float>> f2 = dfr.readBufferedFrame(2);
+        std::shared_ptr<io::BufferedFrame2DI<float>> f0 = dfr.readBufferedFrame(0);
+        std::shared_ptr<io::BufferedFrame2DI<float>> f1 = dfr.readBufferedFrame(1);
+        std::shared_ptr<io::BufferedFrame2DI<float>> f2 = dfr.readBufferedFrame(2);
         REQUIRE(f1->get(0, 0) == static_cast<float>(-0.051792586667711887));
         REQUIRE(f1->get(1, 0) == static_cast<float>(2.6190912906740373));
         REQUIRE(f1->get(2, 0) == static_cast<float>(-0.0015616874131109456));
@@ -69,9 +69,9 @@ TEST_CASE("TEST: KCT::io::DenFrame2DReader", "[denframereader][NOPRINT][NOVIZ]")
     REQUIRE(dfr.dimx() == 4);
     REQUIRE(dfr.dimy() == 3);
     REQUIRE(dfr.getFrameCount() == 248);
-    std::shared_ptr<io::BufferedFrame2D<double>> f0 = dfr.readBufferedFrame(0);
-    std::shared_ptr<io::BufferedFrame2D<double>> f1 = dfr.readBufferedFrame(1);
-    std::shared_ptr<io::BufferedFrame2D<double>> f2 = dfr.readBufferedFrame(2);
+    std::shared_ptr<io::BufferedFrame2DI<double>> f0 = dfr.readBufferedFrame(0);
+    std::shared_ptr<io::BufferedFrame2DI<double>> f1 = dfr.readBufferedFrame(1);
+    std::shared_ptr<io::BufferedFrame2DI<double>> f2 = dfr.readBufferedFrame(2);
     REQUIRE(f1->get(0, 0) == -0.051792586667711887);
     REQUIRE(f1->get(1, 0) == 2.6190912906740373);
     REQUIRE(f1->get(2, 0) == -0.0015616874131109456);

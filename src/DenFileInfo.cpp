@@ -311,7 +311,7 @@ namespace io {
                                         uint32_t dimz,
                                         bool XMajorAlignment)
     {
-        std::array<uint8_t, 4096> buf;
+        std::array<uint8_t, 4096> buf = {}; // Zero initialize
         util::putUint16(0, std::begin(buf));
         util::putUint16(3, std::begin(buf) + 2); // 3D
         util::putUint16(DenSupportedTypeElementByteSize(dst), std::begin(buf) + 4); // 3D
@@ -341,7 +341,7 @@ namespace io {
             std::string ERR = io::xprintf("%d>16 is invalid number of dimensions.", dimCount);
             KCTERR(ERR);
         }
-        std::array<uint8_t, 4096> buf;
+        std::array<uint8_t, 4096> buf = {}; // Zero initialize
         util::putUint16(0, std::begin(buf));
         util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
         util::putUint16(DenSupportedTypeElementByteSize(dst),
@@ -429,7 +429,7 @@ namespace io {
         }
         uint64_t elementSize = DenSupportedTypeElementByteSize(dst);
         uint64_t totalFileSize = 4096 + totalElementCount * elementSize;
-        std::array<uint8_t, 4096> buf;
+        std::array<uint8_t, 4096> buf = {}; // Zero initialize
         util::putUint16(0, std::begin(buf));
         util::putUint16(dimCount, std::begin(buf) + 2); // dimCount
         util::putUint16(DenSupportedTypeElementByteSize(dst),

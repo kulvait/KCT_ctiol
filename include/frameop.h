@@ -7,9 +7,10 @@
 #include <cmath>
 #include <typeinfo>
 
-#include "BufferedFrame2D.hpp"
 #include "DEN/DenSupportedType.hpp"
 #include "Frame2DI.hpp"
+#include "BufferedFrame2DI.hpp"
+#include "BufferedFrame2D.hpp"
 
 namespace KCT {
 namespace io {
@@ -30,7 +31,7 @@ namespace io {
 
     // Computing shifted data https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
     template <typename T>
-    onepassData<T> onepassBuffframeInfo(std::shared_ptr<BufferedFrame2D<T>> f, double shift)
+    onepassData<T> onepassBuffframeInfo(std::shared_ptr<BufferedFrame2DI<T>> f, double shift)
     {
         uint64_t frameSize = f->getFrameSize();
         if(frameSize == 0)
@@ -49,7 +50,7 @@ namespace io {
         double elm_shifted;
         x.NANcount = 0;
         x.INFcount = 0;
-        T* x_array = f->getDataPointer();
+        T* x_array = f->data();
         for(uint64_t i = 0; i != frameSize; i++)
         {
             elm = x_array[i];
@@ -89,7 +90,7 @@ namespace io {
     }
 
     template <typename T>
-    T quantileBuffframe(std::shared_ptr<BufferedFrame2D<T>> f, double pos)
+    T quantileBuffframe(std::shared_ptr<BufferedFrame2DI<T>> f, double pos)
     {
         if(std::isnan(pos))
         {
@@ -108,7 +109,7 @@ namespace io {
             KCTERR("Can not compute quantile on empty frame!");
         }
         BufferedFrame2D<T> g(*f); // Construct copy not to destroy original array
-        T* x_array = g.getDataPointer();
+        T* x_array = g.data();
         std::sort(x_array, x_array + frameSize);
         uint64_t quantileIndex = (uint64_t)(pos * frameSize - 1);
         return x_array[quantileIndex];
@@ -116,7 +117,7 @@ namespace io {
 
     // Computing shifted data https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
     template <typename T>
-    double bufferedFrameSum(std::shared_ptr<BufferedFrame2D<T>> f)
+    double bufferedFrameSum(std::shared_ptr<BufferedFrame2DI<T>> f)
     {
         uint64_t frameSize = f->getFrameSize();
         if(frameSize == 0)
@@ -126,7 +127,7 @@ namespace io {
         T elm;
         double sum = 0.0;
         double elm_double;
-        T* x_array = f->getDataPointer();
+        T* x_array = f->data();
         for(uint64_t i = 0; i != frameSize; i++)
         {
             elm = x_array[i];

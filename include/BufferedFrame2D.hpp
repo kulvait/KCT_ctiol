@@ -2,7 +2,7 @@
 #include <memory>
 
 // Internal
-#include "Frame2DI.hpp"
+#include "BufferedFrame2DI.hpp"
 
 namespace KCT {
 namespace io {
@@ -13,16 +13,29 @@ namespace io {
      *https://cpppatterns.com/patterns/rule-of-five.html
      */
     template <typename T>
-    class BufferedFrame2D : public Frame2DI<T>
+    class BufferedFrame2D : public BufferedFrame2DI<T>
     {
     public:
+        /**Construct BufferedFrame2D with given dimensions.
+         *
+         *This constructor allocates memory for the frame, but does not fill it with any value. The
+         *frame then have to be filled by calling set to individual elements.
+         */
+        BufferedFrame2D(uint32_t sizex, uint32_t sizey)
+            : sizex(sizex)
+            , sizey(sizey)
+            , frameSize((uint64_t)sizex * (uint64_t)sizey)
+        {
+            this->frameDataArray = new T[frameSize];
+        }
+
         /**Create BufferedFrame2D using buffer of the data.
          *
          *Can be called with a buffer that will be used to construct the frame. Deep copy is created
          *while creating object. When the buffer is nullptr, memory is allocated but nothing is
          *copied. Frame then have to be filled by calling set to individual elements.
          */
-        BufferedFrame2D(T* buffer, uint32_t sizex, uint32_t sizey)
+        BufferedFrame2D(const T* buffer, uint32_t sizex, uint32_t sizey)
             : sizex(sizex)
             , sizey(sizey)
             , frameSize((uint64_t)sizex * (uint64_t)sizey)
@@ -54,6 +67,14 @@ namespace io {
          */
         BufferedFrame2D(const BufferedFrame2D& b)
             : BufferedFrame2D(b.frameDataArray, b.sizex, b.sizey)
+        {
+        }
+
+        /**Construct from BufferedFrame2DI
+         *
+         */
+        BufferedFrame2D(const BufferedFrame2DI<T>& b)
+            : BufferedFrame2D(b.data(), b.dimx(), b.dimy())
         {
         }
 
@@ -98,6 +119,9 @@ namespace io {
             this->sizey = other.sizey;
             this->frameSize = other.frameSize;
             other.frameDataArray = nullptr;
+            other.sizex = 0;
+            other.sizey = 0;
+            other.frameSize = 0;
         } // Move constructor
 
         BufferedFrame2D& operator=(BufferedFrame2D&& other)
@@ -147,15 +171,16 @@ namespace io {
         /**
          *Function to get access to the data array.
          *
-         *Potentially unsafe operation since it is structure managed by the object.
          *This array is destroyed after the object is destroyed.
          */
         T* getDataPointer() { return frameDataArray; }
+        T* data() { return frameDataArray; }
+        const T* data() const { return frameDataArray; }
 
     private:
         T* frameDataArray;
-        const uint32_t sizex, sizey;
-        const uint64_t frameSize;
+        uint32_t sizex, sizey;
+        uint64_t frameSize;
     };
 } // namespace io
 } // namespace KCT

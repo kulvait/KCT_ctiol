@@ -2,6 +2,7 @@
 // External libraries
 
 // Internal libraries
+#include "BufferedFrame2DI.hpp"
 #include "Frame2DI.hpp"
 
 namespace KCT {
@@ -19,6 +20,16 @@ namespace io {
     public:
         /*Returns k-th frame in the source.*/
         virtual std::shared_ptr<io::Frame2DI<T>> readFrame(uint64_t k) = 0;
+
+        /*Returns k-th frame in the source as BufferedFrame2D object.*/
+        virtual std::shared_ptr<io::BufferedFrame2DI<T>> readBufferedFrame(uint64_t k) = 0;
+
+        /*Reads k-th frame in the source into provided buffer. The buffer should be large enough to
+         * hold the frame data. If XMajorAlignment is true, the data will be read in row-major
+         * order, otherwise in column-major order.*/
+        virtual void readFrameIntoBuffer(uint64_t flatFrameIndex,
+                                         T* outside_buffer,
+                                         bool XMajorAlignment = true) = 0; 
 
         /**Returns x dimension.*/
         virtual uint32_t dimx() const = 0;

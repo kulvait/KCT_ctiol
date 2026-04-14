@@ -7,7 +7,7 @@
 
 // Internal libraries
 #include "AsyncFrame2DWritterI.hpp"
-#include "BufferedFrame2D.hpp"
+#include "BufferedFrame2DI.hpp"
 #include "DEN/DenFileInfo.hpp"
 #include "littleEndianAlignment.h"
 #include "rawop.h"
@@ -73,10 +73,10 @@ public:
     /**
      * @brief Writes buffered frame to the file.
      *
-     * @param f Object of the type BufferedFrame2D<T> to be written.
+     * @param f Object of the type BufferedFrame2DI<T> to be written.
      * @param k Index of the frame in output file.
      */
-    void writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k);
+    void writeBufferedFrame(BufferedFrame2DI<T>& f, uint64_t k);
 
     /**
      * @brief Writes buffer of the frameSize to the file.
@@ -400,9 +400,9 @@ void DenAsyncFrame2DWritter<T>::writeBuffer(T* buf, uint64_t k)
 }
 
 template <typename T>
-void DenAsyncFrame2DWritter<T>::writeBufferedFrame(BufferedFrame2D<T>& f, uint64_t k)
+void DenAsyncFrame2DWritter<T>::writeBufferedFrame(BufferedFrame2DI<T>& f, uint64_t k)
 {
-    T* f_array = f.getDataPointer();
+    T* f_array = f.data();
     writeBuffer(f_array, k);
 }
 
