@@ -382,7 +382,12 @@ namespace io {
         uint32_t nonNanCount = 0;
         switch(dataType)
         {
-        case io::DenSupportedType::UINT16: {
+        case io::DenSupportedType::UINT8:
+        case io::DenSupportedType::UINT32:
+        case io::DenSupportedType::UINT16: 
+        case io::DenSupportedType::INT16: 
+        case io::DenSupportedType::INT32: 
+        case io::DenSupportedType::INT64: {
             for(uint32_t i = 0; i != dimx; i++)
                 for(uint32_t j = 0; j != dimy; j++)
                 {
