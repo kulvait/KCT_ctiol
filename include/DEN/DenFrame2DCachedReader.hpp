@@ -87,6 +87,7 @@ private:
     uint32_t bufferCount;
     uint32_t cacheSize;
     bool littleEndianArchitecture;
+    bool elementTypeMatches;
     void initialize();
     void frameToCache(uint32_t k, std::shared_ptr<BufferedFrame2DI<T>> f);
 };
@@ -116,6 +117,10 @@ DenFrame2DCachedReader<T>::DenFrame2DCachedReader(std::string denFile,
                           denFile.c_str(), DenSupportedTypeToString(dataType).c_str(),
                           DenSupportedTypeToString(readerDataType).c_str());
         LOGW << ERR;
+        elementTypeMatches = false;
+    } else
+    {
+        elementTypeMatches = true;
     }
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
@@ -264,7 +269,8 @@ void DenFrame2DCachedReader<T>::readFrameIntoBuffer(uint64_t k,
         std::copy(f->data(), f->data() + frameSize, outside_buffer);
         return;
     }
-    if(this->XMajorAlignment == XMajorAlignment && this->littleEndianArchitecture)
+    if(this->XMajorAlignment == XMajorAlignment && this->littleEndianArchitecture
+       && this->elementTypeMatches)
     {
         uint64_t position = this->offset + k * frameByteSize;
         io::readBytesFrom(this->denFile, position, (uint8_t*)outside_buffer, frameByteSize);

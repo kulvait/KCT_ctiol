@@ -70,6 +70,7 @@ private:
     uint8_t** buffers;
     uint32_t additionalBufferNum;
     bool littleEndianArchitecture;
+    bool elementTypeMatchesFile;
 };
 
 template <typename T>
@@ -87,6 +88,10 @@ DenFrame2DReader<T>::DenFrame2DReader(std::string denFile, uint32_t additionalBu
                           denFile.c_str(), DenSupportedTypeToString(dataType).c_str(),
                           DenSupportedTypeToString(readerDataType).c_str());
         LOGW << ERR;
+        elementTypeMatchesFile = false;
+    } else
+    {
+        elementTypeMatchesFile = true;
     }
     this->offset = pi.getOffset();
     this->sizex = pi.dimx();
@@ -193,8 +198,10 @@ std::shared_ptr<io::BufferedFrame2DI<T>> DenFrame2DReader<T>::readBufferedFrame(
 template <typename T>
 void DenFrame2DReader<T>::readFrameIntoBuffer(uint64_t k, T* outside_buffer, bool XMajorAlignment)
 {
-    if(XMajorAlignment == this->XMajorAlignment && this->littleEndianArchitecture)
+    if(XMajorAlignment == this->XMajorAlignment && this->littleEndianArchitecture
+       && this->elementTypeMatchesFile)
     {
+        // Fast path, read the data directly into the output buffer.
         uint64_t position = this->offset + k * frameByteSize;
         io::readBytesFrom(this->denFile, position, (uint8_t*)outside_buffer, frameByteSize);
         return;
