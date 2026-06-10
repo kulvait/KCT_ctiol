@@ -22,8 +22,10 @@ namespace io {
     void readFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void
     readBytesFrom(std::string fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
-    void
-    readBytesFrom(std::shared_ptr<std::ifstream> fileName, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes);
+    void readBytesFrom(std::shared_ptr<std::ifstream> fileName,
+                       uint64_t fromPosition,
+                       uint8_t* buffer,
+                       uint64_t numBytes);
     void writeFirstBytes(std::string fileName, uint8_t* buffer, uint64_t numBytes);
     void writeBytesFrom(std::shared_ptr<std::ofstream> ofstream,
                         uint64_t fromPosition,
@@ -40,6 +42,8 @@ namespace io {
     std::string getParent(const std::string& path);
     std::string getBasename(const std::string& path);
     std::string fileToString(const std::string& fileName);
+    std::string filesToString(const std::vector<std::string>& inputFiles);
+    std::string filesToString(std::initializer_list<std::string> inputFiles);
     /**
      * Concatenate text files given by inputFiles into the file given by outputFile.
      * Intended to create compilation of cl files into the file allsources.cl
@@ -59,11 +63,12 @@ namespace io {
      * @param inputFiles Input files as a std::initializer_list should be strings put into {}
      * brackets.
      */
+    void stringToFile(const std::string& outputFile, bool overwrite, const std::string& content);
     void concatenateTextFiles(const std::string& outputFile,
                               bool overwrite,
                               std::initializer_list<std::string> inputFiles);
     void concatenateTextFiles(const std::string& outputFile,
                               bool overwrite,
-                              std::vector<std::string>& inputFiles);
+                              const std::vector<std::string>& inputFiles);
 } // namespace io
 } // namespace KCT

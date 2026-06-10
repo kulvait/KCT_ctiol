@@ -70,8 +70,10 @@ namespace io {
         }
     }
 
-    void
-    readBytesFrom(std::shared_ptr<std::ifstream> ifstream, uint64_t fromPosition, uint8_t* buffer, uint64_t numBytes)
+    void readBytesFrom(std::shared_ptr<std::ifstream> ifstream,
+                       uint64_t fromPosition,
+                       uint8_t* buffer,
+                       uint64_t numBytes)
     {
         std::string ERR;
         if(!ifstream || !ifstream->is_open()) // cannot open file
@@ -89,8 +91,9 @@ namespace io {
         auto num = ifstream->gcount();
         if(num != (int64_t)numBytes)
         {
-            ERR = io::xprintf("Can not read first %lu bytes from the position %ld in file descriptor.",
-                              numBytes, fromPosition);
+            ERR = io::xprintf(
+                "Can not read first %lu bytes from the position %ld in file descriptor.", numBytes,
+                fromPosition);
             KCTERR(ERR);
         }
     }
@@ -341,6 +344,71 @@ namespace io {
         return std::string(bytes.data(), fileSize);
     }
 
+    std::string filesToString(std::initializer_list<std::string> inputFiles)
+    {
+        std::vector<std::string> inputFilesVector;
+        for(const std::string& f : inputFiles)
+        {
+            inputFilesVector.push_back(f);
+        }
+        return filesToString(inputFilesVector);
+    }
+
+    std::string filesToString(const std::vector<std::string>& inputFiles)
+    {
+        std::string ERR;
+        std::ostringstream oss;
+        for(const std::string& f : inputFiles)
+        {
+            if(!isRegularFile(f))
+            {
+                ERR = io::xprintf("File %s from the files to concatenate is not regular file!",
+                                  f.c_str());
+                KCTERR(ERR);
+            }
+            std::ifstream ifs(f, std::ios_base::binary);
+            oss << ifs.rdbuf();
+            ifs.close();
+            if(ifs.fail())
+            {
+                ERR = io::xprintf("Failure reading %s.", f.c_str());
+                KCTERR(ERR);
+            }
+        }
+        return oss.str();
+    }
+
+    void stringToFile(const std::string& outputFile, bool overwrite, const std::string& content)
+    {
+        std::string ERR;
+        if(pathExists(outputFile))
+        {
+            if(overwrite)
+            {
+                std::remove(outputFile.c_str());
+                if(pathExists(outputFile))
+                {
+                    ERR = io::xprintf("Can not delete %s", outputFile.c_str());
+                    KCTERR(ERR);
+                }
+            } else
+            {
+                ERR = io::xprintf("Path %s already exists, to overwrite set overwrite flag.",
+                                  outputFile.c_str());
+                KCTERR(ERR);
+            }
+        }
+        if(!pathExists(outputFile) || overwrite)
+        {
+            std::ofstream ofs(
+                outputFile,
+                std::ios::binary | std::ios::out
+                    | std::ios::trunc); // Open binary, for output, truncate when opening
+            ofs.write(content.data(), content.size());
+            ofs.close();
+        }
+    }
+
     void concatenateTextFiles(const std::string& outputFile,
                               bool overwrite,
                               std::initializer_list<std::string> inputFiles)
@@ -355,7 +423,7 @@ namespace io {
 
     void concatenateTextFiles(const std::string& outputFile,
                               bool overwrite,
-                              std::vector<std::string>& inputFiles)
+                              const std::vector<std::string>& inputFiles)
     {
         std::string ERR;
         if(pathExists(outputFile) && !overwrite)
@@ -364,33 +432,8 @@ namespace io {
                               outputFile.c_str());
             KCTERR(ERR);
         }
-        std::ofstream ofs(outputFile, std::ios_base::binary | std::ios::trunc);
-        for(std::string f : inputFiles)
-        {
-            if(!isRegularFile(f))
-            {
-                ERR = io::xprintf("File %s from the files to concatenate is not regular file!",
-                                  f.c_str());
-                // can throw std::ios_base::failure(ERR);
-                KCTERR(ERR);
-            }
-            std::ifstream ifs(f, std::ios_base::binary);
-            ofs << ifs.rdbuf();
-            ifs.close();
-            // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
-            if(ifs.fail())
-            {
-                ERR = io::xprintf("Failure reading %s.", f.c_str());
-                KCTERR(ERR);
-            }
-        }
-        ofs.close();
-        // See https://en.cppreference.com/w/cpp/io/basic_ios/fail
-        if(ofs.fail())
-        {
-            ERR = io::xprintf("Failure writing %s.", outputFile.c_str());
-            KCTERR(ERR);
-        }
+        std::string content = filesToString(inputFiles);
+        stringToFile(outputFile, overwrite, content);
     }
 } // namespace io
 } // namespace KCT
